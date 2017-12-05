@@ -97,6 +97,61 @@ int wiringPiSPIDataRW (int channel, unsigned char *data, int len)
  *********************************************************************************
  */
 
+#if defined(BOARD_ODROID)
+
+#include "wiringOdroid.h"
+
+int wiringPiSPISetupMode (int channel, int speed, int mode)
+{
+	int fd ;
+	int model, rev, mem, maker, overVolted ;
+	const char *device ;
+
+	piBoardId (&model, &rev, &mem, &maker, &overVolted) ;
+
+	mode    &= 3 ;	// Mode is 0, 1, 2 or 3
+	channel &= 1 ;	// Channel is 0 or 1
+
+	if (channel || model == MODEL_ODROID_C2) {
+		return wiringPiFailure (WPI_ALMOST,
+			"Can't support spi device. check model or spi channel.\n");
+	}
+
+	switch(model)	{
+	case MODEL_ODROID_C1:
+		device = "/dev/spidev0.0";
+	break;
+	case MODEL_ODROID_XU3:
+		device = "/dev/spidev1.0";
+	break;
+	case MODEL_ODROID_N1:
+	break;
+	}
+
+	if ((fd = open (device, O_RDWR)) < 0)
+		return wiringPiFailure (WPI_ALMOST,
+			"Unable to open SPI device: %s\n", strerror (errno));
+
+	spiSpeeds [channel] = speed ;
+	spiFds    [channel] = fd ;
+
+	// Set SPI parameters.
+	if (ioctl (fd, SPI_IOC_WR_MODE, &mode) < 0)
+		return wiringPiFailure (WPI_ALMOST,
+			"SPI Mode Change failure: %s\n", strerror (errno)) ;
+
+	if (ioctl (fd, SPI_IOC_WR_BITS_PER_WORD, &spiBPW) < 0)
+		return wiringPiFailure (WPI_ALMOST,
+			"SPI BPW Change failure: %s\n", strerror (errno)) ;
+
+	if (ioctl (fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed) < 0)
+		return wiringPiFailure (WPI_ALMOST,
+			"SPI Speed Change failure: %s\n", strerror (errno)) ;
+	return fd ;
+}
+
+#else
+
 int wiringPiSPISetupMode (int channel, int speed, int mode)
 {
   int fd ;
@@ -124,6 +179,7 @@ int wiringPiSPISetupMode (int channel, int speed, int mode)
   return fd ;
 }
 
+#endif	// #defined(BOARD_ODROID)
 
 /*
  * wiringPiSPISetup:

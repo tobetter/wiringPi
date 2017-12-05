@@ -27,6 +27,9 @@ PREFIX?=/local
 
 LDCONFIG?=ldconfig
 
+# BRAND_NAME = Pi
+BRAND_NAME = Odroid
+
 ifneq ($V,1)
 Q ?= @
 endif
@@ -45,7 +48,7 @@ LIBS    = -lm -lpthread -lrt -lcrypt
 
 ###############################################################################
 
-SRC	=	wiringPi.c						\
+SRC	=	wiring${BRAND_NAME}.c					\
 		wiringSerial.c wiringShift.c				\
 		piHiPri.c piThread.c					\
 		wiringPiSPI.c wiringPiI2C.c				\
@@ -61,6 +64,14 @@ SRC	=	wiringPi.c						\
 		drcSerial.c drcNet.c					\
 		pseudoPins.c						\
 		wpiExtensions.c
+
+ifeq ($(BRAND_NAME), Odroid)
+	DEFS	+= -D BOARD_ODROID
+	SRC	+= 	odroidc1.c	\
+			odroidc2.c	\
+			odroidxu3.c	\
+			odroidn1.c
+endif
 
 HEADERS =	$(shell ls *.h)
 
@@ -140,7 +151,16 @@ depend:
 
 # DO NOT DELETE
 
-wiringPi.o: softPwm.h softTone.h wiringPi.h ../version.h
+ifeq ($(BRAND_NAME), Odroid)
+	wiringOdroid.o: softPwm.h softTone.h wiringPi.h wiringOdroid.h ../version.h
+	odroidc1.c  : wiringPi.h wiringOdroid.h odroidc1.h
+	odroidc2.c  : wiringPi.h wiringOdroid.h odroidc2.h
+	odroidxu3.c : wiringPi.h wiringOdroid.h odroidxu3.h
+	odroidn1.c  : wiringPi.h wiringOdroid.h odroidn1.h
+else
+	wiringPi.o: softPwm.h softTone.h wiringPi.h ../version.h
+endif
+
 wiringSerial.o: wiringSerial.h
 wiringShift.o: wiringPi.h wiringShift.h
 piHiPri.o: wiringPi.h

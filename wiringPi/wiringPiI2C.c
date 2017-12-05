@@ -216,6 +216,32 @@ int wiringPiI2CSetupInterface (const char *device, int devId)
  *	Open the I2C device, and regsiter the target device
  *********************************************************************************
  */
+#if defined(BOARD_ODROID)
+
+#include "wiringOdroid.h"
+
+int wiringPiI2CSetup (const int devId)
+{
+	int model, rev, mem, maker, overVolted ;
+	const char *device = NULL;
+
+	piBoardId (&model, &rev, &mem, &maker, &overVolted) ;
+
+	switch(model)	{
+	case MODEL_ODROID_C1:	case MODEL_ODROID_C2:
+		device = "/dev/i2c-1";
+	break;
+	case MODEL_ODROID_XU3:
+		device = "/dev/i2c-4";
+	break;
+	case MODEL_ODROID_N1:
+	break;
+	}
+
+	return wiringPiI2CSetupInterface (device, devId) ;
+}
+
+#else
 
 int wiringPiI2CSetup (const int devId)
 {
@@ -231,3 +257,5 @@ int wiringPiI2CSetup (const int devId)
 
   return wiringPiI2CSetupInterface (device, devId) ;
 }
+
+#endif	// #defined(BOARD_ODROID)
