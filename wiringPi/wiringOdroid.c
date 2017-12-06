@@ -129,7 +129,7 @@ int msg (int type, const char *message, ...)
 	vsnprintf (buffer, 1023, message, argp);
 	va_end (argp) ;
 
-	fprintf (stderr, "%s:%s", type == MSG_WARN ? "warn" : "err", buffer) ;
+	fprintf (stderr, "%s : %s", type == MSG_WARN ? "warn" : "err", buffer) ;
 
 	if (type != MSG_WARN)
 		exit (EXIT_FAILURE) ;
@@ -137,25 +137,29 @@ int msg (int type, const char *message, ...)
 }
 
 /*----------------------------------------------------------------------------*/
+static void warn_msg(const *func)
+{
+	msg(MSG_WARN, "(%s) : This function is not supported by ODROID Board.\n", func);
+}
 /*----------------------------------------------------------------------------*/
 //
 // Unsupport Function list on ODROIDs
 //
 /*----------------------------------------------------------------------------*/
-static 	void piGpioLayoutOops	(const char *why)	{ return; }
-	void setPadDrive	(int group, int value)	{ return; }
-	void pwmSetMode		(int mode)		{ return; }
-	void pwmSetRange	(unsigned int range)	{ return; }
-	void pwmSetClock	(int divisor)		{ return; }
-	void gpioClockSet	(int pin, int freq)	{ return; }
+static 	void piGpioLayoutOops	(const char *why)	{ warn_msg(__func__); return; }
+	void setPadDrive	(int group, int value)	{ warn_msg(__func__); return; }
+	void pwmSetMode		(int mode)		{ warn_msg(__func__); return; }
+	void pwmSetRange	(unsigned int range)	{ warn_msg(__func__); return; }
+	void pwmSetClock	(int divisor)		{ warn_msg(__func__); return; }
+	void gpioClockSet	(int pin, int freq)	{ warn_msg(__func__); return; }
 
 	/* core unsupport function */
-	void pinModeAlt		(int pin, int mode)	{ return; }
-	void pwmWrite		(int pin, int value)	{ return; }
-	void analogWrite	(int pin, int value)	{ return; }
-	void pwmToneWrite	(int pin, int freq)	{ return; }
-	void digitalWriteByte2	(const int value)	{ return; }
-	unsigned int digitalReadByte2 (void)		{ return -1; }
+	void pinModeAlt		(int pin, int mode)	{ warn_msg(__func__); return; }
+	void pwmWrite		(int pin, int value)	{ warn_msg(__func__); return; }
+	void analogWrite	(int pin, int value)	{ warn_msg(__func__); return; }
+	void pwmToneWrite	(int pin, int freq)	{ warn_msg(__func__); return; }
+	void digitalWriteByte2	(const int value)	{ warn_msg(__func__); return; }
+	unsigned int digitalReadByte2 (void)		{ warn_msg(__func__); return -1; }
 /*----------------------------------------------------------------------------*/
 // Extend wiringPi with other pin-based devices and keep track of
 //	them in this structure
