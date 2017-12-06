@@ -49,7 +49,7 @@ const char *piModelNames [16] =
 	"ODROID-C2",
 	"ODROID-XU3/4",
 	"ODROID-N1",
-} ;
+};
 
 const char *piRevisionNames [16] =
 {
@@ -327,7 +327,7 @@ int piGpioLayout (void)
 		{
 			int fd = 0;
 			char buf[2];
-	
+
 			if ((fd = open ("/sys/class/odroid/boardrev", O_RDONLY)) < 0) {
 				printf ("ERROR : file not found.(boardrev)\n");
 				libwiring.rev = 1;
@@ -387,7 +387,7 @@ void piBoardId (int *model, int *rev, int *mem, int *maker, int *warranty)
 	*mem	= libwiring.mem;
 	*warranty = 1;
 }
- 
+
 /*----------------------------------------------------------------------------*/
 /*
  * wpiPinToGpio:
@@ -792,7 +792,11 @@ int wiringPiSetup (void)
 
 	switch (libwiring.model) {
 	case MODEL_ODROID_C1:
+		init_odroidc1(&libwiring);
+	break;
 	case MODEL_ODROID_C2:
+		init_odroidc2(&libwiring);
+	break;
 	case MODEL_ODROID_XU3:
 		init_odroidxu3(&libwiring);
 	break;
