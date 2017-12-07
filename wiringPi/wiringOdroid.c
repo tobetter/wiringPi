@@ -137,7 +137,7 @@ int msg (int type, const char *message, ...)
 }
 
 /*----------------------------------------------------------------------------*/
-static void warn_msg(const *func)
+static void warn_msg(const char *func)
 {
 	msg(MSG_WARN, "(%s) : This function is not supported by ODROID Board.\n", func);
 }
@@ -503,11 +503,6 @@ int waitForInterrupt (int pin, int mS)
 	int fd, x;
 	uint8_t c;
 	struct pollfd polls;
-
-	if (libwiring.getModeToGpio)
-		pin = libwiring.getModeToGpio(libwiring.mode, pin);
-	else
-		return	-2;
 
 	if ((fd = libwiring.sysFds[pin]) ==  -1)
 		return	-2;

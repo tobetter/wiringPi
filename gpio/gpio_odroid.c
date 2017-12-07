@@ -627,7 +627,7 @@ void doUnexportall (char *progName)
 	FILE *fd ;
 	int pin ;
 
-	for (pin = 0 ; pin < 63 ; ++pin) {
+	for (pin = 0 ; pin < 256 ; ++pin) {
 		if ((fd = fopen ("/sys/class/gpio/unexport", "w")) == NULL) {
 			fprintf (stderr, "%s: Unable to open GPIO export interface\n", progName) ;
 			exit (1) ;
