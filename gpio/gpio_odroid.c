@@ -535,6 +535,9 @@ void doEdge (int argc, char *argv [])
 	char *mode ;
 	char fName [128] ;
 
+	// Reset gpio sysfs
+	doUnexport(3, argv);
+
 	if (argc != 4) {
 		fprintf (stderr, "Usage: %s edge pin mode\n", argv [0]) ;
 		exit (1) ;
