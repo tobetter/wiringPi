@@ -341,7 +341,7 @@ int piGpioLayout (void)
 				libwiring.rev = atoi(buf) + 1;
 			}
 		}
-	} else if (strcmp (c, "0300") == 0) {
+	} else if (strncmp (c, "03", 2) == 0) {
 		libwiring.model	= MODEL_ODROID_N1;
 		libwiring.maker	= MAKER_ROCKCHIP;
 		libwiring.mem	= 4;
@@ -377,7 +377,7 @@ int piBoardRev (void)
  *  02xx - Model ODROID C2, 2048M, Hardkernel
  *         Rev 1.0 : /sys/class/odroid/boardrev value is 0 (Dev board)
  *         Rev 1.1 : /sys/class/odroid/boardrev value is 1 (Mass board)
- *  0300 - Model ODROID N1, 4096M, Hardkernel
+ *  03xx - Model ODROID N1, 4096M, Hardkernel
  */
 /*----------------------------------------------------------------------------*/
 void piBoardId (int *model, int *rev, int *mem, int *maker, int *warranty)
@@ -878,7 +878,15 @@ int wiringPiSetupSys (void)
 
 	for (pin = 0 ; pin < 256 ; ++pin)
 	{
-		sprintf (fName, "/sys/class/gpio/gpio%d/value", pin);
+		switch (libwiring.model) {
+		case	MODEL_ODROID_N1:
+			sprintf (fName, "/sys/class/gpio/gpio%d/value", pin + libwiring.pinBase);
+			break;
+		default:
+			sprintf (fName, "/sys/class/gpio/gpio%d/value", pin);
+			break;
+		}
+
 		libwiring.sysFds [pin] = open (fName, O_RDWR);
 	}
 

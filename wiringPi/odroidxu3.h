@@ -11,6 +11,8 @@
 /*----------------------------------------------------------------------------*/
 #define ODROIDXU3_GPIO_MASK	(0xFFFFFF00)
 
+#define GPIO_PIN_BASE		0
+
 // GPX0,1,2,3
 #define ODROIDXU3_GPX_BASE	0x13400000
 

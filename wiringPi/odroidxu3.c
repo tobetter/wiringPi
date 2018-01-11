@@ -624,6 +624,9 @@ void init_odroidxu3 (struct libodroid *libwiring)
 	libwiring->digitalWriteByte	= digitalWriteByte;
 	libwiring->digitalReadByte	= digitalReadByte;
 
+	/* specify pin base number */
+	libwiring->pinBase		= GPIO_PIN_BASE;
+
 	/* global variable setup */
 	lib = libwiring;
 }

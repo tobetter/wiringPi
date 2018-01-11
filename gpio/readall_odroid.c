@@ -234,26 +234,26 @@ static const char *physNamesOdroidN1 [64] =
 {
 	NULL,
 
-	"    3.3V", "5V      ",
-	"I2C1.SDA", "5V      ",
-	"I2C1.SCL", "GND(0V) ",
-	"GPIO. 18", "UART0.TX",
-	" GND(0V)", "UART0.RX",
-	"GPIO.174", "GPIO.173",
-	"GPIO. 21", "GND(0V) ",
-	"GPIO. 22", "GPIO. 19",
-	"    3.3V", "GPIO. 23",
-	"    MOSI", "GND(0V) ",
-	"    MISO", "GPIO. 24",
-	"    SCLK", "CE0     ",
-	" GND(0V)", "GPIO. 25",
-	"I2C5.SDA", "I2C5.SCL",
-	"GPIO. 28", "GND(0V) ",
-	"GPIO. 30", "GPIO. 29",
-	"GPIO. 31", "GND(0V) ",
-	"POWER ON", "GPIO. 33",
-	"   AIN.0", "1V8     ",
-	" GND(0V)", "AIN.3   ",
+	"    3.0V", "5V      ",
+	"I2C4_SDA", "5V      ",
+	"I2C4_SCL", "GND(0V) ",
+	"GPIO1A.0", "UART0_TX",
+	" GND(0V)", "UART0_RX",
+	"GPIO1A.1", "GPIO1A.2",
+	"GPIO1A.3", "GND(0V) ",
+	"GPIO1A.4", "GPIO1B.5",
+	"    3.0V", "GPIO1C.2",
+	"SPI1_TXD", "GND(0V) ",
+	"SPI1_RXD", "GPIO1D.0",
+	"SPI1_CLK", "SPI1_CSN",
+	" GND(0V)", "GPIO1C.6",
+	"I2C8_SDA", "I2C8_SCL",
+	"SPDIF_TX", "GND(0V) ",
+	"    PWM1", "GPIO4D.4",
+	"GPIO4D.0", "GND(0V) ",
+	"GPIO4D.5", "GPIO4D.6",
+	"ADC.AIN1", "1V8     ",
+	" GND(0V)", "ADC.AIN0",
 
 	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
 	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
@@ -372,6 +372,7 @@ void doReadall (void)
 		physNames = physNamesOdroidXU3;
 	break;
 	case MODEL_ODROID_N1:
+		printf (" +------+-----+----------+------+ Model  ODROID-N1 +------+----------+-----+------+\n") ;	
 		physNames = physNamesOdroidN1;
 	break;
 	default:

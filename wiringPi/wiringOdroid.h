@@ -120,6 +120,9 @@ struct libodroid
 	/* GPIO sysfs file discripter */
 	int 	sysFds[256];
 
+	/* GPIO pin base number */
+	int	pinBase;
+
 	// Time for easy calculations
 	uint64_t epochMilli, epochMicro ;
 };
