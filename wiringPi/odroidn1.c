@@ -715,8 +715,8 @@ static void init_adc_fds (void)
 	/* ADC node setup */
 	uname(&uname_buf);
 
-	AIN0_NODE = "/sys/devices/platform/ff100000.saradc/iio:device0/in_voltage0_raw";
-	AIN1_NODE = "/sys/devices/platform/ff100000.saradc/iio:device0/in_voltage1_raw";
+	AIN0_NODE = "/sys/devices/platform/ff100000.saradc/iio:device0/in_voltage1_raw";
+	AIN1_NODE = "/sys/devices/platform/ff100000.saradc/iio:device0/in_voltage0_raw";
 
 	adcFds[0] = open(AIN0_NODE, O_RDONLY);
 	adcFds[1] = open(AIN1_NODE, O_RDONLY);
