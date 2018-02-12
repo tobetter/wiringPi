@@ -122,9 +122,8 @@ int wiringPiSPISetupMode (int channel, int speed, int mode)
 		device = "/dev/spidev0.0";
 	break;
 	case MODEL_ODROID_XU3:
-		device = "/dev/spidev1.0";
-	break;
 	case MODEL_ODROID_N1:
+		device = "/dev/spidev1.0";
 	break;
 	}
 
