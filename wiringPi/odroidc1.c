@@ -121,7 +121,7 @@ static unsigned int	digitalReadByte	(void);
 static 	void init_gpio_mmap	(void);
 static 	void init_adc_fds	(void);
 
-	void init_odroidn1 	(struct libodroid *libwiring);
+	void init_odroidc1 	(struct libodroid *libwiring);
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
