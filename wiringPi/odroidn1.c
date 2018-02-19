@@ -125,7 +125,7 @@ static unsigned int	digitalReadByte	(void);
 static 	void init_gpio_mmap	(void);
 static 	void init_adc_fds	(void);
 
-		void init_odroidn1 	(struct libodroid *libwiring);
+	void init_odroidn1 	(struct libodroid *libwiring);
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -180,21 +180,21 @@ static int getModeToGpio (int mode, int pin)
 /*----------------------------------------------------------------------------*/
 static void setClkState (int pin, int state)
 {
-	uint32_t target = GPIO_CON_REGS_PROG;
-	int bank = pin / 32;
-	int shift = bank < 2 ? bank + 2 : bank + 1;
+	uint32_t target = 0;
+	uint8_t bank = pin / 32;
+	uint8_t shift = bank < 2 ? bank + 2 : bank + 1;
+
+	target |= (1 << (shift + 16));
 
 	switch (state) {
 	case CLK_ENABLE:
 		if (bank < 2) {
 			target |= *(cru[0] + (PMUCRU_GPIO_CLK_OFFSET >> 2));
 			target &= ~(1 << shift);
-
 			*(cru[0] + (PMUCRU_GPIO_CLK_OFFSET >> 2)) = target;
 		} else {
 			target |= *(cru[1] + (CRU_GPIO_CLK_OFFSET >> 2));
 			target &= ~(1 << shift);
-
 			*(cru[1] + (CRU_GPIO_CLK_OFFSET >> 2)) = target;
 		}
 		break;
@@ -202,12 +202,10 @@ static void setClkState (int pin, int state)
 		if (bank < 2) {
 			target |= *(cru[0] + (PMUCRU_GPIO_CLK_OFFSET >> 2));
 			target |=  (1 << shift);
-
 			*(cru[0] + (PMUCRU_GPIO_CLK_OFFSET >> 2)) = target;
 		} else {
 			target |= *(cru[1] + (CRU_GPIO_CLK_OFFSET >> 2));
 			target |=  (1 << shift);
-
 			*(cru[1] + (CRU_GPIO_CLK_OFFSET >> 2)) = target;
 		}
 		break;
@@ -229,24 +227,27 @@ static void setIomuxMode (int pin, int mode)
 	bank	= pin / 32;
 	group	= (pin - bank * 32) / 8;
 	offset	= 0x10 * (bank > 1 ? bank - 2 : bank) + 0x4 * group;
-	target	= GPIO_CON_REGS_PROG;
+	target	= 0;
+
+	target |= (1 << (gpioToShiftGReg(pin) * 2 + 17));
+	target |= (1 << (gpioToShiftGReg(pin) * 2 + 16));
 
 	switch (mode) {
 	case FUNC_GPIO:
-		// Common IOMUX Funtion 1 : GPIO
+		// Common IOMUX Funtion 1 : GPIO (0b00)
 		if (bank < 2) {
 			offset += PMUGRF_IOMUX_OFFSET;
-			
+
 			target |= *(grf[0] + (offset >> 2));
 			target &= ~(1 << (gpioToShiftGReg(pin) * 2 + 1));
 			target &= ~(1 << (gpioToShiftGReg(pin) * 2));
-
+			
 			*(grf[0] + (offset >> 2)) = target;
 		} else {
 			offset += GRF_IOMUX_OFFSET;
 
 			target |= *(grf[1] + (offset >> 2));
-			target &= ~(1 << (gpioToShiftGReg(pin) * 2 + 1));			
+			target &= ~(1 << (gpioToShiftGReg(pin) * 2 + 1));
 			target &= ~(1 << (gpioToShiftGReg(pin) * 2));
 
 			*(grf[1] + (offset >> 2)) = target;
@@ -315,7 +316,6 @@ static int getAlt (int pin)
 	bank	= pin / 32;
 	group	= (pin - bank * 32) / 8;
 	offset	= 0x10 * (bank > 1 ? bank - 2 : bank) + 0x4 * group;
-	target	= GPIO_CON_REGS_PROG;
 
 	setClkState(pin, CLK_ENABLE);
 
@@ -354,7 +354,10 @@ static void pullUpDnControl (int pin, int pud)
 	bank	= pin / 32;
 	group	= (pin - bank * 32) / 8;
 	offset	= 0x10 * (bank > 1 ? bank - 2 : bank) + 0x4 * group;
-	target	= GPIO_CON_REGS_PROG;
+	target	= 0;
+
+	target |= (1 << (gpioToShiftGReg(pin) * 2 + 17));
+	target |= (1 << (gpioToShiftGReg(pin) * 2 + 16));
 
 	setClkState(pin, CLK_ENABLE);
 
@@ -372,7 +375,6 @@ static void pullUpDnControl (int pin, int pud)
 			offset += GRF_PUPD_OFFSET;
 
 			target |= *(grf[1] + (offset >> 2));
-
 			if (bank == 2 && group >= 2) {
 				target |=  (1 << (gpioToShiftGReg(pin) * 2 + 1));
 				target |=  (1 << (gpioToShiftGReg(pin) * 2));
@@ -387,7 +389,7 @@ static void pullUpDnControl (int pin, int pud)
 	case PUD_DOWN:
 		if (bank < 2) {
 			offset += PMUGRF_PUPD_OFFSET;
-			
+
 			target |= *(grf[0] + (offset >> 2));
 			target |=  (1 << (gpioToShiftGReg(pin) * 2 + 1));
 			target &= ~(1 << (gpioToShiftGReg(pin) * 2));
@@ -397,7 +399,6 @@ static void pullUpDnControl (int pin, int pud)
 			offset += GRF_PUPD_OFFSET;
 
 			target |= *(grf[1] + (offset >> 2));
-
 			if (bank == 2 && group >= 2) {
 				target &= ~(1 << (gpioToShiftGReg(pin) * 2 + 1));
 				target |=  (1 << (gpioToShiftGReg(pin) * 2));

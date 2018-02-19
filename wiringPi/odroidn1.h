@@ -40,9 +40,6 @@
 #define CLK_ENABLE		0b0
 #define CLK_DISABLE		0b1
 
-// Control IOMUX, PU/PD, CLK
-#define GPIO_CON_REGS_PROG	0xFFFF0000	// To make GRF/CRU register programmable
-
 // Only for Linux kernel for now. Edit to 0 for Android
 #define GPIO_PIN_BASE		1000
 
