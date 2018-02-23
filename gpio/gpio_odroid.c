@@ -213,74 +213,9 @@ static void checkDevTree (char *argv [])
 	}
 }
 
-
-static void _doLoadUsage (char *argv [])
-{
-	fprintf (stderr, "Usage: %s load <spi/i2c> [I2C baudrate in Kb/sec]\n", argv [0]) ;
-	exit (1) ;
-}
-
-
 static void doLoad (int argc, char *argv [])
 {
-	char *module1, *module2 ;
-	char cmd [80] ;
-	char *file1, *file2 ;
-	char args1 [32], args2 [32] ;
-
 	checkDevTree (argv) ;
-
-	if (argc < 3)
-		_doLoadUsage (argv) ;
-
-	args1 [0] = args2 [0] = 0 ;
-
-	if (strcasecmp (argv [2], "spi") == 0) {
-		module1 = "spidev" ;
-		module2 = "spi_bcm2708" ;
-		file1  = "/dev/spidev0.0" ;
-		file2  = "/dev/spidev0.1" ;
-		if (argc == 4) {
-			fprintf (stderr, "%s: Unable to set the buffer size now. Load aborted. Please see the man page.\n", argv [0]) ;
-			exit (1) ;
-		}
-		else if (argc > 4)
-			_doLoadUsage (argv) ;
-	} else if (strcasecmp (argv [2], "i2c") == 0) {
-		module1 = "i2c_dev" ;
-		module2 = "i2c_bcm2708" ;
-		file1  = "/dev/i2c-0" ;
-		file2  = "/dev/i2c-1" ;
-		if (argc == 4)
-			sprintf (args2, " baudrate=%d", atoi (argv [3]) * 1000) ;
-		else if (argc > 4)
-			_doLoadUsage (argv) ;
-	}  else
-		_doLoadUsage (argv) ;
-
-	if (findExecutable ("modprobe") == NULL)
-		printf ("No found\n") ;
-
-	if (!moduleLoaded (module1)) {
-		sprintf (cmd, "%s %s%s", findExecutable (MODPROBE), module1, args1) ;
-		system (cmd) ;
-	}
-
-	if (!moduleLoaded (module2)) {
-		sprintf (cmd, "%s %s%s", findExecutable (MODPROBE), module2, args2) ;
-		system (cmd) ;
-	}
-
-	if (!moduleLoaded (module2)) {
-		fprintf (stderr, "%s: Unable to load %s\n", argv [0], module2) ;
-		exit (1) ;
-	}
-
-	// To let things get settled
-	sleep (1) ;
-
-	changeOwner (argv [0], file1) ;
-	changeOwner (argv [0], file2) ;
 }
 
 
@@ -289,40 +224,9 @@ static void doLoad (int argc, char *argv [])
  *	Un-Load either the spi or i2c modules and change device ownerships, etc.
  *********************************************************************************
  */
-static void _doUnLoadUsage (char *argv [])
-{
-	fprintf (stderr, "Usage: %s unload <spi/i2c>\n", argv [0]) ;
-	exit (1) ;
-}
-
 static void doUnLoad (int argc, char *argv [])
 {
-	char *module1, *module2 ;
-	char cmd [80] ;
-
 	checkDevTree (argv) ;
-
-	if (argc != 3)
-		_doUnLoadUsage (argv) ;
-
-	if (strcasecmp (argv [2], "spi") == 0) {
-		module1 = "spidev" ;
-		module2 = "spi_bcm2708" ;
-	} else if (strcasecmp (argv [2], "i2c") == 0) {
-		module1 = "i2c_dev" ;
-		module2 = "i2c_bcm2708" ;
-	} else
-		_doUnLoadUsage (argv) ;
-
-	if (moduleLoaded (module1)) {
-		sprintf (cmd, "%s %s", findExecutable (RMMOD), module1) ;
-		system (cmd) ;
-	}
-
-	if (moduleLoaded (module2)) {
-		sprintf (cmd, "%s %s", findExecutable (RMMOD), module2) ;
-		system (cmd) ;
-	}
 }
 
 
