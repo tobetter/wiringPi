@@ -206,9 +206,10 @@ static void checkDevTree (char *argv [])
 		fprintf (stderr,
 			"%s: Unable to load/unload modules as this kernel has the device tree enabled.\n"
 			"    You need to edit /etc/modprobe.d/blacklist-odroid.conf or update /media/models.dts file.\n"
-			"    if you want use spi, you shoud find spidev moudle line and remove comant. then reboot.\n"
-			"  There is more information here:\n"
-			"     https://wiki.odroid.com/start\n", argv [0]) ;
+			"    If you want to use SPI, you should find out spidev module line at the blacklist-odroid.conf\n"
+			"    and uncomment that. Then reboot to enable the module.\n\n"
+			"    Please refer to our wiki page:\n"
+			"      https://wiki.odroid.com/start\n", argv [0]) ;
 		exit (1) ;
 	}
 }
