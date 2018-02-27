@@ -33,6 +33,7 @@
 #include <sys/stat.h>
 
 #include <wiringPi.h>
+#include <wiringOdroid.h>
 #include <wpiExtensions.h>
 
 #include <gertboard.h>
@@ -54,9 +55,9 @@ extern void doPins       (void) ;
 #endif
 
 #define	PI_USB_POWER_CONTROL	38
-#define	I2CDETECT		"/usr/sbin/i2cdetect"
-#define	MODPROBE		"/sbin/modprobe"
-#define	RMMOD			"/sbin/rmmod"
+#define	I2CDETECT		"i2cdetect"
+#define	MODPROBE		"modprobe"
+#define	RMMOD			"rmmod"
 
 int wpMode ;
 
@@ -238,17 +239,39 @@ static void doUnLoad (int argc, char *argv [])
  */
 static void doI2Cdetect (UNU int argc, char *argv [])
 {
-	int port = piGpioLayout () == 1 ? 0 : 1 ;
+	int model, rev, mem, maker, overVolted, port;
+	const char *device = NULL;
 	char *c, *command ;
+
+	piBoardId(&model, &rev, &mem, &maker, &overVolted);
+
+	switch (model) {
+	case MODEL_ODROID_C1:	case MODEL_ODROID_C2:
+	case MODEL_ODROID_XU3:
+		device = "/dev/i2c-1";
+		port = 1;
+		break;
+	case MODEL_ODROID_N1:
+		device = "/dev/i2c-4";
+		port = 4;
+		break;
+	default:
+		break;
+	}
 
 	if ((c = findExecutable (I2CDETECT)) == NULL) {
 		fprintf (stderr, "%s: Unable to find i2cdetect command: %s\n", argv [0], strerror (errno)) ;
 		return ;
 	}
 
-	if (!moduleLoaded ("i2c_dev")) {
-		fprintf (stderr, "%s: The I2C kernel module(s) are not loaded.\n", argv [0]) ;
-		return ;
+	switch (maker) {
+	case MAKER_AMLOGIC:
+		if (!moduleLoaded ("aml_i2c")) {
+			fprintf (stderr, "%s: The I2C kernel module(s) are not loaded.\n", argv [0]) ;
+			return ;
+		}
+	default:
+		break;
 	}
 
 	command = malloc (strlen (c) + 16) ;
