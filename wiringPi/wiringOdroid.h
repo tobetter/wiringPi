@@ -70,6 +70,9 @@
 #define	PUD_DOWN		1
 #define	PUD_UP			2
 
+// Module names
+#define AML_MODULE_I2C		"aml_i2c"
+
 /*----------------------------------------------------------------------------*/
 #define	PAGE_SIZE		(4*1024)
 #define	BLOCK_SIZE		(4*1024)

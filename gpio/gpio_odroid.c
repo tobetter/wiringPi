@@ -234,7 +234,7 @@ static void doI2Cdetect (UNU int argc, char *argv [])
 
 	switch (maker) {
 	case MAKER_AMLOGIC:
-		if (!moduleLoaded ("aml_i2c")) {
+		if (!moduleLoaded (AML_MODULE_I2C)) {
 			fprintf (stderr, "%s: The I2C kernel module(s) are not loaded.\n", argv [0]) ;
 			return ;
 		}
