@@ -117,6 +117,36 @@ struct libodroid	libwiring;
 
 /*----------------------------------------------------------------------------*/
 //
+// Return true/false if the supplied module is loaded
+//
+/*----------------------------------------------------------------------------*/
+int moduleLoaded (char *modName)
+{
+	int len   = strlen (modName) ;
+	int found = FALSE ;
+	FILE *fd = fopen ("/proc/modules", "r") ;
+	char line [80] ;
+
+	if (fd == NULL) {
+		fprintf (stderr, "gpio: Unable to check /proc/modules: %s\n",
+			strerror (errno)) ;
+		exit (1) ;
+	}
+
+	while (fgets (line, 80, fd) != NULL) {
+		if (strncmp (line, modName, len) != 0)
+			continue ;
+
+		found = TRUE ;
+		break ;
+	}
+	fclose (fd) ;
+
+	return found ;
+}
+
+/*----------------------------------------------------------------------------*/
+//
 // ODROID System Message function
 //
 /*----------------------------------------------------------------------------*/

@@ -89,6 +89,7 @@ extern "C" {
 // Export function define
 /*----------------------------------------------------------------------------*/
 extern	int msg (int type, const char *message, ...);
+extern	int moduleLoaded(char *);
 
 #ifdef __cplusplus
 }
