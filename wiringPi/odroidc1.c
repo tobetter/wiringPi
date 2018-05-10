@@ -30,7 +30,7 @@ static const int pinToGpio[64] = {
 	116, 115,	//  2 |  3 : GPIOX.19, GPIOX.18
 	104, 102,	//  4 |  5 : GPIOX.7, GPIOX.5
 	103, 83,	//  6 |  7 : GPIOX.6, GPIOY.3
-	-1,  -1,	//  8 |  9 : GPIODV.24(I2CA_SDA), GPIODV.25(I2CA_SCL)
+	74,  75,	//  8 |  9 : GPIODV.24(I2CA_SDA), GPIODV.25(I2CA_SCL)
 	117, 118,	// 10 | 11 : GPIOX.20(SPI_CE0), GPIOX.21(SPI_CE1)
 	107, 106,	// 12 | 13 : GPIOX.10(SPI_MOSI), GPIOX.9(SPI_MISO)
 	105, -1,	// 14 | 15 : GPIOX.8(SPI_SCLK), GPIOX.16(UART_TX_B)
@@ -52,8 +52,8 @@ static const int phyToGpio[64] = {
 	// physical header pin number to native gpio number
 	-1,		//  0
 	-1,  -1,	//  1 |  2 : 3.3V, 5.0V
-	-1,  -1,	//  3 |  4 : GPIODV.24(I2CA_SDA), 5.0V
-	-1,  -1,	//  5 |  6 : GPIODV.25(I2CA_SCL), GND
+	74,  -1,	//  3 |  4 : GPIODV.24(I2CA_SDA), 5.0V
+	75,  -1,	//  5 |  6 : GPIODV.25(I2CA_SCL), GND
 	83,  -1,	//  7 |  8 : GPIOY.3, GPIOX.16(UART_TX_B)
 	-1,  -1,	//  9 | 10 : GND, GPIOX.17(UART_RX_B)
 	88,  87,	// 11 | 12 : GPIOY.8, GPIOY.7
@@ -135,6 +135,8 @@ static int gpioToGPSETReg (int pin)
 		return  GPIOX_OUTP_REG_OFFSET;
 	if (pin >= GPIOY_PIN_START && pin <= GPIOY_PIN_END)
 		return  GPIOY_OUTP_REG_OFFSET;
+	if (pin >= GPIODV_PIN_START && pin <= GPIODV_PIN_END)
+		return  GPIODV_OUTP_REG_OFFSET;
 	return	-1;
 }
 
@@ -149,6 +151,8 @@ static int gpioToGPLEVReg (int pin)
 		return  GPIOX_INP_REG_OFFSET;
 	if (pin >= GPIOY_PIN_START && pin <= GPIOY_PIN_END)
 		return  GPIOY_INP_REG_OFFSET;
+	if (pin >= GPIODV_PIN_START && pin <= GPIODV_PIN_END)
+		return  GPIODV_INP_REG_OFFSET;
 	return	-1;
 }
 
@@ -163,6 +167,8 @@ static int gpioToPUENReg (int pin)
 		return  GPIOX_PUEN_REG_OFFSET;
 	if (pin >= GPIOY_PIN_START && pin <= GPIOY_PIN_END)
 		return  GPIOY_PUEN_REG_OFFSET;
+	if (pin >= GPIODV_PIN_START && pin <= GPIODV_PIN_END)
+		return  GPIODV_PUEN_REG_OFFSET;
 	return	-1;
 }
 
@@ -177,6 +183,8 @@ static int gpioToPUPDReg (int pin)
 		return  GPIOX_PUPD_REG_OFFSET;
 	if (pin >= GPIOY_PIN_START && pin <= GPIOY_PIN_END)
 		return  GPIOY_PUPD_REG_OFFSET;
+	if (pin >= GPIODV_PIN_START && pin <= GPIODV_PIN_END)
+		return  GPIODV_PUPD_REG_OFFSET;
 	return	-1;
 }
 
@@ -191,6 +199,8 @@ static int gpioToShiftReg (int pin)
 		return  pin - GPIOX_PIN_START;
 	if (pin >= GPIOY_PIN_START && pin <= GPIOY_PIN_END)
 		return  pin - GPIOY_PIN_START;
+	if (pin >= GPIODV_PIN_START && pin <= GPIODV_PIN_END)
+		return  pin - GPIODV_PIN_START;
 	return	-1;
 }
 
@@ -205,29 +215,42 @@ static int gpioToGPFSELReg (int pin)
 		return  GPIOX_FSEL_REG_OFFSET;
 	if (pin >= GPIOY_PIN_START && pin <= GPIOY_PIN_END)
 		return  GPIOY_FSEL_REG_OFFSET;
+	if (pin >= GPIODV_PIN_START && pin <= GPIODV_PIN_END)
+		return  GPIODV_FSEL_REG_OFFSET;
 	return	-1;
 }
 /*----------------------------------------------------------------------------*/
 static int getModeToGpio (int mode, int pin)
 {
+	int retPin = -1;
+
 	switch (mode) {
 	/* Native gpio number */
 	case	MODE_GPIO:
-		return	pin;
+		retPin = pin;
+		break;
 	/* Native gpio number for sysfs */
 	case	MODE_GPIO_SYS:
-		return	lib->sysFds[pin] != -1 ? pin : -1;
+		retPin = lib->sysFds[pin] != -1 ? pin : -1;
+		break;
 	/* wiringPi number */
 	case	MODE_PINS:
-		return	pin < 64 ? pinToGpio[pin] : -1;
+		retPin = pin < 64 ? pinToGpio[pin] : -1;
+		break;
 	/* header pin number */
 	case	MODE_PHYS:
-		return	pin < 64 ? phyToGpio[pin] : -1;
-	default	:
+		retPin = pin < 64 ? phyToGpio[pin] : -1;
 		break;
+	default	:
+		msg(MSG_WARN, "%s : Unknown Mode %d\n", __func__, mode);
+		return -1;
 	}
-	msg(MSG_WARN, "%s : Unknown Mode %d\n", __func__, mode);
-	return	-1;
+
+	/* To check I2C module loaded */
+	if (moduleLoaded(AML_MODULE_I2C) && (retPin == 74 || retPin == 75))
+		return -1;
+	else
+		return retPin;
 }
 
 /*----------------------------------------------------------------------------*/
