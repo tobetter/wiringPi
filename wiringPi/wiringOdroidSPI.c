@@ -120,6 +120,9 @@ int wiringPiSPISetupMode (int channel, int speed, int mode)
 	case MODEL_ODROID_N1:
 		device = spiDevType1;
 	break;
+	case MODEL_ODROID_N2:
+		device = "/dev/spidev0.0";
+	break;
 	}
 
 	if ((fd = open (device, O_RDWR)) < 0)

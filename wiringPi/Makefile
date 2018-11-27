@@ -70,7 +70,8 @@ ifeq ($(BRAND_NAME), Odroid)
 	SRC	+= 	odroidc1.c	\
 			odroidc2.c	\
 			odroidxu3.c	\
-			odroidn1.c
+			odroidn1.c	\
+			odroidn2.c
 endif
 
 HEADERS =	$(shell ls *.h)
@@ -157,6 +158,7 @@ ifeq ($(BRAND_NAME), Odroid)
 	odroidc2.c  : wiringPi.h wiringOdroid.h odroidc2.h
 	odroidxu3.c : wiringPi.h wiringOdroid.h odroidxu3.h
 	odroidn1.c  : wiringPi.h wiringOdroid.h odroidn1.h
+	odroidn2.c  : wiringPi.h wiringOdroid.h odroidn2.h
 else
 	wiringPi.o: softPwm.h softTone.h wiringPi.h ../version.h
 endif

@@ -7,7 +7,8 @@ SRC	=	pins.tex	\
 		odroid_xu3.tex	\
 		odroid_c1.tex	\
 		odroid_c2.tex	\
-		odroid_n1.tex
+		odroid_n1.tex	\
+		odroid_n2.tex
 
 DVI	=	$(SRC:.tex=.dvi)
 

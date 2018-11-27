@@ -260,6 +260,37 @@ static const char *physNamesOdroidN1 [64] =
 } ;
 
 /*----------------------------------------------------------------------------*/
+static const char *physNamesOdroidN2 [64] =
+{
+	NULL,
+
+	"    3.3V", "5V      ",
+	"   SDA.2", "5V      ",
+	"   SCL.2", "GND(0V) ",
+	"GPIO.473", "TxD1    ",
+	" GND(0V)", "RxD1    ",
+	"GPIO.479", "GPIO.492",
+	"GPIO.480", "GND(0V) ",
+	"GPIO.483", "GPIO.476",
+	"    3.3V", "GPIO.477",
+	"    MOSI", "GND(0V) ",
+	"    MISO", "GPIO.478",
+	"    SCLK", "CE0     ",
+	" GND(0V)", "GPIO.464",
+	"   SDA.3", "SCL.3   ",
+	"GPIO.490", "GND(0V) ",
+	"GPIO.491", "GPIO.472",
+	"GPIO.481", "GND(0V) ",
+	"GPIO.482", "GPIO.495",
+	"   AIN.3", "1V8     ",
+	" GND(0V)", "AIN.2   ",
+
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,
+} ;
+
+/*----------------------------------------------------------------------------*/
 static void readallPhysOdroid (int model, int rev, int physPin, const char *physNames[])
 {
 	int pin ;
@@ -373,6 +404,10 @@ void doReadall (void)
 	case MODEL_ODROID_N1:
 		printf (" +------+-----+----------+------+ Model  ODROID-N1 +------+----------+-----+------+\n") ;	
 		physNames = physNamesOdroidN1;
+	break;
+	case MODEL_ODROID_N2:
+		printf (" +------+-----+----------+------+ Model  ODROID-N2 +------+----------+-----+------+\n") ;
+		physNames = physNamesOdroidN2;
 	break;
 	default:
 		printf ("Oops - unable to determine board type... model: %d\n", model) ;

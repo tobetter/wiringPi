@@ -222,6 +222,9 @@ static void doI2Cdetect (UNU int argc, char *argv [])
 		device = "/dev/i2c-4";
 		port = 4;
 		break;
+	case MODEL_ODROID_N2:
+		device = "/dev/i2c-3";
+		port = 3;
 	default:
 		break;
 	}

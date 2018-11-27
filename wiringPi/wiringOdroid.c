@@ -36,6 +36,7 @@
 #include "odroidc2.h"
 #include "odroidxu3.h"
 #include "odroidn1.h"
+#include "odroidn2.h"
 
 /*----------------------------------------------------------------------------*/
 // Const string define
@@ -47,6 +48,7 @@ const char *piModelNames [16] =
 	"ODROID-C2",
 	"ODROID-XU3/4",
 	"ODROID-N1",
+	"ODROID-N2",
 };
 
 const char *piRevisionNames [16] =
@@ -337,7 +339,8 @@ int piGpioLayout (void)
 		printf ("piGpioLayout: last4Chars are: \"%s\"\n", c) ;
 
 	if ((strcmp (c, "0002") == 0) || (strcmp (c, "0003") == 0) ||
-	    (strcmp (c, "000a") == 0) || (strcmp (c, "0100") == 0) )
+	    (strcmp (c, "000a") == 0) || (strcmp (c, "0100") == 0) ||
+	    (strcmp (c, "0400") == 0) )
 		gpioLayout = 1;
 	else
 		gpioLayout = 2;
@@ -374,6 +377,11 @@ int piGpioLayout (void)
 		libwiring.maker	= MAKER_ROCKCHIP;
 		libwiring.mem	= 4;
 		libwiring.rev	= 1;
+	} else if (strncmp (c, "04", 2) == 0) {
+		libwiring.model	= MODEL_ODROID_N2;
+		libwiring.maker	= MAKER_AMLOGIC;
+		libwiring.mem	= 4;
+		libwiring.rev	= 1;
 	} else {
 		libwiring.model	= MODEL_UNKNOWN;
 		libwiring.maker	= MAKER_UNKNOWN;
@@ -406,6 +414,7 @@ int piBoardRev (void)
  *         Rev 1.0 : /sys/class/odroid/boardrev value is 0 (Dev board)
  *         Rev 1.1 : /sys/class/odroid/boardrev value is 1 (Mass board)
  *  03xx - Model ODROID N1, 4096M, Hardkernel
+ *  04xx - Model ODROID N2, 4096M, Hardkernel
  */
 /*----------------------------------------------------------------------------*/
 void piBoardId (int *model, int *rev, int *mem, int *maker, int *warranty)
@@ -829,6 +838,9 @@ int wiringPiSetup (void)
 	break;
 	case MODEL_ODROID_N1:
 		init_odroidn1(&libwiring);
+	break;
+	case MODEL_ODROID_N2:
+		init_odroidn2(&libwiring);
 	break;
 	default:
 		return wiringPiFailure (WPI_ALMOST,
