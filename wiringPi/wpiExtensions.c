@@ -61,7 +61,6 @@
 #include "bmp180.h"
 #include "htu21d.h"
 #include "ds18b20.h"
-#include "rht03.h"
 
 #include "wpiExtensions.h"
 
@@ -518,25 +517,6 @@ static int doExtensionDs18b20 (char *progName, int pinBase, char *params)
   return ds18b20Setup (pinBase, serialNum) ;
 }
 
-
-/*
- * doExtensionRht03:
- *	Maxdetect 1-Wire Temperature & Humidity
- *	rht03:base:piPin
- *********************************************************************************
- */
-
-static int doExtensionRht03 (char *progName, int pinBase, char *params)
-{
-  int piPin ;
-
-  if ((params = extractInt (progName, params, &piPin)) == NULL)
-    return FALSE ;
-
-  return rht03Setup (pinBase, piPin) ;
-}
-
-
 /*
  * doExtensionMax31855:
  *	Analog IO
@@ -843,7 +823,6 @@ static struct extensionFunctionStruct extensionFunctions [] =
   { "pseudoPins",	&doExtensionPseudoPins	},
   { "htu21d",		&doExtensionHtu21d	},
   { "ds18b20",		&doExtensionDs18b20	},
-  { "rht03",		&doExtensionRht03	},
   { "mcp3002",		&doExtensionMcp3002	},
   { "mcp3004",		&doExtensionMcp3004	},
   { "mcp4802",		&doExtensionMcp4802	},

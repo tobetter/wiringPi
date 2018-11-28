@@ -31,6 +31,14 @@
 #include <stdlib.h>
 
 /*----------------------------------------------------------------------------*/
+
+#ifndef	TRUE
+#define	TRUE	(1==1)
+#define	FALSE	(!TRUE)
+#endif
+
+#define	UNU	__attribute__((unused))
+
 #define	ENV_DEBUG		"WIRINGPI_DEBUG"
 #define	ENV_CODES		"WIRINGPI_CODES"
 #define	ENV_GPIOMEM		"WIRINGPI_GPIOMEM"
@@ -70,15 +78,33 @@
 #define	PUD_DOWN		1
 #define	PUD_UP			2
 
+// Interrupt levels
+#define	INT_EDGE_SETUP		0
+#define	INT_EDGE_FALLING	1
+#define	INT_EDGE_RISING		2
+#define	INT_EDGE_BOTH		3
+
 // Module names
 #define AML_MODULE_I2C		"aml_i2c"
+
+// Threads
+#define	PI_THREAD(X)		void *X (UNU void *dummy)
+
+// Failure modes
+#define	WPI_FATAL		(1==1)
+#define	WPI_ALMOST		(1==2)
+
+extern const char *piModelNames    [16];
+extern const char *piRevisionNames [16];
+extern const char *piMakerNames    [16];
+extern const int   piMemorySize    [ 8];
 
 /*----------------------------------------------------------------------------*/
 #define	PAGE_SIZE		(4*1024)
 #define	BLOCK_SIZE		(4*1024)
 
 /*----------------------------------------------------------------------------*/
-/* Debuf message display function */
+/* Debug message display function */
 /*----------------------------------------------------------------------------*/
 #define	MSG_ERR		-1
 #define	MSG_WARN	-2
@@ -97,6 +123,45 @@ extern	int moduleLoaded(char *);
 #ifdef __cplusplus
 }
 #endif
+
+/*----------------------------------------------------------------------------*/
+// wiringPiNodeStruct:
+//	This describes additional device nodes in the extended wiringPi
+//	2.0 scheme of things.
+//	It's a simple linked list for now, but will hopefully migrate to 
+//	a binary tree for efficiency reasons - but then again, the chances
+//	of more than 1 or 2 devices being added are fairly slim, so who
+//	knows....
+/*----------------------------------------------------------------------------*/
+struct wiringPiNodeStruct
+{
+	int	pinBase;
+	int	pinMax;
+
+	int	fd;		// Node specific
+	unsigned int data0;	//  ditto
+	unsigned int data1;	//  ditto
+	unsigned int data2;	//  ditto
+	unsigned int data3;	//  ditto
+
+	void		(*pinMode)		(struct wiringPiNodeStruct *node, int pin, int mode);
+	void		(*pullUpDnControl)	(struct wiringPiNodeStruct *node, int pin, int mode);
+	int		(*digitalRead)		(struct wiringPiNodeStruct *node, int pin);
+	// unsigned int	(*digitalRead8)		(struct wiringPiNodeStruct *node, int pin);
+	void		(*digitalWrite)		(struct wiringPiNodeStruct *node, int pin, int value);
+	// void		(*digitalWrite8)	(struct wiringPiNodeStruct *node, int pin, int value);
+	void		(*pwmWrite)		(struct wiringPiNodeStruct *node, int pin, int value);
+	int		(*analogRead)		(struct wiringPiNodeStruct *node, int pin);
+	void		(*analogWrite)		(struct wiringPiNodeStruct *node, int pin, int value);
+
+	struct wiringPiNodeStruct *next;
+};
+
+extern struct wiringPiNodeStruct *wiringPiNodes;
+extern struct wiringPiNodeStruct *wiringPiFindNode (int pin);
+extern struct wiringPiNodeStruct *wiringPiNewNode  (int pinBase, int numPins);
+
+extern int wiringPiFailure (int fatal, const char *message, ...) ;
 
 /*----------------------------------------------------------------------------*/
 struct libodroid

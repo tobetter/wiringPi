@@ -29,10 +29,8 @@
 #include "softTone.h"
 
 /*----------------------------------------------------------------------------*/
-#include "wiringPi.h"
-#include "../version.h"
-
 #include "wiringOdroid.h"
+#include "../version.h"
 
 #include "odroidc1.h"
 #include "odroidc2.h"
@@ -432,7 +430,7 @@ void piBoardId (int *model, int *rev, int *mem, int *maker, int *warranty)
 int wpiPinToGpio (int wpiPin)
 {
 	if (libwiring.getModeToGpio)
-		return	libwiring.getModeToGpio(WPI_MODE_PINS, wpiPin);
+		return	libwiring.getModeToGpio(MODE_PINS, wpiPin);
 
 	return	-1;
 }
@@ -447,7 +445,7 @@ int wpiPinToGpio (int wpiPin)
 int physPinToGpio (int physPin)
 {
 	if (libwiring.getModeToGpio)
-		return	libwiring.getModeToGpio(WPI_MODE_PHYS, physPin);
+		return	libwiring.getModeToGpio(MODE_PHYS, physPin);
 
 	return	-1;
 }
@@ -582,7 +580,7 @@ int wiringPiISR (int pin, int mode, void (*function)(void))
 	char  c;
 	int   GpioPin;
 
-	if (libwiring.mode == WPI_MODE_UNINITIALISED)
+	if (libwiring.mode == MODE_UNINITIALISED)
 		return wiringPiFailure (
 			WPI_FATAL,
 			"wiringPiISR: wiringPi has not been initialised. " \
@@ -801,7 +799,7 @@ int wiringPiSetup (void)
 	for(i = 0; i < 256; i++)
 		libwiring.sysFds[i] = -1;
 	// init wiringPi mode
-	libwiring.mode = WPI_MODE_UNINITIALISED;
+	libwiring.mode = MODE_UNINITIALISED;
 
 	if (getenv (ENV_DEBUG) != NULL)
 		wiringPiDebug = TRUE;
@@ -839,7 +837,7 @@ int wiringPiSetup (void)
 
 	initialiseEpoch ();
 
-	libwiring.mode = WPI_MODE_PINS;
+	libwiring.mode = MODE_PINS;
 	return 0;
 }
 
@@ -859,7 +857,7 @@ int wiringPiSetupGpio (void)
 	if (wiringPiDebug)
 		printf ("wiringPi: wiringPiSetupGpio called\n") ;
 
-	libwiring.mode = WPI_MODE_GPIO;
+	libwiring.mode = MODE_GPIO;
 	return 0 ;
 }
 
@@ -879,7 +877,7 @@ int wiringPiSetupPhys (void)
 	if (wiringPiDebug)
 		printf ("wiringPi: wiringPiSetupPhys called\n") ;
 
-	libwiring.mode = WPI_MODE_PHYS ;
+	libwiring.mode = MODE_PHYS ;
 	return 0 ;
 }
 
@@ -922,7 +920,7 @@ int wiringPiSetupSys (void)
 
 	initialiseEpoch ();
 
-	libwiring.mode = WPI_MODE_GPIO_SYS;
+	libwiring.mode = MODE_GPIO_SYS;
 	return 0;
 }
 

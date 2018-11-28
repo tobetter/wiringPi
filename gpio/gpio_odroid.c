@@ -33,7 +33,6 @@
 #include <sys/stat.h>
 
 #include <wiringPi.h>
-#include <wiringOdroid.h>
 #include <wpiExtensions.h>
 
 #include <gertboard.h>
@@ -626,52 +625,6 @@ static void doPadDrive (int argc, char *argv [])
 
 
 /*
- * doUsbP:
- *	Control USB Power - High (1.2A) or Low (600mA)
- *	gpio usbp high/low
- *********************************************************************************
- */
-
-static void doUsbP (int argc, char *argv [])
-{
-	int model, rev, mem, maker, overVolted ;
-
-	if (argc != 3) {
-		fprintf (stderr, "Usage: %s usbp high|low\n", argv [0]) ;
-		exit (1) ;
-	}
-
-	// Make sure we're on a B+
-	piBoardId (&model, &rev, &mem, &maker, &overVolted) ;
-
-	if (!((model == PI_MODEL_BP) || (model == PI_MODEL_2))) {
-		fprintf (stderr, "USB power contol is applicable to B+ and v2 boards only.\n") ;
-		exit (1) ;
-	}
-
-	// Make sure we start in BCM_GPIO mode
-	wiringPiSetupGpio () ;
-
-	if ((strcasecmp (argv [2], "high") == 0) || (strcasecmp (argv [2], "hi") == 0))	{
-		digitalWrite (PI_USB_POWER_CONTROL, 1) ;
-		pinMode (PI_USB_POWER_CONTROL, OUTPUT) ;
-		printf ("Switched to HIGH current USB (1.2A)\n") ;
-		return ;
-	}
-
-	if ((strcasecmp (argv [2], "low") == 0) || (strcasecmp (argv [2], "lo") == 0)) {
-		digitalWrite (PI_USB_POWER_CONTROL, 0) ;
-		pinMode (PI_USB_POWER_CONTROL, OUTPUT) ;
-		printf ("Switched to LOW current USB (600mA)\n") ;
-		return ;
-	}
-
-	fprintf (stderr, "Usage: %s usbp high|low\n", argv [0]) ;
-	exit (1) ;
-}
-
-
-/*
  * doGbw:
  *	gpio gbw channel value
  *	Gertboard Write - To the Analog output
@@ -1189,29 +1142,29 @@ int main (int argc, char *argv [])
 		for (i = 2 ; i < argc ; ++i)
 			argv [i - 1] = argv [i] ;
 		--argc ;
-		wpMode = WPI_MODE_GPIO ;
+		wpMode = MODE_GPIO ;
 	} else if (strcasecmp (argv [1], "-1") == 0) {	// Check for -1 argument
 		wiringPiSetupPhys () ;
 
 		for (i = 2 ; i < argc ; ++i)
 			argv [i - 1] = argv [i] ;
 		--argc ;
-		wpMode = WPI_MODE_PHYS ;
+		wpMode = MODE_PHYS ;
 	} else if (strcasecmp (argv [1], "-p") == 0) {	// Check for -p argument for PiFace
 		piFaceSetup (200) ;
 
 		for (i = 2 ; i < argc ; ++i)
 			argv [i - 1] = argv [i] ;
 		--argc ;
-		wpMode = WPI_MODE_PIFACE ;
+		wpMode = MODE_PIFACE ;
 	} else if (strcasecmp (argv [1], "-z") == 0) {	// Check for -z argument so we don't actually initialise wiringPi
 		for (i = 2 ; i < argc ; ++i)
 			argv [i - 1] = argv [i] ;
 		--argc ;
-		wpMode = WPI_MODE_UNINITIALISED ;
+		wpMode = MODE_UNINITIALISED ;
 	} else {					// Default to wiringPi mode
 		wiringPiSetup () ;
-		wpMode = WPI_MODE_PINS ;
+		wpMode = MODE_PINS ;
 	}
 
 	// Check for -x argument to load in a new extension

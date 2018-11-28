@@ -33,7 +33,6 @@
 
 #include <wiringPi.h>
 /*----------------------------------------------------------------------------*/
-#include <wiringOdroid.h>
 
 extern int wpMode ;
 
@@ -277,9 +276,9 @@ static void readallPhysOdroid (int model, int rev, int physPin, const char *phys
 	if ((physToWpi [physPin] == -1) || (physPinToGpio (physPin) == -1))
 		printf (" |      |  ") ;
 	else {
-		if (wpMode == WPI_MODE_GPIO)
+		if (wpMode == MODE_GPIO)
 			pin = physPinToGpio (physPin);
-		else if (wpMode == WPI_MODE_PHYS)
+		else if (wpMode == MODE_PHYS)
 			pin = physPin ;
 		else
 			pin = physToWpi [physPin];
@@ -297,9 +296,9 @@ static void readallPhysOdroid (int model, int rev, int physPin, const char *phys
 	if ((physToWpi [physPin] == -1) || (physPinToGpio (physPin) == -1))
 		printf (" |   |     ") ;
 	else {
-		if (wpMode == WPI_MODE_GPIO)
+		if (wpMode == MODE_GPIO)
 			pin = physPinToGpio (physPin);
-		else if (wpMode == WPI_MODE_PHYS)
+		else if (wpMode == MODE_PHYS)
 			pin = physPin ;
 		else
 			pin = physToWpi [physPin];
