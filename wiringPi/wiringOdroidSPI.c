@@ -121,7 +121,7 @@ int wiringPiSPISetupMode (int channel, int speed, int mode)
 		device = spiDevType1;
 	break;
 	case MODEL_ODROID_N2:
-		device = "/dev/spidev0.0";
+		device = spiDevType0;
 	break;
 	}
 
