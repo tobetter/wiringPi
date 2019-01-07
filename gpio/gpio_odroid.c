@@ -72,7 +72,7 @@ char *usage = "Usage: gpio -v\n"
 	"       gpio unexportall/exports\n"
 	"       gpio export/edge/unexport ...\n"
 	"       gpio wfi <pin> <mode>\n"
-	"       gpio drive <group> <value>\n"
+	"       gpio drive <pin> <value>\n"
 	"       gpio pwm-bal/pwm-ms \n"
 	"       gpio pwmr <range> \n"
 	"       gpio pwmc <divider> \n"
@@ -598,32 +598,23 @@ void doMode (int argc, char *argv [])
 
 /*
  * doPadDrive:
- *	gpio drive group value
+ *	gpio drive pin value for ODROIDs since it depends on the SoC
  *********************************************************************************
  */
 
 static void doPadDrive (int argc, char *argv [])
 {
-	int group, val ;
+	int pin, val;
 
 	if (argc != 4) {
-		fprintf (stderr, "Usage: %s drive group value\n", argv [0]) ;
+		fprintf (stderr, "Usage: %s drive pin value\n", argv [0]) ;
 		exit (1) ;
 	}
 
-	group = atoi (argv [2]) ;
-	val   = atoi (argv [3]) ;
+	pin = atoi (argv [2]) ;
+	val = atoi (argv [3]) ;
 
-	if ((group < 0) || (group > 2)) {
-		fprintf (stderr, "%s: drive group not 0, 1 or 2: %d\n", argv [0], group) ;
-		exit (1) ;
-	}
-
-	if ((val < 0) || (val > 7)) {
-		fprintf (stderr, "%s: drive value not 0-7: %d\n", argv [0], val) ;
-		exit (1) ;
-	}
-	setPadDrive (group, val) ;
+	setPadDrive (pin, val) ;
 }
 
 
@@ -1214,7 +1205,7 @@ int main (int argc, char *argv [])
 	else if (strcasecmp (argv [1], "pwmr"     ) == 0) doNothing    (argc, argv) ;
 	else if (strcasecmp (argv [1], "pwmc"     ) == 0) doNothing    (argc, argv) ;
 	else if (strcasecmp (argv [1], "pwmTone"  ) == 0) doNothing    (argc, argv) ;
-	else if (strcasecmp (argv [1], "drive"    ) == 0) doNothing    (argc, argv) ;
+	else if (strcasecmp (argv [1], "drive"    ) == 0) doPadDrive   (argc, argv) ;
 	else if (strcasecmp (argv [1], "readall"  ) == 0) doReadall    () ;
 	else if (strcasecmp (argv [1], "nreadall" ) == 0) doReadall    () ;
 	else if (strcasecmp (argv [1], "pins"     ) == 0) doPins       () ;

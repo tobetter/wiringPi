@@ -175,8 +175,11 @@ struct libodroid
 
 	/* wiringPi core func */
 	int	(*getModeToGpio)	(int mode, int pin);
+	void	(*setPadDrive)		(int pin, int value);
+	int	(*getPadDrive)		(int pin);
 	void	(*pinMode)		(int pin, int mode);
 	int	(*getAlt)		(int pin);
+	int	(*getPUPD)		(int pin);
 	void	(*pullUpDnControl)	(int pin, int pud);
 	int	(*digitalRead)		(int pin);
 	void	(*digitalWrite)		(int pin, int value);

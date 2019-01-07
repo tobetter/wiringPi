@@ -177,7 +177,6 @@ static void warn_msg(const char *func)
 //
 /*----------------------------------------------------------------------------*/
 static 	void piGpioLayoutOops	(const char *why)	{ warn_msg(__func__); return; }
-	void setPadDrive	(int group, int value)	{ warn_msg(__func__); return; }
 	void pwmSetMode		(int mode)		{ warn_msg(__func__); return; }
 	void pwmSetRange	(unsigned int range)	{ warn_msg(__func__); return; }
 	void pwmSetClock	(int divisor)		{ warn_msg(__func__); return; }
@@ -461,6 +460,34 @@ int physPinToGpio (int physPin)
 
 /*----------------------------------------------------------------------------*/
 /*
+ * setPadDrive:
+ *	Set the PAD driver value
+ */
+/*----------------------------------------------------------------------------*/
+void setPadDrive (int pin, int value)
+{
+	if (libwiring.setPadDrive)
+		return	libwiring.setPadDrive(pin, value);
+
+	return	-1;
+}
+
+/*----------------------------------------------------------------------------*/
+/*
+ * getPadDrive:
+ *	Get the PAD driver value
+ */
+/*----------------------------------------------------------------------------*/
+int getPadDrive (int pin)
+{
+	if (libwiring.getPadDrive)
+		return	libwiring.getPadDrive(pin);
+
+	return	-1;
+}
+
+/*----------------------------------------------------------------------------*/
+/*
  * getAlt:
  *	Returns the ALT bits for a given port. Only really of-use
  *	for the gpio readall command (I think)
@@ -470,6 +497,21 @@ int getAlt (int pin)
 {
 	if (libwiring.getAlt)
 		return	libwiring.getAlt(pin);
+
+	return	-1;
+}
+
+/*----------------------------------------------------------------------------*/
+/*
+ * getPUPD:
+ *	Returns the PU/PD bits for a given port. Only really of-use
+ *	for the gpio readall command (I think)
+ */
+/*----------------------------------------------------------------------------*/
+int getPUPD (int pin)
+{
+	if (libwiring.getPUPD)
+		return	libwiring.getPUPD(pin);
 
 	return	-1;
 }

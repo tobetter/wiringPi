@@ -67,11 +67,16 @@ static void doReadallExternal (void)
 /*----------------------------------------------------------------------------*/
 static const char *alts [] =
 {
-	"IN", "OUT", "ALT"
+	"IN", "OUT", "ALT1", "ALT2", "ALT3", "ALT4", "ALT5", "ALT6", "ALT7"
+} ;
+
+static const char *pupd [] =
+{
+	"DSBLD", "P/U", "P/D"
 } ;
 
 /*----------------------------------------------------------------------------*/
-static const int physToWpi [64] = 
+static const int physToWpi [64] =
 {
 	-1,	// 0
 	-1, -1,	// 1, 2
@@ -295,6 +300,7 @@ static void readallPhysOdroid (int model, int rev, int physPin, const char *phys
 {
 	int pin ;
 
+	// GPIO, wPi pin number
 	if ((physPinToGpio (physPin) == -1) && (physToWpi [physPin] == -1))
 		printf (" |      |    ") ;
 	else if (physPinToGpio (physPin) != -1)
@@ -302,10 +308,12 @@ static void readallPhysOdroid (int model, int rev, int physPin, const char *phys
 	else
 		printf (" |      | %3d", physToWpi [physPin]);
 
+	// GPIO pin name
 	printf (" | %s", physNames [physPin]) ;
 
+	// GPIO pin mode, value, drive strength, pupd
 	if ((physToWpi [physPin] == -1) || (physPinToGpio (physPin) == -1))
-		printf (" |      |  ") ;
+		printf (" |      |   |    |      ") ;
 	else {
 		if (wpMode == MODE_GPIO)
 			pin = physPinToGpio (physPin);
@@ -316,16 +324,18 @@ static void readallPhysOdroid (int model, int rev, int physPin, const char *phys
 
 		printf (" | %4s", alts [getAlt (pin)]) ;
 		printf (" | %d", digitalRead (pin)) ;
+		printf (" | %2d", getPadDrive (pin)) ;
+		printf (" | %5s", pupd [getPUPD (pin)]);
 	}
 
-	// Pin numbers:
+	// Physical pin number
 	printf (" | %2d", physPin) ;
 	++physPin ;
 	printf (" || %-2d", physPin) ;
 
-	// Same, reversed
+	// GPIO pin mode, value, drive strength, pupd
 	if ((physToWpi [physPin] == -1) || (physPinToGpio (physPin) == -1))
-		printf (" |   |     ") ;
+		printf (" |       |    |   |     ") ;
 	else {
 		if (wpMode == MODE_GPIO)
 			pin = physPinToGpio (physPin);
@@ -334,12 +344,16 @@ static void readallPhysOdroid (int model, int rev, int physPin, const char *phys
 		else
 			pin = physToWpi [physPin];
 
+		printf (" | %-5s", pupd [getPUPD (pin)]);
+		printf (" | %-2d", getPadDrive (pin)) ;
 		printf (" | %d", digitalRead (pin));
 		printf (" | %-4s", alts [getAlt (pin)]);
 	}
 
+	// GPIO pin name
 	printf (" | %-6s", physNames [physPin]);
 
+	// GPIO, wPi pin number
 	if ((physPinToGpio (physPin) == -1) && (physToWpi [physPin] == -1))
 		printf (" |     |     ") ;
 	else if (physPinToGpio (physPin) != -1)
@@ -355,11 +369,11 @@ void ReadallOdroid (int model, int rev, const char *physNames[])
 {
 	int pin ;
 
-	printf (" | GPIO | wPi |   Name   | Mode | V | Physical | V | Mode |   Name   | wPi | GPIO |\n") ;
-	printf (" +------+-----+----------+------+---+----++----+---+------+----------+-----+------+\n") ;
+	printf (" | GPIO | wPi |   Name   | Mode | V | DS | PU/PD | Physical | PU/PD | DS | V | Mode |   Name   | wPi | GPIO |\n") ;
+	printf (" +------+-----+----------+------+---+----+-------+----++----+-------+----+---+------+----------+-----+------+\n") ;
 	for (pin = 1 ; pin <= 40 ; pin += 2)
 		readallPhysOdroid (model, rev, pin, physNames) ;
-	printf (" +------+-----+----------+------+---+----++----+---+------+----------+-----+------+\n") ;
+	printf (" +------+-----+----------+------+---+----+-------+----++----+-------+----+---+------+----------+-----+------+\n") ;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -387,26 +401,26 @@ void doReadall (void)
 
 	switch (model) {
 	case MODEL_ODROID_C1:
-		printf (" +------+-----+----------+------+- Model ODROID-C -+------+----------+-----+------+\n") ;
+		printf (" +------+-----+----------+------+---+----+---- Model  ODROID-C1 ----+----+---+------+----------+-----+------+\n") ;
 		physNames = physNamesOdroidC1;
 	break;
 	case MODEL_ODROID_C2:
-		printf (" +------+-----+----------+------+ Model  ODROID-C2 +------+----------+-----+------+\n") ;
+		printf (" +------+-----+----------+------+---+----+---- Model  ODROID-C2 ----+----+---+------+----------+-----+------+\n") ;
 		if (rev == 1)
 			physNames = physNamesOdroidC2_Rev1;
 		else
 			physNames = physNamesOdroidC2_Rev2;
 	break;
 	case MODEL_ODROID_XU3:
-		printf (" +------+-----+----------+------ Model ODROID-XU3/4 ------+----------+-----+------+\n") ;
+		printf (" +------+-----+----------+------+---+----+--- Model ODROID-XU3/4 ---+----+---+------+----------+-----+------+\n") ;
 		physNames = physNamesOdroidXU3;
 	break;
 	case MODEL_ODROID_N1:
-		printf (" +------+-----+----------+------+ Model  ODROID-N1 +------+----------+-----+------+\n") ;	
+		printf (" +------+-----+----------+------+---+----+---- Model  ODROID-N1 ----+----+---+------+----------+-----+------+\n") ;
 		physNames = physNamesOdroidN1;
 	break;
 	case MODEL_ODROID_N2:
-		printf (" +------+-----+----------+------+ Model  ODROID-N2 +------+----------+-----+------+\n") ;
+		printf (" +------+-----+----------+------+---+----+---- Model  ODROID-N2 ----+----+---+------+----------+-----+------+\n") ;
 		physNames = physNamesOdroidN2;
 	break;
 	default:

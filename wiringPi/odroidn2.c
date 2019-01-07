@@ -106,13 +106,18 @@ static int	gpioToPUENReg	(int pin);
 static int	gpioToPUPDReg	(int pin);
 static int	gpioToShiftReg	(int pin);
 static int	gpioToGPFSELReg	(int pin);
+static int	gpioToDSReg	(int pin);
+static int	gpioToMuxReg	(int pin);
 
 /*----------------------------------------------------------------------------*/
 // wiringPi core function
 /*----------------------------------------------------------------------------*/
 static int		getModeToGpio	(int mode, int pin);
+static void		setPadDrive	(int pin, int value);
+static int		getPadDrive	(int pin);
 static void		pinMode		(int pin, int mode);
 static int		getAlt		(int pin);
+static int		getPUPD		(int pin);
 static void		pullUpDnControl	(int pin, int pud);
 static int		digitalRead	(int pin);
 static void		digitalWrite	(int pin, int value);
@@ -212,6 +217,46 @@ static int gpioToGPFSELReg (int pin)
 		return  N2_GPIOA_FSEL_REG_OFFSET;
 	return	-1;
 }
+
+/*----------------------------------------------------------------------------*/
+//
+// offset to the GPIO Drive Strength register
+//
+/*----------------------------------------------------------------------------*/
+static int gpioToDSReg (int pin)
+{
+	if (pin >= N2_GPIOX_PIN_START && pin <= N2_GPIOX_PIN_MID)
+		return  N2_GPIOX_DS_REG_2A_OFFSET;
+	if (pin > N2_GPIOX_PIN_MID && pin <= N2_GPIOX_PIN_END)
+		return  N2_GPIOX_DS_REG_2B_OFFSET;
+	if (pin >= N2_GPIOA_PIN_START && pin <= N2_GPIOA_PIN_END)
+		return  N2_GPIOA_DS_REG_5A_OFFSET;
+	return	-1;
+}
+
+/*----------------------------------------------------------------------------*/
+//
+// offset to the GPIO Pin Mux register
+//
+/*----------------------------------------------------------------------------*/
+static int gpioToMuxReg (int pin)
+{
+	switch (pin) {
+	case	N2_GPIOA_PIN_START	...N2_GPIOA_PIN_START + 7:
+		return  N2_GPIOA_MUX_D_REG_OFFSET;
+	case	N2_GPIOA_PIN_START + 8	...N2_GPIOA_PIN_END:
+		return  N2_GPIOA_MUX_E_REG_OFFSET;
+	case	N2_GPIOX_PIN_START	...N2_GPIOX_PIN_START + 7:
+		return  N2_GPIOX_MUX_3_REG_OFFSET;
+	case	N2_GPIOX_PIN_START + 8	...N2_GPIOX_PIN_START + 15:
+		return  N2_GPIOX_MUX_4_REG_OFFSET;
+	case	N2_GPIOX_PIN_START + 16	...N2_GPIOX_PIN_END:
+		return  N2_GPIOX_MUX_5_REG_OFFSET;
+	default:
+		return -1;
+	}
+}
+
 /*----------------------------------------------------------------------------*/
 static int getModeToGpio (int mode, int pin)
 {
@@ -244,6 +289,48 @@ static int getModeToGpio (int mode, int pin)
 		return -1;
 	else
 		return retPin;
+}
+
+/*----------------------------------------------------------------------------*/
+static void setPadDrive (int pin, int value)
+{
+	int ds, shift;
+
+	if (lib->mode == MODE_GPIO_SYS)
+		return;
+
+	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+		return;
+
+	if (value < 0 || value > 3) {
+		msg(MSG_WARN, "%s : Invalid value %d (Must be 0 ~ 3)\n", __func__, value);
+		return;
+	}
+
+	ds    = gpioToDSReg(pin);
+	shift = gpioToShiftReg(pin);
+	shift = pin > N2_GPIOX_PIN_MID ? (shift - 16) * 2 : shift * 2 ;
+
+	*(gpio + ds) &= ~(0b11 << shift);
+	*(gpio + ds) |= (value << shift);
+}
+
+/*----------------------------------------------------------------------------*/
+static int getPadDrive (int pin)
+{
+	int ds, shift;
+
+	if (lib->mode == MODE_GPIO_SYS)
+		return;
+
+	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+		return;
+
+	ds    = gpioToDSReg(pin);
+	shift = gpioToShiftReg(pin);
+	shift = pin > N2_GPIOX_PIN_MID ? (shift - 16) * 2 : shift * 2 ;
+
+	return (*(gpio + ds) >> shift) & 0b11;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -285,7 +372,7 @@ static void pinMode (int pin, int mode)
 /*----------------------------------------------------------------------------*/
 static int getAlt (int pin)
 {
-	int fsel, shift;
+	int fsel, mux, shift, target, mode;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return	0;
@@ -293,10 +380,37 @@ static int getAlt (int pin)
 	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
 		return	2;
 
-	fsel = gpioToGPFSELReg(pin);
+	fsel   = gpioToGPFSELReg(pin);
+	mux    = gpioToMuxReg(pin);
+	target = shift = gpioToShiftReg(pin);
+
+	while (target >= 8) {
+		target -= 8;
+	}
+
+	mode = (*(gpio + mux) >> (target * 4)) & 0xF;
+	return	mode ? mode + 1 : (*(gpio + fsel) & (1 << shift)) ? 0 : 1;
+}
+
+/*----------------------------------------------------------------------------*/
+static int getPUPD (int pin)
+{
+	int puen, pupd, shift;
+
+	if (lib->mode == MODE_GPIO_SYS)
+		return;
+
+	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+		return;
+
+	puen  = gpioToPUENReg(pin);
+	pupd  = gpioToPUPDReg(pin);
 	shift = gpioToShiftReg(pin);
 
-	return	(*(gpio + fsel) & (1 << shift)) ? 0 : 1;
+	if (*(gpio + puen) & (1 << shift))
+		return *(gpio + pupd) & (1 << shift) ? 1 : 2;
+	else
+		return 0;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -494,8 +608,11 @@ void init_odroidn2 (struct libodroid *libwiring)
 
 	/* wiringPi Core function initialize */
 	libwiring->getModeToGpio	= getModeToGpio;
+	libwiring->setPadDrive		= setPadDrive;
+	libwiring->getPadDrive		= getPadDrive;
 	libwiring->pinMode		= pinMode;
 	libwiring->getAlt		= getAlt;
+	libwiring->getPUPD		= getPUPD;
 	libwiring->pullUpDnControl	= pullUpDnControl;
 	libwiring->digitalRead		= digitalRead;
 	libwiring->digitalWrite		= digitalWrite;
