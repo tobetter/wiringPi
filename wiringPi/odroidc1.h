@@ -39,6 +39,16 @@
 #define GPIODV_PUPD_REG_OFFSET	0x3A
 #define GPIODV_PUEN_REG_OFFSET	0x48
 
+#define	MUX_REG_1_OFFSET	0x2D
+#define	MUX_REG_2_OFFSET	0x2E
+#define	MUX_REG_3_OFFSET	0x2F
+#define	MUX_REG_4_OFFSET	0x30
+#define	MUX_REG_5_OFFSET	0x31
+#define	MUX_REG_6_OFFSET	0x32
+#define	MUX_REG_7_OFFSET	0x33
+#define	MUX_REG_8_OFFSET	0x34
+#define	MUX_REG_9_OFFSET	0x35
+
 #ifdef __cplusplus
 extern "C" {
 #endif

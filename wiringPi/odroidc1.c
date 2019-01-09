@@ -108,6 +108,7 @@ static int	gpioToGPFSELReg	(int pin);
 static int		getModeToGpio	(int mode, int pin);
 static void		pinMode		(int pin, int mode);
 static int		getAlt		(int pin);
+static int		getPUPD		(int pin);
 static void		pullUpDnControl	(int pin, int pud);
 static int		digitalRead	(int pin);
 static void		digitalWrite	(int pin, int value);
@@ -219,6 +220,7 @@ static int gpioToGPFSELReg (int pin)
 		return  GPIODV_FSEL_REG_OFFSET;
 	return	-1;
 }
+
 /*----------------------------------------------------------------------------*/
 static int getModeToGpio (int mode, int pin)
 {
@@ -295,6 +297,7 @@ static void pinMode (int pin, int mode)
 static int getAlt (int pin)
 {
 	int fsel, shift;
+	int mode = 0;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return	0;
@@ -302,9 +305,195 @@ static int getAlt (int pin)
 	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
 		return	2;
 
+	fsel  = gpioToGPFSELReg(pin);
 	shift = gpioToShiftReg(pin);
 
-	return	(*(gpio + gpioToGPFSELReg(pin)) & (1 << shift)) ? 0 : 1;
+	switch (pin) {
+	case GPIOX_PIN_START  ...GPIOX_PIN_END:
+		switch (shift) {
+		case	0:
+			if (*(gpio + MUX_REG_8_OFFSET) & (1 << 5))	mode = 1;	break;
+			if (*(gpio + MUX_REG_5_OFFSET) & (1 << 14))	mode = 2;	break;
+			break;
+		case	1:
+			if (*(gpio + MUX_REG_8_OFFSET) & (1 << 4))	mode = 1;	break;
+			if (*(gpio + MUX_REG_5_OFFSET) & (1 << 13))	mode = 2;	break;
+			break;
+		case	2:
+			if (*(gpio + MUX_REG_8_OFFSET) & (1 << 3))	mode = 1;	break;
+			if (*(gpio + MUX_REG_5_OFFSET) & (1 << 13))	mode = 2;	break;
+			break;
+		case	3:
+			if (*(gpio + MUX_REG_8_OFFSET) & (1 << 2))	mode = 1;	break;
+			if (*(gpio + MUX_REG_5_OFFSET) & (1 << 13))	mode = 2;	break;
+			break;
+		case	4:
+			if ((*(gpio + MUX_REG_5_OFFSET) & (1 << 29)) &&
+			    (*(gpio + MUX_REG_5_OFFSET) & (1 << 12)))	mode = 1;	break;
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 30))	mode = 2;	break;
+			if (*(gpio + MUX_REG_4_OFFSET) & (1 << 17))	mode = 3;	break;
+			break;
+		case	5:
+			if ((*(gpio + MUX_REG_5_OFFSET) & (1 << 28)) &&
+			    (*(gpio + MUX_REG_5_OFFSET) & (1 << 12)))	mode = 1;	break;
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 29))	mode = 2;	break;
+			if (*(gpio + MUX_REG_4_OFFSET) & (1 << 16))	mode = 3;	break;
+			break;
+		case	6:
+			if ((*(gpio + MUX_REG_5_OFFSET) & (1 << 28)) &&
+			    (*(gpio + MUX_REG_5_OFFSET) & (1 << 12)))	mode = 1;	break;
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 27))	mode = 2;	break;
+			if (*(gpio + MUX_REG_4_OFFSET) & (1 << 15))	mode = 3;	break;
+			if (*(gpio + MUX_REG_5_OFFSET) & (1 << 9))	mode = 4;	break;
+			break;
+		case	7:
+			if ((*(gpio + MUX_REG_5_OFFSET) & (1 << 28)) &&
+			    (*(gpio + MUX_REG_5_OFFSET) & (1 << 12)))	mode = 1;	break;
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 27))	mode = 2;	break;
+			if (*(gpio + MUX_REG_4_OFFSET) & (1 << 14))	mode = 3;	break;
+			if (*(gpio + MUX_REG_5_OFFSET) & (1 << 8))	mode = 4;	break;
+			break;
+		case	8:
+			if (*(gpio + MUX_REG_8_OFFSET) & (1 << 1))	mode = 1;	break;
+			if (*(gpio + MUX_REG_5_OFFSET) & (1 << 11))	mode = 2;	break;
+			if (*(gpio + MUX_REG_6_OFFSET) & (1 << 19))	mode = 3;	break;
+			if (*(gpio + MUX_REG_4_OFFSET) & (1 << 22))	mode = 4;	break;
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 6))	mode = 5;	break;
+			break;
+		case	9:
+			if (*(gpio + MUX_REG_8_OFFSET) & (1 << 0))	mode = 1;	break;
+			if (*(gpio + MUX_REG_5_OFFSET) & (1 << 10))	mode = 2;	break;
+			if (*(gpio + MUX_REG_6_OFFSET) & (1 << 18))	mode = 3;	break;
+			if (*(gpio + MUX_REG_4_OFFSET) & (1 << 24))	mode = 4;	break;
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 6))	mode = 5;	break;
+			break;
+		case	10:
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 22))	mode = 1;	break;
+			if ((*(gpio + MUX_REG_7_OFFSET) & (1 << 31)) &&
+			    (*(gpio + MUX_REG_9_OFFSET) & (1 << 19)))	mode = 2;	break;
+			if (*(gpio + MUX_REG_6_OFFSET) & (1 << 17))	mode = 3;	break;
+			if (*(gpio + MUX_REG_4_OFFSET) & (1 << 23))	mode = 4;	break;
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 8))	mode = 5;	break;
+			break;
+		case	11:
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 20))	mode = 1;	break;
+			if (*(gpio + MUX_REG_7_OFFSET) & (1 << 30))	mode = 2;	break;
+			if (*(gpio + MUX_REG_2_OFFSET) & (1 << 3))	mode = 5;	break;
+			break;
+		case	16:
+			if (*(gpio + MUX_REG_4_OFFSET) & (1 << 9))	mode = 1;	break;
+			if (*(gpio + MUX_REG_4_OFFSET) & (1 << 21))	mode = 4;	break;
+			if (*(gpio + MUX_REG_4_OFFSET) & (1 << 5))	mode = 5;	break;
+			break;
+		case	17:
+			if (*(gpio + MUX_REG_4_OFFSET) & (1 << 8))	mode = 1;	break;
+			if (*(gpio + MUX_REG_4_OFFSET) & (1 << 20))	mode = 4;	break;
+			if (*(gpio + MUX_REG_4_OFFSET) & (1 << 4))	mode = 5;	break;
+			break;
+		case	18:
+			if (*(gpio + MUX_REG_4_OFFSET) & (1 << 7))	mode = 1;	break;
+			if (*(gpio + MUX_REG_4_OFFSET) & (1 << 19))	mode = 4;	break;
+			break;
+		case	19:
+			if (*(gpio + MUX_REG_4_OFFSET) & (1 << 6))	mode = 1;	break;
+			if (*(gpio + MUX_REG_4_OFFSET) & (1 << 18))	mode = 4;	break;
+			break;
+		case	20:
+			if (*(gpio + MUX_REG_6_OFFSET) & (1 << 16))	mode = 3;	break;
+			if (*(gpio + MUX_REG_4_OFFSET) & (1 << 25))	mode = 4;	break;
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 9))	mode = 5;	break;
+			break;
+		}
+		break;
+	case GPIOY_PIN_START  ...GPIOY_PIN_END:
+		switch (shift) {
+		case	0:
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 2))	mode = 1;	break;
+			break;
+		case	1:
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 1))	mode = 1;	break;
+			break;
+		case	3:
+			if (*(gpio + MUX_REG_1_OFFSET) & (1 << 7))	mode = 2;	break;
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 18))	mode = 3;	break;
+			break;
+		case	6:
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 5))	mode = 1;	break;
+			break;
+		case	7:
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 5))	mode = 1;	break;
+			break;
+		case	8:
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 0))	mode = 1;	break;
+			break;
+		case	9:
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 4))	mode = 1;	break;
+			break;
+		case	10:
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 5))	mode = 1;	break;
+			break;
+		case	11:
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 5))	mode = 1;	break;
+			break;
+		case	12:
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 5))	mode = 1;	break;
+			break;
+		case	13:
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 5))	mode = 1;	break;
+			if (*(gpio + MUX_REG_5_OFFSET) & (1 << 7))	mode = 3;	break;
+			break;
+		case	14:
+			if (*(gpio + MUX_REG_3_OFFSET) & (1 << 5))	mode = 1;	break;
+			if (*(gpio + MUX_REG_5_OFFSET) & (1 << 6))	mode = 3;	break;
+			break;
+		}
+		break;
+	case GPIODV_PIN_START...GPIODV_PIN_END:
+		switch (shift) {
+		case	24:
+			if (*(gpio + MUX_REG_6_OFFSET) & (1 << 23))	mode = 4;	break;
+			if (*(gpio + MUX_REG_9_OFFSET) & (1 << 31))	mode = 5;	break;
+			break;
+		case	25:
+			if (*(gpio + MUX_REG_6_OFFSET) & (1 << 22))	mode = 4;	break;
+			if (*(gpio + MUX_REG_9_OFFSET) & (1 << 30))	mode = 5;	break;
+			break;
+		case	26:
+			if (*(gpio + MUX_REG_6_OFFSET) & (1 << 21))	mode = 4;	break;
+			if (*(gpio + MUX_REG_9_OFFSET) & (1 << 29))	mode = 5;	break;
+			break;
+		case	27:
+			if (*(gpio + MUX_REG_6_OFFSET) & (1 << 20))	mode = 4;	break;
+			if (*(gpio + MUX_REG_9_OFFSET) & (1 << 28))	mode = 5;	break;
+			break;
+		}
+		break;
+	default:
+		return -1;
+	}
+
+	return	mode ? mode + 1 : (*(gpio + fsel) & (1 << shift)) ? 0 : 1;
+}
+
+/*----------------------------------------------------------------------------*/
+static int getPUPD (int pin)
+{
+	int puen, pupd, shift;
+
+	if (lib->mode == MODE_GPIO_SYS)
+		return;
+
+	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+		return;
+
+	puen  = gpioToPUENReg(pin);
+	pupd  = gpioToPUPDReg(pin);
+	shift = gpioToShiftReg(pin);
+
+	if (*(gpio + puen) & (1 << shift))
+		return *(gpio + pupd) & (1 << shift) ? 1 : 2;
+	else
+		return 0;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -531,6 +720,7 @@ void init_odroidc1 (struct libodroid *libwiring)
 	libwiring->getModeToGpio	= getModeToGpio;
 	libwiring->pinMode		= pinMode;
 	libwiring->getAlt		= getAlt;
+	libwiring->getPUPD		= getPUPD;
 	libwiring->pullUpDnControl	= pullUpDnControl;
 	libwiring->digitalRead		= digitalRead;
 	libwiring->digitalWrite		= digitalWrite;
