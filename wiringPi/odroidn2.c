@@ -284,11 +284,7 @@ static int getModeToGpio (int mode, int pin)
 		return -1;
 	}
 
-	/* To check I2C module loaded */
-	if (moduleLoaded(AML_MODULE_I2C) && (retPin == 205 || retPin == 206))
-		return -1;
-	else
-		return retPin;
+	return retPin;
 }
 
 /*----------------------------------------------------------------------------*/
