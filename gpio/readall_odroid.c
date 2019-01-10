@@ -324,8 +324,21 @@ static void readallPhysOdroid (int model, int rev, int physPin, const char *phys
 
 		printf (" | %4s", alts [getAlt (pin)]) ;
 		printf (" | %d", digitalRead (pin)) ;
-		printf (" | %2d", getPadDrive (pin)) ;
-		printf (" | %5s", pupd [getPUPD (pin)]);
+		switch (model) {
+		case MODEL_ODROID_N1:
+			printf (" |    |      ");
+			break;
+		case MODEL_ODROID_C1:
+		case MODEL_ODROID_C2:
+			printf (" |    | %5s", pupd[getPUPD(pin)]);
+			break;
+		case MODEL_ODROID_XU3:
+		case MODEL_ODROID_N2:
+			printf (" | %2d | %5s", getPadDrive(pin), pupd[getPUPD(pin)]);
+			break;
+		default:
+			break;
+		}
 	}
 
 	// Physical pin number
@@ -344,8 +357,21 @@ static void readallPhysOdroid (int model, int rev, int physPin, const char *phys
 		else
 			pin = physToWpi [physPin];
 
-		printf (" | %-5s", pupd [getPUPD (pin)]);
-		printf (" | %-2d", getPadDrive (pin)) ;
+		switch (model) {
+		case MODEL_ODROID_N1:
+			printf (" |       |   ");
+			break;
+		case MODEL_ODROID_C1:
+		case MODEL_ODROID_C2:
+			printf (" | %-5s |   ", pupd[getPUPD(pin)]);
+			break;
+		case MODEL_ODROID_XU3:
+		case MODEL_ODROID_N2:
+			printf (" | %-5s | %-2d", pupd[getPUPD(pin)], getPadDrive(pin));
+			break;
+		default:
+			break;
+		}
 		printf (" | %d", digitalRead (pin));
 		printf (" | %-4s", alts [getAlt (pin)]);
 	}
