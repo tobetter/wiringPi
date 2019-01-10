@@ -97,17 +97,20 @@ static struct libodroid	*lib = NULL;
 /*----------------------------------------------------------------------------*/
 static int	gpioToGPSETReg	(int pin);
 static int	gpioToGPLEVReg	(int pin);
-static int	gpioToPUENReg	(int pin);
 static int	gpioToPUPDReg	(int pin);
 static int	gpioToShiftReg	(int pin);
 static int	gpioToGPFSELReg	(int pin);
+static int	gpioToDSReg	(int pin);
 
 /*----------------------------------------------------------------------------*/
 // wiringPi core function 
 /*----------------------------------------------------------------------------*/
 static int		getModeToGpio	(int mode, int pin);
+static void		setPadDrive	(int pin, int value);
+static int		getPadDrive	(int pin);
 static void		pinMode		(int pin, int mode);
 static int		getAlt		(int pin);
+static int		getPUPD		(int pin);
 static void		pullUpDnControl	(int pin, int pud);
 static int		digitalRead	(int pin);
 static void		digitalWrite	(int pin, int value);
@@ -173,18 +176,6 @@ static int gpioToGPLEVReg (int pin)
 	break;
 	}
 	return	-1;
-}
-
-/*----------------------------------------------------------------------------*/
-//
-// offset to the GPIO Pull up/down enable regsiter
-//
-/*----------------------------------------------------------------------------*/
-static int gpioToPUENReg (int pin)
-{
-	msg(MSG_WARN, "%s : unused function in xu3/4. pin = %d\n",
-		__func__, pin);
-	return	0;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -264,6 +255,33 @@ static int gpioToGPFSELReg (int pin)
 	}
 	return	-1;
 }
+
+/*----------------------------------------------------------------------------*/
+//
+// offset to the GPIO Drive Strength register
+//
+/*----------------------------------------------------------------------------*/
+static int gpioToDSReg (int pin)
+{
+	switch (pin) {
+	case	GPIO_X1_START...GPIO_X1_END:
+		return  (GPIO_X1_DRV_OFFSET >> 2);
+	case	GPIO_X2_START...GPIO_X2_END:
+		return  (GPIO_X2_DRV_OFFSET >> 2);
+	case	GPIO_X3_START...GPIO_X3_END:
+		return  (GPIO_X3_DRV_OFFSET >> 2);
+	case	GPIO_A0_START...GPIO_A0_END:
+		return  (GPIO_A0_DRV_OFFSET >> 2);
+	case	GPIO_A2_START...GPIO_A2_END:
+		return  (GPIO_A2_DRV_OFFSET >> 2);
+	case	GPIO_B3_START...GPIO_B3_END:
+		return  (GPIO_B3_DRV_OFFSET >> 2);
+	default:
+		break;
+	}
+	return	-1;
+}
+
 /*----------------------------------------------------------------------------*/
 static int getModeToGpio (int mode, int pin)
 {
@@ -285,6 +303,54 @@ static int getModeToGpio (int mode, int pin)
 	}
 	msg(MSG_WARN, "%s : Unknown Mode %d\n", __func__, mode);
 	return	-1;
+}
+
+/*----------------------------------------------------------------------------*/
+static void setPadDrive (int pin, int value)
+{
+	int ds, shift;
+
+	if (lib->mode == MODE_GPIO_SYS)
+		return;
+
+	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+		return;
+
+	if (value < 0 || value > 3) {
+		msg(MSG_WARN, "%s : Invalid value %d (Must be 0 ~ 3)\n", __func__, value);
+		return;
+	}
+
+	ds    = gpioToDSReg(pin);
+	shift = gpioToShiftReg(pin) << 1;
+
+	if (pin < 100) {
+		*(gpio  + ds) &= ~(0b11 << shift);
+		*(gpio  + ds) |= (value << shift);
+	} else {
+		*(gpio1 + ds) &= ~(0b11 << shift);
+		*(gpio1 + ds) |= (value << shift);
+	}
+}
+
+/*----------------------------------------------------------------------------*/
+static int getPadDrive (int pin)
+{
+	int ds, shift;
+
+	if (lib->mode == MODE_GPIO_SYS)
+		return;
+
+	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+		return;
+
+	ds    = gpioToDSReg(pin);
+	shift = gpioToShiftReg(pin) << 1;
+
+	if (pin < 100)
+		return (*(gpio  + ds) >> shift) & 0b11;
+	else
+		return (*(gpio1 + ds) >> shift) & 0b11;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -335,7 +401,7 @@ static void pinMode (int pin, int mode)
 /*----------------------------------------------------------------------------*/
 static int getAlt (int pin)
 {
-	int fsel, shift;
+	int fsel, shift, mode;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return	0;
@@ -343,17 +409,39 @@ static int getAlt (int pin)
 	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
 		return	2;
 
+	fsel  = gpioToGPFSELReg(pin);
 	shift = gpioToShiftReg(pin) << 2;
 
 	if (pin < 100)	// GPX0,1,2,3
-		fsel = (*(gpio  + gpioToGPFSELReg(pin)) & (0xF << shift));
+		mode = (*(gpio  + fsel) >> shift) & 0xF;
 	else		// GPA0,1,2, GPB0,1,2,3,4
-		fsel = (*(gpio1 + gpioToGPFSELReg(pin)) & (0xF << shift));
+		mode = (*(gpio1 + fsel) >> shift) & 0xF;
 
-	if (fsel & (0xE << shift))
-		return  2;
+	// If mode is bigger than 8 including EXT_INT(0xF), it returns ALT7
+	return	mode <= 8 ? mode : 8;
+}
 
-	return	(fsel & (0x1 << shift)) ? 1 : 0;
+/*----------------------------------------------------------------------------*/
+static int getPUPD (int pin)
+{
+	int pupd, shift, pull;
+
+	if (lib->mode == MODE_GPIO_SYS)
+		return;
+
+	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+		return;
+
+	pupd  = gpioToPUPDReg(pin);
+	shift = gpioToShiftReg(pin) << 1;
+
+	if (pin < 100)
+		pull = (*(gpio  + pupd) >> shift) & 0x3;
+	else
+		pull = (*(gpio1 + pupd) >> shift) & 0x3;
+
+	// Pull up when 0x3, down when 0x1
+	return	pull == 0 ? 0 : (pull == 0x3 ? 1 : 2);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -615,8 +703,11 @@ void init_odroidxu3 (struct libodroid *libwiring)
 
 	/* wiringPi Core function initialize */
 	libwiring->getModeToGpio	= getModeToGpio;
+	libwiring->setPadDrive		= setPadDrive;
+	libwiring->getPadDrive		= getPadDrive;
 	libwiring->pinMode		= pinMode;
 	libwiring->getAlt		= getAlt;
+	libwiring->getPUPD		= getPUPD;
 	libwiring->pullUpDnControl	= pullUpDnControl;
 	libwiring->digitalRead		= digitalRead;
 	libwiring->digitalWrite		= digitalWrite;
