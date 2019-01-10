@@ -303,8 +303,8 @@ static void pinMode (int pin, int mode)
 /*----------------------------------------------------------------------------*/
 static int getAlt (int pin)
 {
-	uint32_t offset, target;
-	uint8_t	bank, group;
+	uint32_t offset;
+	uint8_t	bank, group, shift;
 	uint8_t ret = 0;
 
 	if (lib->mode == MODE_GPIO_SYS)
@@ -316,23 +316,26 @@ static int getAlt (int pin)
 	bank	= pin / 32;
 	group	= (pin - bank * 32) / 8;
 	offset	= 0x10 * (bank > 1 ? bank - 2 : bank) + 0x4 * group;
+	shift	= gpioToShiftGReg(pin) << 1;
 
 	setClkState(pin, CLK_ENABLE);
 
 	// Check if the pin is GPIO mode on GRF register
 	if (bank < 2) {
 		offset += PMUGRF_IOMUX_OFFSET;
-		if (*(grf[0] + (offset >> 2)) & (3 << (gpioToShiftGReg(pin) * 2)))
-			ret = 2;
+		ret = (*(grf[0] + (offset >> 2)) >> shift) & 0b11;
 	} else {
 		offset += GRF_IOMUX_OFFSET;
-		if (*(grf[1] + (offset >> 2)) & (3 << (gpioToShiftGReg(pin) * 2)))
-			ret = 2;
+		ret = (*(grf[1] + (offset >> 2)) >> shift) & 0b11;
 	}
 
 	// If it is GPIO mode, check it's direction
-	if (ret != 2)
+	if (ret == 0)
 		ret = *(gpio[bank] + (GPIO_CON_OFFSET >> 2)) & (1 << gpioToShiftReg(pin)) ? 1 : 0;
+	else {
+		// ALT1 is GPIO mode(0b00) on this SoC
+		ret++;
+	}
 
 	setClkState(pin, CLK_DISABLE);
 
