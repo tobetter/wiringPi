@@ -37,6 +37,8 @@
 #define	FALSE	(!TRUE)
 #endif
 
+#define PIN_NUM_CALC_SYSFD(X)	(X > 255 ? X - libwiring.pinBase : X)
+
 #define	UNU	__attribute__((unused))
 
 #define	ENV_DEBUG		"WIRINGPI_DEBUG"

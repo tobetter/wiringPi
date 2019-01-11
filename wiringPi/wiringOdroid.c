@@ -583,7 +583,7 @@ int waitForInterrupt (int pin, int mS)
 	uint8_t c;
 	struct pollfd polls;
 
-	if ((fd = libwiring.sysFds[pin]) ==  -1)
+	if ((fd = libwiring.sysFds[PIN_NUM_CALC_SYSFD(pin)]) ==  -1)
 		return	-2;
 
 	// Setup poll structure
@@ -614,7 +614,7 @@ static void *interruptHandler (UNU void *arg)
 
 	for (;;)
 		if (waitForInterrupt (myPin, -1) > 0)
-			libwiring.isrFunctions [myPin] () ;
+			libwiring.isrFunctions [PIN_NUM_CALC_SYSFD(myPin)] () ;
 
 	return NULL ;
 }
@@ -694,9 +694,11 @@ int wiringPiISR (int pin, int mode, void (*function)(void))
 
 	// Now pre-open the /sys/class node - but it may already be open if
 	//	we are in Sys mode...
-	if (libwiring.sysFds [GpioPin] == -1) {
+
+	if (libwiring.sysFds [PIN_NUM_CALC_SYSFD(GpioPin)] == -1) {
 		sprintf (fName, "/sys/class/gpio/gpio%d/value", GpioPin) ;
-		if ((libwiring.sysFds [GpioPin] = open (fName, O_RDWR)) < 0)
+
+		if ((libwiring.sysFds [PIN_NUM_CALC_SYSFD(GpioPin)] = open (fName, O_RDWR)) < 0)
 			return wiringPiFailure (
 				WPI_FATAL,
 				"wiringPiISR: unable to open %s: %s\n",
@@ -704,11 +706,11 @@ int wiringPiISR (int pin, int mode, void (*function)(void))
 	}
 
 	// Clear any initial pending interrupt
-	ioctl (libwiring.sysFds [GpioPin], FIONREAD, &count) ;
+	ioctl (libwiring.sysFds [PIN_NUM_CALC_SYSFD(GpioPin)], FIONREAD, &count) ;
 	for (i = 0 ; i < count ; ++i)
-		(void)read (libwiring.sysFds [GpioPin], &c, 1) ;
+		(void)read (libwiring.sysFds [PIN_NUM_CALC_SYSFD(GpioPin)], &c, 1) ;
 
-	libwiring.isrFunctions [GpioPin] = function ;
+	libwiring.isrFunctions [PIN_NUM_CALC_SYSFD(GpioPin)] = function ;
 
 	pthread_mutex_lock (&pinMutex) ;
 	pinPass = GpioPin ;
@@ -962,6 +964,7 @@ int wiringPiSetupSys (void)
 	{
 		switch (libwiring.model) {
 		case	MODEL_ODROID_N1:
+		case	MODEL_ODROID_N2:
 			sprintf (fName, "/sys/class/gpio/gpio%d/value", pin + libwiring.pinBase);
 			break;
 		default:
