@@ -29,7 +29,7 @@
 #include "softTone.h"
 
 /*----------------------------------------------------------------------------*/
-#include "wiringOdroid.h"
+#include "wiringPi.h"
 #include "../version.h"
 
 #include "odroidc1.h"

@@ -21,7 +21,11 @@
 #include "softTone.h"
 
 /*----------------------------------------------------------------------------*/
-#include "wiringOdroid.h"
+#include "softPwm.h"
+#include "softTone.h"
+
+/*----------------------------------------------------------------------------*/
+#include "wiringPi.h"
 #include "odroidn2.h"
 
 /*----------------------------------------------------------------------------*/
@@ -112,18 +116,18 @@ static int	gpioToMuxReg	(int pin);
 /*----------------------------------------------------------------------------*/
 // wiringPi core function
 /*----------------------------------------------------------------------------*/
-static int		getModeToGpio	(int mode, int pin);
-static void		setPadDrive	(int pin, int value);
-static int		getPadDrive	(int pin);
-static void		pinMode		(int pin, int mode);
-static int		getAlt		(int pin);
-static int		getPUPD		(int pin);
-static void		pullUpDnControl	(int pin, int pud);
-static int		digitalRead	(int pin);
-static void		digitalWrite	(int pin, int value);
-static int		analogRead	(int pin);
-static void		digitalWriteByte(const int value);
-static unsigned int	digitalReadByte	(void);
+static int		_getModeToGpio		(int mode, int pin);
+static void		_setPadDrive		(int pin, int value);
+static int		_getPadDrive		(int pin);
+static void		_pinMode		(int pin, int mode);
+static int		_getAlt			(int pin);
+static int		_getPUPD		(int pin);
+static void		_pullUpDnControl	(int pin, int pud);
+static int		_digitalRead		(int pin);
+static void		_digitalWrite		(int pin, int value);
+static int		_analogRead		(int pin);
+static void		_digitalWriteByte	(const int value);
+static unsigned int	_digitalReadByte	(void);
 
 /*----------------------------------------------------------------------------*/
 // board init function
@@ -258,7 +262,7 @@ static int gpioToMuxReg (int pin)
 }
 
 /*----------------------------------------------------------------------------*/
-static int getModeToGpio (int mode, int pin)
+static int _getModeToGpio (int mode, int pin)
 {
 	int retPin = -1;
 
@@ -288,14 +292,14 @@ static int getModeToGpio (int mode, int pin)
 }
 
 /*----------------------------------------------------------------------------*/
-static void setPadDrive (int pin, int value)
+static void _setPadDrive (int pin, int value)
 {
 	int ds, shift;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return;
 
-	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return;
 
 	if (value < 0 || value > 3) {
@@ -312,14 +316,14 @@ static void setPadDrive (int pin, int value)
 }
 
 /*----------------------------------------------------------------------------*/
-static int getPadDrive (int pin)
+static int _getPadDrive (int pin)
 {
 	int ds, shift;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return;
 
-	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return;
 
 	ds    = gpioToDSReg(pin);
@@ -330,14 +334,14 @@ static int getPadDrive (int pin)
 }
 
 /*----------------------------------------------------------------------------*/
-static void pinMode (int pin, int mode)
+static void _pinMode (int pin, int mode)
 {
 	int fsel, shift, origPin = pin;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return;
 
-	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return;
 
 	softPwmStop  (origPin);
@@ -366,14 +370,14 @@ static void pinMode (int pin, int mode)
 }
 
 /*----------------------------------------------------------------------------*/
-static int getAlt (int pin)
+static int _getAlt (int pin)
 {
 	int fsel, mux, shift, target, mode;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return	0;
 
-	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return	2;
 
 	fsel   = gpioToGPFSELReg(pin);
@@ -389,14 +393,14 @@ static int getAlt (int pin)
 }
 
 /*----------------------------------------------------------------------------*/
-static int getPUPD (int pin)
+static int _getPUPD (int pin)
 {
 	int puen, pupd, shift;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return;
 
-	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return;
 
 	puen  = gpioToPUENReg(pin);
@@ -410,14 +414,14 @@ static int getPUPD (int pin)
 }
 
 /*----------------------------------------------------------------------------*/
-static void pullUpDnControl (int pin, int pud)
+static void _pullUpDnControl (int pin, int pud)
 {
 	int shift = 0;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return;
 
-	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return;
 
 	shift = gpioToShiftReg(pin);
@@ -439,7 +443,7 @@ static void pullUpDnControl (int pin, int pud)
 }
 
 /*----------------------------------------------------------------------------*/
-static int digitalRead (int pin)
+static int _digitalRead (int pin)
 {
 	char c ;
 
@@ -453,7 +457,7 @@ static int digitalRead (int pin)
 		return	(c == '0') ? LOW : HIGH;
 	}
 
-	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return	0;
 
 	if ((*(gpio + gpioToGPLEVReg(pin)) & (1 << gpioToShiftReg(pin))) != 0)
@@ -463,7 +467,7 @@ static int digitalRead (int pin)
 }
 
 /*----------------------------------------------------------------------------*/
-static void digitalWrite (int pin, int value)
+static void _digitalWrite (int pin, int value)
 {
 	if (lib->mode == MODE_GPIO_SYS) {
 		if (lib->sysFds[pin] != -1) {
@@ -475,7 +479,7 @@ static void digitalWrite (int pin, int value)
 		return;
 	}
 
-	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return;
 
 	if (value == LOW)
@@ -485,7 +489,7 @@ static void digitalWrite (int pin, int value)
 }
 
 /*----------------------------------------------------------------------------*/
-static int analogRead (int pin)
+static int _analogRead (int pin)
 {
 	unsigned char value[5] = {0,};
 
@@ -513,7 +517,7 @@ static int analogRead (int pin)
 }
 
 /*----------------------------------------------------------------------------*/
-static void digitalWriteByte (const int value)
+static void _digitalWriteByte (const int value)
 {
 	union	reg_bitfield	gpiox;
 	union	reg_bitfield	gpioa;
@@ -543,7 +547,7 @@ static void digitalWriteByte (const int value)
 }
 
 /*----------------------------------------------------------------------------*/
-static unsigned int digitalReadByte (void)
+static unsigned int _digitalReadByte (void)
 {
 	return	-1;
 }
@@ -569,9 +573,9 @@ static void init_gpio_mmap (void)
 				"wiringPiSetup: Unable to open /dev/mem: %s\n",
 				strerror (errno)) ;
 	}
-	//#define ODROIDN2_GPIO_BASE	0xff634000
+	//#define N2_GPIO_BASE	0xff634000
 	gpio  = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE,
-				MAP_SHARED, fd, ODROIDN2_GPIO_BASE) ;
+				MAP_SHARED, fd, N2_GPIO_BASE) ;
 
 	if ((int32_t)gpio == -1)
 		return msg (MSG_ERR,
@@ -603,21 +607,21 @@ void init_odroidn2 (struct libodroid *libwiring)
 	phyToGpio = phyToGpio_rev1;
 
 	/* wiringPi Core function initialize */
-	libwiring->getModeToGpio	= getModeToGpio;
-	libwiring->setPadDrive		= setPadDrive;
-	libwiring->getPadDrive		= getPadDrive;
-	libwiring->pinMode		= pinMode;
-	libwiring->getAlt		= getAlt;
-	libwiring->getPUPD		= getPUPD;
-	libwiring->pullUpDnControl	= pullUpDnControl;
-	libwiring->digitalRead		= digitalRead;
-	libwiring->digitalWrite		= digitalWrite;
-	libwiring->analogRead		= analogRead;
-	libwiring->digitalWriteByte	= digitalWriteByte;
-	libwiring->digitalReadByte	= digitalReadByte;
+	libwiring->getModeToGpio	= _getModeToGpio;
+	libwiring->setPadDrive		= _setPadDrive;
+	libwiring->getPadDrive		= _getPadDrive;
+	libwiring->pinMode		= _pinMode;
+	libwiring->getAlt		= _getAlt;
+	libwiring->getPUPD		= _getPUPD;
+	libwiring->pullUpDnControl	= _pullUpDnControl;
+	libwiring->digitalRead		= _digitalRead;
+	libwiring->digitalWrite		= _digitalWrite;
+	libwiring->analogRead		= _analogRead;
+	libwiring->digitalWriteByte	= _digitalWriteByte;
+	libwiring->digitalReadByte	= _digitalReadByte;
 
 	/* specify pin base number */
-	libwiring->pinBase		= GPIO_PIN_BASE;
+	libwiring->pinBase		= N2_GPIO_PIN_BASE;
 
 	/* global variable setup */
 	lib = libwiring;

@@ -9,16 +9,16 @@
 #define	__ODROID_N2_H__
 
 /*----------------------------------------------------------------------------*/
-#define ODROIDN2_GPIO_MASK		(0xFFFFFF00)
-#define ODROIDN2_GPIO_BASE		0xff634000
+#define N2_GPIO_MASK			(0xFFFFFF00)
+#define N2_GPIO_BASE			0xff634000
 
-#define GPIO_PIN_BASE			410
+#define N2_GPIO_PIN_BASE		410
 
-#define N2_GPIOA_PIN_START		(GPIO_PIN_BASE + 50) // GPIOA_0
-#define N2_GPIOA_PIN_END		(GPIO_PIN_BASE + 65) // GPIOA_15
-#define N2_GPIOX_PIN_START		(GPIO_PIN_BASE + 66) // GPIOX_0
-#define N2_GPIOX_PIN_MID		(GPIO_PIN_BASE + 81) // GPIOX_15
-#define N2_GPIOX_PIN_END		(GPIO_PIN_BASE + 85) // GPIOX_19
+#define N2_GPIOA_PIN_START		(N2_GPIO_PIN_BASE + 50) // GPIOA_0
+#define N2_GPIOA_PIN_END		(N2_GPIO_PIN_BASE + 65) // GPIOA_15
+#define N2_GPIOX_PIN_START		(N2_GPIO_PIN_BASE + 66) // GPIOX_0
+#define N2_GPIOX_PIN_MID		(N2_GPIO_PIN_BASE + 81) // GPIOX_15
+#define N2_GPIOX_PIN_END		(N2_GPIO_PIN_BASE + 85) // GPIOX_19
 
 #define N2_GPIOX_FSEL_REG_OFFSET	0x116
 #define N2_GPIOX_OUTP_REG_OFFSET	0x117

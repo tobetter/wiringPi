@@ -30,9 +30,6 @@ ifneq ($V,1)
 Q ?= @
 endif
 
-# BRAND_NAME = Pi
-BRAND_NAME = Odroid
-
 #DEBUG	= -g -O0
 DEBUG	= -O2
 CC	= gcc
@@ -44,15 +41,7 @@ LIBS    = -lwiringPi -lwiringPiDev -lpthread -lrt -lm -lcrypt
 
 # May not need to  alter anything below this line
 ###############################################################################
-ifeq ($(BRAND_NAME), Odroid)
-
-SRC	=	gpio_odroid.c readall_odroid.c pins.c
-
-else
-
 SRC	=	gpio.c readall.c pins.c
-
-endif
 
 OBJ	=	$(SRC:.c=.o)
 

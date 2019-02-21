@@ -18,7 +18,11 @@
 #include <sys/utsname.h>
 
 /*----------------------------------------------------------------------------*/
-#include "wiringOdroid.h"
+#include "softPwm.h"
+#include "softTone.h"
+
+/*----------------------------------------------------------------------------*/
+#include "wiringPi.h"
 #include "odroidn1.h"
 
 /*----------------------------------------------------------------------------*/
@@ -107,17 +111,17 @@ static void	setClkState	(int pin, int state);
 static void	setIomuxMode 	(int pin, int mode);
 
 /*----------------------------------------------------------------------------*/
-// wiringPi core function 
+// wiringPi core function
 /*----------------------------------------------------------------------------*/
-static int		getModeToGpio	(int mode, int pin);
-static void		pinMode		(int pin, int mode);
-static int		getAlt		(int pin);
-static void		pullUpDnControl	(int pin, int pud);
-static int		digitalRead	(int pin);
-static void		digitalWrite	(int pin, int value);
-static int		analogRead	(int pin);
-static void		digitalWriteByte(const int value);
-static unsigned int	digitalReadByte	(void);
+static int		_getModeToGpio		(int mode, int pin);
+static void		_pinMode		(int pin, int mode);
+static int		_getAlt			(int pin);
+static void		_pullUpDnControl	(int pin, int pud);
+static int		_digitalRead		(int pin);
+static void		_digitalWrite		(int pin, int value);
+static int		_analogRead		(int pin);
+static void		_digitalWriteByte	(const int value);
+static unsigned int	_digitalReadByte	(void);
 
 /*----------------------------------------------------------------------------*/
 // board init function
@@ -149,7 +153,7 @@ static int gpioToShiftGReg (int pin)
 }
 
 /*----------------------------------------------------------------------------*/
-static int getModeToGpio (int mode, int pin)
+static int _getModeToGpio (int mode, int pin)
 {
 	if (pin > 255)
 		return msg(MSG_ERR, "%s : Invalid pin number %d\n", __func__, pin);
@@ -187,26 +191,26 @@ static void setClkState (int pin, int state)
 	target |= (1 << (shift + 16));
 
 	switch (state) {
-	case CLK_ENABLE:
+	case N1_CLK_ENABLE:
 		if (bank < 2) {
-			target |= *(cru[0] + (PMUCRU_GPIO_CLK_OFFSET >> 2));
+			target |= *(cru[0] + (N1_PMUCRU_GPIO_CLK_OFFSET >> 2));
 			target &= ~(1 << shift);
-			*(cru[0] + (PMUCRU_GPIO_CLK_OFFSET >> 2)) = target;
+			*(cru[0] + (N1_PMUCRU_GPIO_CLK_OFFSET >> 2)) = target;
 		} else {
-			target |= *(cru[1] + (CRU_GPIO_CLK_OFFSET >> 2));
+			target |= *(cru[1] + (N1_CRU_GPIO_CLK_OFFSET >> 2));
 			target &= ~(1 << shift);
-			*(cru[1] + (CRU_GPIO_CLK_OFFSET >> 2)) = target;
+			*(cru[1] + (N1_CRU_GPIO_CLK_OFFSET >> 2)) = target;
 		}
 		break;
-	case CLK_DISABLE:
+	case N1_CLK_DISABLE:
 		if (bank < 2) {
-			target |= *(cru[0] + (PMUCRU_GPIO_CLK_OFFSET >> 2));
+			target |= *(cru[0] + (N1_PMUCRU_GPIO_CLK_OFFSET >> 2));
 			target |=  (1 << shift);
-			*(cru[0] + (PMUCRU_GPIO_CLK_OFFSET >> 2)) = target;
+			*(cru[0] + (N1_PMUCRU_GPIO_CLK_OFFSET >> 2)) = target;
 		} else {
-			target |= *(cru[1] + (CRU_GPIO_CLK_OFFSET >> 2));
+			target |= *(cru[1] + (N1_CRU_GPIO_CLK_OFFSET >> 2));
 			target |=  (1 << shift);
-			*(cru[1] + (CRU_GPIO_CLK_OFFSET >> 2)) = target;
+			*(cru[1] + (N1_CRU_GPIO_CLK_OFFSET >> 2)) = target;
 		}
 		break;
 	default:
@@ -233,10 +237,10 @@ static void setIomuxMode (int pin, int mode)
 	target |= (1 << (gpioToShiftGReg(pin) * 2 + 16));
 
 	switch (mode) {
-	case FUNC_GPIO:
+	case N1_FUNC_GPIO:
 		// Common IOMUX Funtion 1 : GPIO (0b00)
 		if (bank < 2) {
-			offset += PMUGRF_IOMUX_OFFSET;
+			offset += N1_PMUGRF_IOMUX_OFFSET;
 
 			target |= *(grf[0] + (offset >> 2));
 			target &= ~(1 << (gpioToShiftGReg(pin) * 2 + 1));
@@ -244,7 +248,7 @@ static void setIomuxMode (int pin, int mode)
 			
 			*(grf[0] + (offset >> 2)) = target;
 		} else {
-			offset += GRF_IOMUX_OFFSET;
+			offset += N1_GRF_IOMUX_OFFSET;
 
 			target |= *(grf[1] + (offset >> 2));
 			target &= ~(1 << (gpioToShiftGReg(pin) * 2 + 1));
@@ -259,7 +263,7 @@ static void setIomuxMode (int pin, int mode)
 }
 
 /*----------------------------------------------------------------------------*/
-static void pinMode (int pin, int mode)
+static void _pinMode (int pin, int mode)
 {
 	int origPin, bank;
 	unsigned long flags;
@@ -267,7 +271,7 @@ static void pinMode (int pin, int mode)
 	if (lib->mode == MODE_GPIO_SYS)
 		return;
 
-	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return;
 
 	origPin = pin;
@@ -276,15 +280,15 @@ static void pinMode (int pin, int mode)
 	softPwmStop (origPin);
 	softToneStop(origPin);
 
-	setClkState (pin, CLK_ENABLE);
-	setIomuxMode(pin, FUNC_GPIO);
+	setClkState (pin, N1_CLK_ENABLE);
+	setIomuxMode(pin, N1_FUNC_GPIO);
 
 	switch (mode) {
 	case INPUT:
-		*(gpio[bank] + (GPIO_CON_OFFSET >> 2)) &= ~(1 << gpioToShiftReg(pin));
+		*(gpio[bank] + (N1_GPIO_CON_OFFSET >> 2)) &= ~(1 << gpioToShiftReg(pin));
 		break;
 	case OUTPUT:
-		*(gpio[bank] + (GPIO_CON_OFFSET >> 2)) |=  (1 << gpioToShiftReg(pin));
+		*(gpio[bank] + (N1_GPIO_CON_OFFSET >> 2)) |=  (1 << gpioToShiftReg(pin));
 		break;
 	case SOFT_PWM_OUTPUT:
 		softPwmCreate (pin, 0, 100);
@@ -297,11 +301,11 @@ static void pinMode (int pin, int mode)
 		break;
 	}
 
-	setClkState (pin, CLK_DISABLE);
+	setClkState (pin, N1_CLK_DISABLE);
 }
 
 /*----------------------------------------------------------------------------*/
-static int getAlt (int pin)
+static int _getAlt (int pin)
 {
 	uint32_t offset;
 	uint8_t	bank, group, shift;
@@ -310,7 +314,7 @@ static int getAlt (int pin)
 	if (lib->mode == MODE_GPIO_SYS)
 		return	0;
 
-	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return	2;
 
 	bank	= pin / 32;
@@ -318,32 +322,32 @@ static int getAlt (int pin)
 	offset	= 0x10 * (bank > 1 ? bank - 2 : bank) + 0x4 * group;
 	shift	= gpioToShiftGReg(pin) << 1;
 
-	setClkState(pin, CLK_ENABLE);
+	setClkState(pin, N1_CLK_ENABLE);
 
 	// Check if the pin is GPIO mode on GRF register
 	if (bank < 2) {
-		offset += PMUGRF_IOMUX_OFFSET;
+		offset += N1_PMUGRF_IOMUX_OFFSET;
 		ret = (*(grf[0] + (offset >> 2)) >> shift) & 0b11;
 	} else {
-		offset += GRF_IOMUX_OFFSET;
+		offset += N1_GRF_IOMUX_OFFSET;
 		ret = (*(grf[1] + (offset >> 2)) >> shift) & 0b11;
 	}
 
 	// If it is GPIO mode, check it's direction
 	if (ret == 0)
-		ret = *(gpio[bank] + (GPIO_CON_OFFSET >> 2)) & (1 << gpioToShiftReg(pin)) ? 1 : 0;
+		ret = *(gpio[bank] + (N1_GPIO_CON_OFFSET >> 2)) & (1 << gpioToShiftReg(pin)) ? 1 : 0;
 	else {
 		// ALT1 is GPIO mode(0b00) on this SoC
 		ret++;
 	}
 
-	setClkState(pin, CLK_DISABLE);
+	setClkState(pin, N1_CLK_DISABLE);
 
 	return ret;
 }
 
 /*----------------------------------------------------------------------------*/
-static void pullUpDnControl (int pin, int pud)
+static void _pullUpDnControl (int pin, int pud)
 {
 	uint32_t offset, target;
 	uint8_t	bank, group;
@@ -351,7 +355,7 @@ static void pullUpDnControl (int pin, int pud)
 	if (lib->mode == MODE_GPIO_SYS)
 		return	0;
 
-	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return	2;
 
 	bank	= pin / 32;
@@ -362,12 +366,12 @@ static void pullUpDnControl (int pin, int pud)
 	target |= (1 << (gpioToShiftGReg(pin) * 2 + 17));
 	target |= (1 << (gpioToShiftGReg(pin) * 2 + 16));
 
-	setClkState(pin, CLK_ENABLE);
+	setClkState(pin, N1_CLK_ENABLE);
 
 	switch (pud) {
 	case PUD_UP:
 		if (bank < 2) {
-			offset += PMUGRF_PUPD_OFFSET;
+			offset += N1_PMUGRF_PUPD_OFFSET;
 
 			target |= *(grf[0] + (offset >> 2));
 			target &= ~(1 << (gpioToShiftGReg(pin) * 2 + 1));
@@ -375,7 +379,7 @@ static void pullUpDnControl (int pin, int pud)
 
 			*(grf[0] + (offset >> 2)) = target;
 		} else {
-			offset += GRF_PUPD_OFFSET;
+			offset += N1_GRF_PUPD_OFFSET;
 
 			target |= *(grf[1] + (offset >> 2));
 			if (bank == 2 && group >= 2) {
@@ -391,7 +395,7 @@ static void pullUpDnControl (int pin, int pud)
 		break;
 	case PUD_DOWN:
 		if (bank < 2) {
-			offset += PMUGRF_PUPD_OFFSET;
+			offset += N1_PMUGRF_PUPD_OFFSET;
 
 			target |= *(grf[0] + (offset >> 2));
 			target |=  (1 << (gpioToShiftGReg(pin) * 2 + 1));
@@ -399,7 +403,7 @@ static void pullUpDnControl (int pin, int pud)
 
 			*(grf[0] + (offset >> 2)) = target;
 		} else {
-			offset += GRF_PUPD_OFFSET;
+			offset += N1_GRF_PUPD_OFFSET;
 
 			target |= *(grf[1] + (offset >> 2));
 			if (bank == 2 && group >= 2) {
@@ -415,7 +419,7 @@ static void pullUpDnControl (int pin, int pud)
 		break;
 	case PUD_OFF:
 		if (bank < 2) {
-			offset += PMUGRF_PUPD_OFFSET;
+			offset += N1_PMUGRF_PUPD_OFFSET;
 			
 			target |= *(grf[0] + (offset >> 2));
 			target &= ~(1 << (gpioToShiftGReg(pin) * 2 + 1));
@@ -423,7 +427,7 @@ static void pullUpDnControl (int pin, int pud)
 
 			*(grf[0] + (offset >> 2)) = target;
 		} else {
-			offset += GRF_PUPD_OFFSET;
+			offset += N1_GRF_PUPD_OFFSET;
 
 			target |= *(grf[1] + (offset >> 2));
 			target &= ~(1 << (gpioToShiftGReg(pin) * 2 + 1));
@@ -436,11 +440,11 @@ static void pullUpDnControl (int pin, int pud)
 		break;
 	}
 
-	setClkState(pin, CLK_DISABLE);
+	setClkState(pin, N1_CLK_DISABLE);
 }
 
 /*----------------------------------------------------------------------------*/
-static int digitalRead (int pin)
+static int _digitalRead (int pin)
 {
 	int bank, ret;
 	char c;
@@ -455,20 +459,20 @@ static int digitalRead (int pin)
 		return (c == '0') ? LOW : HIGH;
 	}
 
-	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return	0;
 
 	bank = pin / 32;
-	setClkState(pin, CLK_ENABLE);
+	setClkState(pin, N1_CLK_ENABLE);
 
-	ret = *(gpio[bank] + (GPIO_GET_OFFSET >> 2)) & (1 << gpioToShiftReg(pin)) ? HIGH : LOW;
+	ret = *(gpio[bank] + (N1_GPIO_GET_OFFSET >> 2)) & (1 << gpioToShiftReg(pin)) ? HIGH : LOW;
 	
-	setClkState(pin, CLK_DISABLE);
+	setClkState(pin, N1_CLK_DISABLE);
 	return ret;
 }
 
 /*----------------------------------------------------------------------------*/
-static void digitalWrite (int pin, int value)
+static void _digitalWrite (int pin, int value)
 {
 	int bank;
 
@@ -478,39 +482,39 @@ static void digitalWrite (int pin, int value)
 				if (write (lib->sysFds[pin], "0\n", 2) < 0)
 					msg(MSG_ERR,
 					"%s : %s\nEdit direction file to output mode for\n\t/sys/class/gpio/gpio%d/direction\n",
-					__func__, strerror(errno), pin + GPIO_PIN_BASE);
+					__func__, strerror(errno), pin + N1_GPIO_PIN_BASE);
 			} else {
 				if (write (lib->sysFds[pin], "1\n", 2) < 0)
 					msg(MSG_ERR,
 					"%s : %s\nEdit direction file to output mode for\n\t/sys/class/gpio/gpio%d/direction\n",
-					__func__, strerror(errno), pin + GPIO_PIN_BASE);
+					__func__, strerror(errno), pin + N1_GPIO_PIN_BASE);
 			}
 		}
 		return;
 	}
 
-	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return;
 
 	bank = pin / 32;
-	setClkState(pin, CLK_ENABLE);
+	setClkState(pin, N1_CLK_ENABLE);
 
 	switch (value) {
 	case LOW:
-		*(gpio[bank] + (GPIO_SET_OFFSET >> 2)) &= ~(1 << gpioToShiftReg(pin));
+		*(gpio[bank] + (N1_GPIO_SET_OFFSET >> 2)) &= ~(1 << gpioToShiftReg(pin));
 		break;
 	case HIGH:
-		*(gpio[bank] + (GPIO_SET_OFFSET >> 2)) |=  (1 << gpioToShiftReg(pin));
+		*(gpio[bank] + (N1_GPIO_SET_OFFSET >> 2)) |=  (1 << gpioToShiftReg(pin));
 		break;
 	default:
 		break;
 	}
 
-	setClkState(pin, CLK_DISABLE);
+	setClkState(pin, N1_CLK_DISABLE);
 }
 
 /*----------------------------------------------------------------------------*/
-static int analogRead (int pin)
+static int _analogRead (int pin)
 {
 	unsigned char value[5] = {0,};
 
@@ -538,7 +542,7 @@ static int analogRead (int pin)
 }
 
 /*----------------------------------------------------------------------------*/
-static void digitalWriteByte (const int value)
+static void _digitalWriteByte (const int value)
 {
 	union	reg_bitfield	gpioBits1;
 
@@ -547,10 +551,10 @@ static void digitalWriteByte (const int value)
 	}
 
 	// Enable clock for GPIO 1 bank
-	setClkState(32, CLK_ENABLE);
+	setClkState(32, N1_CLK_ENABLE);
 
 	/* Read data register */
-	gpioBits1.wvalue = *(gpio[1] + (GPIO_GET_OFFSET >> 2));
+	gpioBits1.wvalue = *(gpio[1] + (N1_GPIO_GET_OFFSET >> 2));
 
 	/* Wiring PI GPIO0 = N1 GPIO1_A.1 */
 	gpioBits1.bits.bit1  = (value & 0x01);
@@ -570,13 +574,13 @@ static void digitalWriteByte (const int value)
 	gpioBits1.bits.bit0  = (value & 0x80);
 
 	/* Update data register */
-	*(gpio[1] + (GPIO_SET_OFFSET >> 2)) = gpioBits1.wvalue;
+	*(gpio[1] + (N1_GPIO_SET_OFFSET >> 2)) = gpioBits1.wvalue;
 
-	setClkState(32, CLK_DISABLE);
+	setClkState(32, N1_CLK_DISABLE);
 }
 
 /*----------------------------------------------------------------------------*/
-static unsigned int digitalReadByte (void)
+static unsigned int _digitalReadByte (void)
 {
 	union reg_bitfield	gpioBits1;
 	unsigned int		value = 0;
@@ -586,12 +590,12 @@ static unsigned int digitalReadByte (void)
 	}
 
 	// Enable clock for GPIO 1 bank
-	setClkState(32, CLK_ENABLE);
+	setClkState(32, N1_CLK_ENABLE);
 
 	/* Read data register */
-	gpioBits1.wvalue = *(gpio[1] + (GPIO_GET_OFFSET >> 2));
+	gpioBits1.wvalue = *(gpio[1] + (N1_GPIO_GET_OFFSET >> 2));
 
-	setClkState(32, CLK_DISABLE);
+	setClkState(32, N1_CLK_DISABLE);
 
 	/* Wiring PI GPIO0 = N1 GPIO1_A.1 */
 	if (gpioBits1.bits.bit1)
@@ -645,22 +649,22 @@ static void init_gpio_mmap (void)
 	// GPIO{0, 1}
 	//#define ODROIDN1_PMUCRU_BASE	0xFF750000
 	cru[0] = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE,
-				MAP_SHARED, fd, PMUCRU_BASE) ;
+				MAP_SHARED, fd, N1_PMUCRU_BASE) ;
 
 	// GPIO{2, 3, 4}
 	//#define ODROIDN1_CRU_BASE	0xFF760000
 	cru[1] = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE,
-				MAP_SHARED, fd, CRU_BASE) ;
+				MAP_SHARED, fd, N1_CRU_BASE) ;
 
 	// GPIO{0, 1}
 	//#define ODROIDN1_PMU_BASE	0xFF320000
-	grf[0] = (uint32_t *)mmap(0, GRF_BLOCK_SIZE, PROT_READ|PROT_WRITE,
-				MAP_SHARED, fd, PMUGRF_BASE) ;
+	grf[0] = (uint32_t *)mmap(0, N1_GRF_BLOCK_SIZE, PROT_READ|PROT_WRITE,
+				MAP_SHARED, fd, N1_PMUGRF_BASE) ;
 
 	// GPIO{2, 3, 4}
 	//#define ODROIDN1_GRF_BASE	0xFF770000
-	grf[1] = (uint32_t *)mmap(0, GRF_BLOCK_SIZE, PROT_READ|PROT_WRITE,
-				MAP_SHARED, fd, GRF_BASE) ;
+	grf[1] = (uint32_t *)mmap(0, N1_GRF_BLOCK_SIZE, PROT_READ|PROT_WRITE,
+				MAP_SHARED, fd, N1_GRF_BASE) ;
 
 	// GPIO1_A.	0,1,2,3,4,7
 	// GPIO1_B.	0,1,2,3,4,5
@@ -668,24 +672,24 @@ static void init_gpio_mmap (void)
 	// GPIO1_D.	0
 	//#define ODROIDN1_GPIO1_BASE	0xFF730000
 	gpio[1] = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE,
-				MAP_SHARED, fd, GPIO_1_BASE) ;
+				MAP_SHARED, fd, N1_GPIO_1_BASE) ;
 
 	// GPIO2_C.	0_B,1_B
 	//#define ODROIDN1_GPIO2_BASE	0xFF780000
 	gpio[2] = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE,
-				MAP_SHARED, fd, GPIO_2_BASE) ;
+				MAP_SHARED, fd, N1_GPIO_2_BASE) ;
 
 	// GPIO4_C.	5,6
 	// GPIO4_D.	0,4,5,6
 	//#define ODROIDN1_GPIO4_BASE	0xFF790000
 	gpio[4] = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE,
-				MAP_SHARED, fd, GPIO_4_BASE) ;
+				MAP_SHARED, fd, N1_GPIO_4_BASE) ;
 
 	// Reserved
 	gpio[0] = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE,
-				MAP_SHARED, fd, GPIO_0_BASE) ;
+				MAP_SHARED, fd, N1_GPIO_0_BASE) ;
 	gpio[3] = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE,
-				MAP_SHARED, fd, GPIO_3_BASE) ;
+				MAP_SHARED, fd, N1_GPIO_3_BASE) ;
 
 	if (((int32_t)cru[0] == -1) || ((int32_t)cru[1] == -1)) {
 		return msg (MSG_ERR,
@@ -734,18 +738,18 @@ void init_odroidn1 (struct libodroid *libwiring)
 	init_adc_fds();
 
 	/* wiringPi Core function initialize */
-	libwiring->getModeToGpio	= getModeToGpio;
-	libwiring->pinMode		= pinMode;
-	libwiring->getAlt		= getAlt;
-	libwiring->pullUpDnControl	= pullUpDnControl;
-	libwiring->digitalRead		= digitalRead;
-	libwiring->digitalWrite		= digitalWrite;
-	libwiring->analogRead		= analogRead;
-	libwiring->digitalWriteByte	= digitalWriteByte;
-	libwiring->digitalReadByte	= digitalReadByte;
+	libwiring->getModeToGpio	= _getModeToGpio;
+	libwiring->pinMode		= _pinMode;
+	libwiring->getAlt		= _getAlt;
+	libwiring->pullUpDnControl	= _pullUpDnControl;
+	libwiring->digitalRead		= _digitalRead;
+	libwiring->digitalWrite		= _digitalWrite;
+	libwiring->analogRead		= _analogRead;
+	libwiring->digitalWriteByte	= _digitalWriteByte;
+	libwiring->digitalReadByte	= _digitalReadByte;
 
 	/* specify pin base number */
-	libwiring->pinBase		= GPIO_PIN_BASE;
+	libwiring->pinBase		= N1_GPIO_PIN_BASE;
 
 	/* global variable setup */
 	lib = libwiring;

@@ -18,7 +18,11 @@
 #include <sys/utsname.h>
 
 /*----------------------------------------------------------------------------*/
-#include "wiringOdroid.h"
+#include "softPwm.h"
+#include "softTone.h"
+
+/*----------------------------------------------------------------------------*/
+#include "wiringPi.h"
 #include "odroidxu3.h"
 
 /*----------------------------------------------------------------------------*/
@@ -103,20 +107,20 @@ static int	gpioToGPFSELReg	(int pin);
 static int	gpioToDSReg	(int pin);
 
 /*----------------------------------------------------------------------------*/
-// wiringPi core function 
+// wiringPi core function
 /*----------------------------------------------------------------------------*/
-static int		getModeToGpio	(int mode, int pin);
-static void		setPadDrive	(int pin, int value);
-static int		getPadDrive	(int pin);
-static void		pinMode		(int pin, int mode);
-static int		getAlt		(int pin);
-static int		getPUPD		(int pin);
-static void		pullUpDnControl	(int pin, int pud);
-static int		digitalRead	(int pin);
-static void		digitalWrite	(int pin, int value);
-static int		analogRead	(int pin);
-static void		digitalWriteByte(const int value);
-static unsigned int	digitalReadByte	(void);
+static int		_getModeToGpio		(int mode, int pin);
+static void		_setPadDrive		(int pin, int value);
+static int		_getPadDrive		(int pin);
+static void		_pinMode		(int pin, int mode);
+static int		_getAlt			(int pin);
+static int		_getPUPD		(int pin);
+static void		_pullUpDnControl	(int pin, int pud);
+static int		_digitalRead		(int pin);
+static void		_digitalWrite		(int pin, int value);
+static int		_analogRead		(int pin);
+static void		_digitalWriteByte	(const int value);
+static unsigned int	_digitalReadByte	(void);
 
 /*----------------------------------------------------------------------------*/
 // board init function
@@ -134,18 +138,18 @@ static 	void init_adc_fds	(void);
 static int gpioToGPSETReg (int pin)
 {
 	switch (pin) {
-	case	GPIO_X1_START...GPIO_X1_END:
-		return  (GPIO_X1_DAT_OFFSET >> 2);
-	case	GPIO_X2_START...GPIO_X2_END:
-		return  (GPIO_X2_DAT_OFFSET >> 2);
-	case	GPIO_X3_START...GPIO_X3_END:
-		return  (GPIO_X3_DAT_OFFSET >> 2);
-	case	GPIO_A0_START...GPIO_A0_END:
-		return  (GPIO_A0_DAT_OFFSET >> 2);
-	case	GPIO_A2_START...GPIO_A2_END:
-		return  (GPIO_A2_DAT_OFFSET >> 2);
-	case	GPIO_B3_START...GPIO_B3_END:
-		return  (GPIO_B3_DAT_OFFSET >> 2);
+	case	XU3_GPIO_X1_START...XU3_GPIO_X1_END:
+		return  (XU3_GPIO_X1_DAT_OFFSET >> 2);
+	case	XU3_GPIO_X2_START...XU3_GPIO_X2_END:
+		return  (XU3_GPIO_X2_DAT_OFFSET >> 2);
+	case	XU3_GPIO_X3_START...XU3_GPIO_X3_END:
+		return  (XU3_GPIO_X3_DAT_OFFSET >> 2);
+	case	XU3_GPIO_A0_START...XU3_GPIO_A0_END:
+		return  (XU3_GPIO_A0_DAT_OFFSET >> 2);
+	case	XU3_GPIO_A2_START...XU3_GPIO_A2_END:
+		return  (XU3_GPIO_A2_DAT_OFFSET >> 2);
+	case	XU3_GPIO_B3_START...XU3_GPIO_B3_END:
+		return  (XU3_GPIO_B3_DAT_OFFSET >> 2);
 	default:
 		break;
 	}
@@ -160,18 +164,18 @@ static int gpioToGPSETReg (int pin)
 static int gpioToGPLEVReg (int pin)
 {
 	switch (pin) {
-	case	GPIO_X1_START...GPIO_X1_END:
-		return  (GPIO_X1_DAT_OFFSET >> 2);
-	case	GPIO_X2_START...GPIO_X2_END:
-		return  (GPIO_X2_DAT_OFFSET >> 2);
-	case	GPIO_X3_START...GPIO_X3_END:
-		return  (GPIO_X3_DAT_OFFSET >> 2);
-	case	GPIO_A0_START...GPIO_A0_END:
-		return  (GPIO_A0_DAT_OFFSET >> 2);
-	case	GPIO_A2_START...GPIO_A2_END:
-		return  (GPIO_A2_DAT_OFFSET >> 2);
-	case	GPIO_B3_START...GPIO_B3_END:
-		return  (GPIO_B3_DAT_OFFSET >> 2);
+	case	XU3_GPIO_X1_START...XU3_GPIO_X1_END:
+		return  (XU3_GPIO_X1_DAT_OFFSET >> 2);
+	case	XU3_GPIO_X2_START...XU3_GPIO_X2_END:
+		return  (XU3_GPIO_X2_DAT_OFFSET >> 2);
+	case	XU3_GPIO_X3_START...XU3_GPIO_X3_END:
+		return  (XU3_GPIO_X3_DAT_OFFSET >> 2);
+	case	XU3_GPIO_A0_START...XU3_GPIO_A0_END:
+		return  (XU3_GPIO_A0_DAT_OFFSET >> 2);
+	case	XU3_GPIO_A2_START...XU3_GPIO_A2_END:
+		return  (XU3_GPIO_A2_DAT_OFFSET >> 2);
+	case	XU3_GPIO_B3_START...XU3_GPIO_B3_END:
+		return  (XU3_GPIO_B3_DAT_OFFSET >> 2);
 	default:
 	break;
 	}
@@ -186,18 +190,18 @@ static int gpioToGPLEVReg (int pin)
 static int gpioToPUPDReg (int pin)
 {
 	switch (pin) {
-	case	GPIO_X1_START...GPIO_X1_END:
-		return  (GPIO_X1_PUD_OFFSET >> 2);
-	case	GPIO_X2_START...GPIO_X2_END:
-		return  (GPIO_X2_PUD_OFFSET >> 2);
-	case	GPIO_X3_START...GPIO_X3_END:
-		return  (GPIO_X3_PUD_OFFSET >> 2);
-	case	GPIO_A0_START...GPIO_A0_END:
-		return  (GPIO_A0_PUD_OFFSET >> 2);
-	case	GPIO_A2_START...GPIO_A2_END:
-		return  (GPIO_A2_PUD_OFFSET >> 2);
-	case	GPIO_B3_START...GPIO_B3_END:
-		return  (GPIO_B3_PUD_OFFSET >> 2);
+	case	XU3_GPIO_X1_START...XU3_GPIO_X1_END:
+		return  (XU3_GPIO_X1_PUD_OFFSET >> 2);
+	case	XU3_GPIO_X2_START...XU3_GPIO_X2_END:
+		return  (XU3_GPIO_X2_PUD_OFFSET >> 2);
+	case	XU3_GPIO_X3_START...XU3_GPIO_X3_END:
+		return  (XU3_GPIO_X3_PUD_OFFSET >> 2);
+	case	XU3_GPIO_A0_START...XU3_GPIO_A0_END:
+		return  (XU3_GPIO_A0_PUD_OFFSET >> 2);
+	case	XU3_GPIO_A2_START...XU3_GPIO_A2_END:
+		return  (XU3_GPIO_A2_PUD_OFFSET >> 2);
+	case	XU3_GPIO_B3_START...XU3_GPIO_B3_END:
+		return  (XU3_GPIO_B3_PUD_OFFSET >> 2);
 	default:
 		break;
 	}
@@ -212,18 +216,18 @@ static int gpioToPUPDReg (int pin)
 static int gpioToShiftReg (int pin)
 {
 	switch (pin) {
-	case	GPIO_X1_START...GPIO_X1_END:
-		return  (pin - GPIO_X1_START);
-	case	GPIO_X2_START...GPIO_X2_END:
-		return  (pin - GPIO_X2_START);
-	case	GPIO_X3_START...GPIO_X3_END:
-		return  (pin - GPIO_X3_START);
-	case	GPIO_A0_START...GPIO_A0_END:
-		return  (pin - GPIO_A0_START);
-	case	GPIO_A2_START...GPIO_A2_END:
-		return  (pin - GPIO_A2_START);
-	case	GPIO_B3_START...GPIO_B3_END:
-		return  (pin - GPIO_B3_START);
+	case	XU3_GPIO_X1_START...XU3_GPIO_X1_END:
+		return  (pin - XU3_GPIO_X1_START);
+	case	XU3_GPIO_X2_START...XU3_GPIO_X2_END:
+		return  (pin - XU3_GPIO_X2_START);
+	case	XU3_GPIO_X3_START...XU3_GPIO_X3_END:
+		return  (pin - XU3_GPIO_X3_START);
+	case	XU3_GPIO_A0_START...XU3_GPIO_A0_END:
+		return  (pin - XU3_GPIO_A0_START);
+	case	XU3_GPIO_A2_START...XU3_GPIO_A2_END:
+		return  (pin - XU3_GPIO_A2_START);
+	case	XU3_GPIO_B3_START...XU3_GPIO_B3_END:
+		return  (pin - XU3_GPIO_B3_START);
 	default:
 		break;
 	}
@@ -238,18 +242,18 @@ static int gpioToShiftReg (int pin)
 static int gpioToGPFSELReg (int pin)
 {
 	switch (pin) {
-	case	GPIO_X1_START...GPIO_X1_END:
-		return  (GPIO_X1_CON_OFFSET >> 2);
-	case	GPIO_X2_START...GPIO_X2_END:
-		return  (GPIO_X2_CON_OFFSET >> 2);
-	case	GPIO_X3_START...GPIO_X3_END:
-		return  (GPIO_X3_CON_OFFSET >> 2);
-	case	GPIO_A0_START...GPIO_A0_END:
-		return  (GPIO_A0_CON_OFFSET >> 2);
-	case	GPIO_A2_START...GPIO_A2_END:
-		return  (GPIO_A2_CON_OFFSET >> 2);
-	case	GPIO_B3_START...GPIO_B3_END:
-		return  (GPIO_B3_CON_OFFSET >> 2);
+	case	XU3_GPIO_X1_START...XU3_GPIO_X1_END:
+		return  (XU3_GPIO_X1_CON_OFFSET >> 2);
+	case	XU3_GPIO_X2_START...XU3_GPIO_X2_END:
+		return  (XU3_GPIO_X2_CON_OFFSET >> 2);
+	case	XU3_GPIO_X3_START...XU3_GPIO_X3_END:
+		return  (XU3_GPIO_X3_CON_OFFSET >> 2);
+	case	XU3_GPIO_A0_START...XU3_GPIO_A0_END:
+		return  (XU3_GPIO_A0_CON_OFFSET >> 2);
+	case	XU3_GPIO_A2_START...XU3_GPIO_A2_END:
+		return  (XU3_GPIO_A2_CON_OFFSET >> 2);
+	case	XU3_GPIO_B3_START...XU3_GPIO_B3_END:
+		return  (XU3_GPIO_B3_CON_OFFSET >> 2);
 	default:
 		break;
 	}
@@ -264,18 +268,18 @@ static int gpioToGPFSELReg (int pin)
 static int gpioToDSReg (int pin)
 {
 	switch (pin) {
-	case	GPIO_X1_START...GPIO_X1_END:
-		return  (GPIO_X1_DRV_OFFSET >> 2);
-	case	GPIO_X2_START...GPIO_X2_END:
-		return  (GPIO_X2_DRV_OFFSET >> 2);
-	case	GPIO_X3_START...GPIO_X3_END:
-		return  (GPIO_X3_DRV_OFFSET >> 2);
-	case	GPIO_A0_START...GPIO_A0_END:
-		return  (GPIO_A0_DRV_OFFSET >> 2);
-	case	GPIO_A2_START...GPIO_A2_END:
-		return  (GPIO_A2_DRV_OFFSET >> 2);
-	case	GPIO_B3_START...GPIO_B3_END:
-		return  (GPIO_B3_DRV_OFFSET >> 2);
+	case	XU3_GPIO_X1_START...XU3_GPIO_X1_END:
+		return  (XU3_GPIO_X1_DRV_OFFSET >> 2);
+	case	XU3_GPIO_X2_START...XU3_GPIO_X2_END:
+		return  (XU3_GPIO_X2_DRV_OFFSET >> 2);
+	case	XU3_GPIO_X3_START...XU3_GPIO_X3_END:
+		return  (XU3_GPIO_X3_DRV_OFFSET >> 2);
+	case	XU3_GPIO_A0_START...XU3_GPIO_A0_END:
+		return  (XU3_GPIO_A0_DRV_OFFSET >> 2);
+	case	XU3_GPIO_A2_START...XU3_GPIO_A2_END:
+		return  (XU3_GPIO_A2_DRV_OFFSET >> 2);
+	case	XU3_GPIO_B3_START...XU3_GPIO_B3_END:
+		return  (XU3_GPIO_B3_DRV_OFFSET >> 2);
 	default:
 		break;
 	}
@@ -283,7 +287,7 @@ static int gpioToDSReg (int pin)
 }
 
 /*----------------------------------------------------------------------------*/
-static int getModeToGpio (int mode, int pin)
+static int _getModeToGpio (int mode, int pin)
 {
 	switch (mode) {
 	/* Native gpio number */
@@ -306,14 +310,14 @@ static int getModeToGpio (int mode, int pin)
 }
 
 /*----------------------------------------------------------------------------*/
-static void setPadDrive (int pin, int value)
+static void _setPadDrive (int pin, int value)
 {
 	int ds, shift;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return;
 
-	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return;
 
 	if (value < 0 || value > 3) {
@@ -334,14 +338,14 @@ static void setPadDrive (int pin, int value)
 }
 
 /*----------------------------------------------------------------------------*/
-static int getPadDrive (int pin)
+static int _getPadDrive (int pin)
 {
 	int ds, shift;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return;
 
-	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return;
 
 	ds    = gpioToDSReg(pin);
@@ -354,14 +358,14 @@ static int getPadDrive (int pin)
 }
 
 /*----------------------------------------------------------------------------*/
-static void pinMode (int pin, int mode)
+static void _pinMode (int pin, int mode)
 {
 	int fsel, shift, origPin = pin;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return;
 
-	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return;
 
 	softPwmStop  (origPin);
@@ -399,14 +403,14 @@ static void pinMode (int pin, int mode)
 }
 
 /*----------------------------------------------------------------------------*/
-static int getAlt (int pin)
+static int _getAlt (int pin)
 {
 	int fsel, shift, mode;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return	0;
 
-	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return	2;
 
 	fsel  = gpioToGPFSELReg(pin);
@@ -422,14 +426,14 @@ static int getAlt (int pin)
 }
 
 /*----------------------------------------------------------------------------*/
-static int getPUPD (int pin)
+static int _getPUPD (int pin)
 {
 	int pupd, shift, pull;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return;
 
-	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return;
 
 	pupd  = gpioToPUPDReg(pin);
@@ -445,14 +449,14 @@ static int getPUPD (int pin)
 }
 
 /*----------------------------------------------------------------------------*/
-static void pullUpDnControl (int pin, int pud)
+static void _pullUpDnControl (int pin, int pud)
 {
 	int shift = 0;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return;
 
-	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return;
 
 	shift = gpioToShiftReg(pin) << 1;
@@ -481,7 +485,7 @@ static void pullUpDnControl (int pin, int pud)
 }
 
 /*----------------------------------------------------------------------------*/
-static int digitalRead (int pin)
+static int _digitalRead (int pin)
 {
 	char c ;
 
@@ -495,7 +499,7 @@ static int digitalRead (int pin)
 		return	(c == '0') ? LOW : HIGH;
 	}
 
-	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return	0;
 
 	if (pin < 100)
@@ -505,7 +509,7 @@ static int digitalRead (int pin)
 }
 
 /*----------------------------------------------------------------------------*/
-static void digitalWrite (int pin, int value)
+static void _digitalWrite (int pin, int value)
 {
 	if (lib->mode == MODE_GPIO_SYS) {
 		if (lib->sysFds[pin] != -1) {
@@ -517,7 +521,7 @@ static void digitalWrite (int pin, int value)
 		return;
 	}
 
-	if ((pin = getModeToGpio(lib->mode, pin)) < 0)
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return;
 
 	if (pin < 100) {
@@ -534,7 +538,7 @@ static void digitalWrite (int pin, int value)
 }
 
 /*----------------------------------------------------------------------------*/
-static int analogRead (int pin)
+static int _analogRead (int pin)
 {
 	unsigned char value[5] = {0,};
 
@@ -562,7 +566,7 @@ static int analogRead (int pin)
 }
 
 /*----------------------------------------------------------------------------*/
-static void digitalWriteByte (const int value)
+static void _digitalWriteByte (const int value)
 {
 	union	reg_bitfield	gpx1, gpx2, gpa0;
 
@@ -570,9 +574,9 @@ static void digitalWriteByte (const int value)
 		return;
 	}
 	/* Read data register */
-	gpx1.wvalue = *(gpio  + (GPIO_X1_DAT_OFFSET >> 2));
-	gpx2.wvalue = *(gpio  + (GPIO_X2_DAT_OFFSET >> 2));
-	gpa0.wvalue = *(gpio1 + (GPIO_A0_DAT_OFFSET >> 2));
+	gpx1.wvalue = *(gpio  + (XU3_GPIO_X1_DAT_OFFSET >> 2));
+	gpx2.wvalue = *(gpio  + (XU3_GPIO_X2_DAT_OFFSET >> 2));
+	gpa0.wvalue = *(gpio1 + (XU3_GPIO_A0_DAT_OFFSET >> 2));
 
 	/* Wiring PI GPIO0 = XU3/4 GPA0.3 */
 	gpa0.bits.bit3 = (value & 0x01);
@@ -592,13 +596,13 @@ static void digitalWriteByte (const int value)
 	gpx1.bits.bit2 = (value & 0x80);
 
 	/* update data register */
-	*(gpio  + (GPIO_X1_DAT_OFFSET >> 2)) = gpx1.wvalue;
-	*(gpio  + (GPIO_X2_DAT_OFFSET >> 2)) = gpx2.wvalue;
-	*(gpio1 + (GPIO_A0_DAT_OFFSET >> 2)) = gpa0.wvalue;
+	*(gpio  + (XU3_GPIO_X1_DAT_OFFSET >> 2)) = gpx1.wvalue;
+	*(gpio  + (XU3_GPIO_X2_DAT_OFFSET >> 2)) = gpx2.wvalue;
+	*(gpio1 + (XU3_GPIO_A0_DAT_OFFSET >> 2)) = gpa0.wvalue;
 }
 
 /*----------------------------------------------------------------------------*/
-static unsigned int digitalReadByte (void)
+static unsigned int _digitalReadByte (void)
 {
 	union reg_bitfield	gpx1, gpx2, gpa0;
 	unsigned int		value = 0;
@@ -607,9 +611,9 @@ static unsigned int digitalReadByte (void)
 		return	-1;
 	}
 	/* Read data register */
-	gpx1.wvalue = *(gpio  + (GPIO_X1_DAT_OFFSET >> 2));
-	gpx2.wvalue = *(gpio  + (GPIO_X2_DAT_OFFSET >> 2));
-	gpa0.wvalue = *(gpio1 + (GPIO_A0_DAT_OFFSET >> 2));
+	gpx1.wvalue = *(gpio  + (XU3_GPIO_X1_DAT_OFFSET >> 2));
+	gpx2.wvalue = *(gpio  + (XU3_GPIO_X2_DAT_OFFSET >> 2));
+	gpa0.wvalue = *(gpio1 + (XU3_GPIO_A0_DAT_OFFSET >> 2));
 
 	/* Wiring PI GPIO0 = XU3/4 GPA0.3 */
 	if (gpa0.bits.bit3)
@@ -662,10 +666,10 @@ static void init_gpio_mmap (void)
 	}
 	//#define ODROIDXU_GPX_BASE   0x13400000  // GPX0,1,2,3
 	gpio  = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE,
-				MAP_SHARED, fd, ODROIDXU3_GPX_BASE) ;
+				MAP_SHARED, fd, XU3_GPX_BASE) ;
 	//#define ODROIDXU_GPA_BASE   0x14010000  // GPA0,1,2, GPB0,1,2,3,4
 	gpio1 = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE,
-				MAP_SHARED, fd, ODROIDXU3_GPA_BASE) ;
+				MAP_SHARED, fd, XU3_GPA_BASE) ;
 	if (((int32_t)gpio == -1) || ((int32_t)gpio1 == -1))
 		return msg (MSG_ERR,
 			"wiringPiSetup: mmap (GPIO) failed: %s\n",
@@ -702,21 +706,21 @@ void init_odroidxu3 (struct libodroid *libwiring)
 	init_adc_fds();
 
 	/* wiringPi Core function initialize */
-	libwiring->getModeToGpio	= getModeToGpio;
-	libwiring->setPadDrive		= setPadDrive;
-	libwiring->getPadDrive		= getPadDrive;
-	libwiring->pinMode		= pinMode;
-	libwiring->getAlt		= getAlt;
-	libwiring->getPUPD		= getPUPD;
-	libwiring->pullUpDnControl	= pullUpDnControl;
-	libwiring->digitalRead		= digitalRead;
-	libwiring->digitalWrite		= digitalWrite;
-	libwiring->analogRead		= analogRead;
-	libwiring->digitalWriteByte	= digitalWriteByte;
-	libwiring->digitalReadByte	= digitalReadByte;
+	libwiring->getModeToGpio	= _getModeToGpio;
+	libwiring->setPadDrive		= _setPadDrive;
+	libwiring->getPadDrive		= _getPadDrive;
+	libwiring->pinMode		= _pinMode;
+	libwiring->getAlt		= _getAlt;
+	libwiring->getPUPD		= _getPUPD;
+	libwiring->pullUpDnControl	= _pullUpDnControl;
+	libwiring->digitalRead		= _digitalRead;
+	libwiring->digitalWrite		= _digitalWrite;
+	libwiring->analogRead		= _analogRead;
+	libwiring->digitalWriteByte	= _digitalWriteByte;
+	libwiring->digitalReadByte	= _digitalReadByte;
 
 	/* specify pin base number */
-	libwiring->pinBase		= GPIO_PIN_BASE;
+	libwiring->pinBase		= XU3_GPIO_PIN_BASE;
 
 	/* global variable setup */
 	lib = libwiring;

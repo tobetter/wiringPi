@@ -18,7 +18,11 @@
 #include <sys/utsname.h>
 
 /*----------------------------------------------------------------------------*/
-#include "wiringOdroid.h"
+#include "softPwm.h"
+#include "softTone.h"
+
+/*----------------------------------------------------------------------------*/
+#include "wiringPi.h"
 #include "odroid???.h"
 
 /*----------------------------------------------------------------------------*/
@@ -101,17 +105,17 @@ static int	gpioToShiftReg	(int pin);
 static int	gpioToGPFSELReg	(int pin);
 
 /*----------------------------------------------------------------------------*/
-// wiringPi core function 
+// wiringPi core function
 /*----------------------------------------------------------------------------*/
-static int		getModeToGpio	(int mode, int pin);
-static void		pinMode		(int pin, int mode);
-static int		getAlt		(int pin);
-static void		pullUpDnControl	(int pin, int pud);
-static int		digitalRead	(int pin);
-static void		digitalWrite	(int pin, int value);
-static int		analogRead	(int pin);
-static void		digitalWriteByte(const int value);
-static unsigned int	digitalReadByte	(void);
+static int		_getModeToGpio		(int mode, int pin);
+static void		_pinMode		(int pin, int mode);
+static int		_getAlt			(int pin);
+static void		_pullUpDnControl	(int pin, int pud);
+static int		_digitalRead		(int pin);
+static void		_digitalWrite		(int pin, int value);
+static int		_analogRead		(int pin);
+static void		_digitalWriteByte	(const int value);
+static unsigned int	_digitalReadByte	(void);
 
 /*----------------------------------------------------------------------------*/
 // board init function
@@ -182,50 +186,50 @@ static int gpioToGPFSELReg (int pin)
 	return	-1;
 }
 /*----------------------------------------------------------------------------*/
-static int getModeToGpio (int mode, int pin)
+static int _getModeToGpio (int mode, int pin)
 {
 	return	-1;
 }
 
 /*----------------------------------------------------------------------------*/
-static void pinMode (int pin, int mode)
+static void _pinMode (int pin, int mode)
 {
 }
 
 /*----------------------------------------------------------------------------*/
-static int getAlt (int pin)
-{
-	return	-1;
-}
-
-/*----------------------------------------------------------------------------*/
-static void pullUpDnControl (int pin, int pud)
-{
-}
-
-/*----------------------------------------------------------------------------*/
-static int digitalRead (int pin)
-{
-}
-
-/*----------------------------------------------------------------------------*/
-static void digitalWrite (int pin, int value)
-{
-}
-
-/*----------------------------------------------------------------------------*/
-static int analogRead (int pin)
+static int _getAlt (int pin)
 {
 	return	-1;
 }
 
 /*----------------------------------------------------------------------------*/
-static void digitalWriteByte (const int value)
+static void _pullUpDnControl (int pin, int pud)
 {
 }
 
 /*----------------------------------------------------------------------------*/
-static unsigned int digitalReadByte (void)
+static int _digitalRead (int pin)
+{
+}
+
+/*----------------------------------------------------------------------------*/
+static void _digitalWrite (int pin, int value)
+{
+}
+
+/*----------------------------------------------------------------------------*/
+static int _analogRead (int pin)
+{
+	return	-1;
+}
+
+/*----------------------------------------------------------------------------*/
+static void _digitalWriteByte (const int value)
+{
+}
+
+/*----------------------------------------------------------------------------*/
+static unsigned int _digitalReadByte (void)
 {
 	return	-1;
 }
@@ -248,15 +252,15 @@ void init_odroid??? (struct libodroid *libwiring)
 	init_adc_fds();
 
 	/* wiringPi Core function initialize */
-	libwiring->getModeToGpio	= getModeToGpio;
-	libwiring->pinMode		= pinMode;
-	libwiring->getAlt		= getAlt;
-	libwiring->pullUpDnControl	= pullUpDnControl;
-	libwiring->digitalRead		= digitalRead;
-	libwiring->digitalWrite		= digitalWrite;
-	libwiring->analogRead		= analogRead;
-	libwiring->digitalWriteByte	= digitalWriteByte;
-	libwiring->digitalReadByte	= digitalReadByte;
+	libwiring->getModeToGpio	= _getModeToGpio;
+	libwiring->pinMode		= _pinMode;
+	libwiring->getAlt		= _getAlt;
+	libwiring->pullUpDnControl	= _pullUpDnControl;
+	libwiring->digitalRead		= _digitalRead;
+	libwiring->digitalWrite		= _digitalWrite;
+	libwiring->analogRead		= _analogRead;
+	libwiring->digitalWriteByte	= _digitalWriteByte;
+	libwiring->digitalReadByte	= _digitalReadByte;
 
 	/* global variable setup */
 	lib = libwiring;
