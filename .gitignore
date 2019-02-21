@@ -2,11 +2,11 @@
 *.so
 lib*.so.*
 *~
-debian-template/wiringPi
 debian-template/wiringpi-*.deb
 gpio/gpio
 *.aux
 *.dvi
 *.log
 .DS_Store
+._.DS_Store
 .vscode
