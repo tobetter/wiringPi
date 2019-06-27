@@ -558,21 +558,22 @@ static void init_gpio_mmap (void)
 	int	fd;
 
 	/* GPIO mmap setup */
-	if (access("/dev/gpiomem",0) == 0) {
-		if ((fd = open ("/dev/gpiomem", O_RDWR | O_SYNC | O_CLOEXEC) ) < 0)
-			return msg (MSG_ERR,
-				"wiringPiSetup: Unable to open /dev/gpiomem: %s\n",
-				strerror (errno)) ;
-	} else {
-		if (geteuid () != 0)
-			return msg (MSG_ERR,
-				"wiringPiSetup: Must be root. (Did you forget sudo?)\n");
-
+	if (!getuid()) {
 		if ((fd = open ("/dev/mem", O_RDWR | O_SYNC | O_CLOEXEC) ) < 0)
 			return msg (MSG_ERR,
 				"wiringPiSetup: Unable to open /dev/mem: %s\n",
-				strerror (errno)) ;
+				strerror (errno));
+	} else {
+		if (access("/dev/gpiomem",0) == 0) {
+			if ((fd = open ("/dev/gpiomem", O_RDWR | O_SYNC | O_CLOEXEC) ) < 0)
+				return msg (MSG_ERR,
+					"wiringPiSetup: Unable to open /dev/gpiomem: %s\n",
+					strerror (errno));
+		} else
+			return msg (MSG_ERR,
+				"wiringPiSetup: /dev/gpiomem doesn't exist. Please try again with sudo.\n");
 	}
+
 	//#define N2_GPIO_BASE	0xff634000
 	gpio  = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE,
 				MAP_SHARED, fd, N2_GPIO_BASE) ;

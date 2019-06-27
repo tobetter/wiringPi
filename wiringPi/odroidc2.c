@@ -31,14 +31,14 @@
 static const int pinToGpio_rev1[64] = {
 	// wiringPi number to native gpio number
 	219, 218,	//  0 |  1 : GPIOY.8, GPIOY.7
-	247, -1,	//  2 |  3 : GPIOX.19, 
+	247, -1,	//  2 |  3 : GPIOX.19,
 	235, 233,	//  4 |  5 : GPIOX.7, GPIOX.5
 	234, 214,	//  6 |  7 : GPIOX.6, GPIOY.3
 	205, 206,	//  8 |  9 : GPIODV.24(I2CA_SDA), GPIODV.25(I2CA_SCL)
 	248, 249,	// 10 | 11 : GPIOX.20, GPIOX.21
 	238, 237,	// 12 | 13 : GPIOX.10, GPIOX.9
-	236, -1,	// 14 | 15 : GPIOX.8, 
-	-1,  -1,	// 16 | 17 : 
+	236, -1,	// 14 | 15 : GPIOX.8,
+	-1,  -1,	// 16 | 17 :
 	-1,  -1,	// 18 | 19 :
 	-1,  232,	// 20 | 21 : , GPIOX.4
 	231, 239,	// 22 | 23 : GPIOX.3, GPIOX.11
@@ -728,21 +728,22 @@ static void init_gpio_mmap (void)
 	int	fd;
 
 	/* GPIO mmap setup */
-	if (access("/dev/gpiomem",0) == 0) {
-		if ((fd = open ("/dev/gpiomem", O_RDWR | O_SYNC | O_CLOEXEC) ) < 0)
-			return msg (MSG_ERR,
-				"wiringPiSetup: Unable to open /dev/gpiomem: %s\n",
-				strerror (errno)) ;
-	} else {
-		if (geteuid () != 0)
-			return msg (MSG_ERR,
-				"wiringPiSetup: Must be root. (Did you forget sudo?)\n");
-	
+	if (!getuid()) {
 		if ((fd = open ("/dev/mem", O_RDWR | O_SYNC | O_CLOEXEC) ) < 0)
 			return msg (MSG_ERR,
 				"wiringPiSetup: Unable to open /dev/mem: %s\n",
-				strerror (errno)) ;
+				strerror (errno));
+	} else {
+		if (access("/dev/gpiomem",0) == 0) {
+			if ((fd = open ("/dev/gpiomem", O_RDWR | O_SYNC | O_CLOEXEC) ) < 0)
+				return msg (MSG_ERR,
+					"wiringPiSetup: Unable to open /dev/gpiomem: %s\n",
+					strerror (errno));
+		} else
+			return msg (MSG_ERR,
+				"wiringPiSetup: /dev/gpiomem doesn't exist. Please try again with sudo.\n");
 	}
+
 	//#define C2_GPIO_BASE	0xC8834000
 	gpio  = (uint32_t *)mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE,
 				MAP_SHARED, fd, C2_GPIO_BASE) ;

@@ -245,7 +245,7 @@ static void setIomuxMode (int pin, int mode)
 			target |= *(grf[0] + (offset >> 2));
 			target &= ~(1 << (gpioToShiftGReg(pin) * 2 + 1));
 			target &= ~(1 << (gpioToShiftGReg(pin) * 2));
-			
+
 			*(grf[0] + (offset >> 2)) = target;
 		} else {
 			offset += N1_GRF_IOMUX_OFFSET;
@@ -420,7 +420,7 @@ static void _pullUpDnControl (int pin, int pud)
 	case PUD_OFF:
 		if (bank < 2) {
 			offset += N1_PMUGRF_PUPD_OFFSET;
-			
+
 			target |= *(grf[0] + (offset >> 2));
 			target &= ~(1 << (gpioToShiftGReg(pin) * 2 + 1));
 			target &= ~(1 << (gpioToShiftGReg(pin) * 2));
@@ -466,7 +466,7 @@ static int _digitalRead (int pin)
 	setClkState(pin, N1_CLK_ENABLE);
 
 	ret = *(gpio[bank] + (N1_GPIO_GET_OFFSET >> 2)) & (1 << gpioToShiftReg(pin)) ? HIGH : LOW;
-	
+
 	setClkState(pin, N1_CLK_DISABLE);
 	return ret;
 }
@@ -631,19 +631,20 @@ static void init_gpio_mmap (void)
 	int fd;
 
 	/* GPIO mmap setup */
-	if (access("/dev/gpiomem",0) == 0) {
-		if ((fd = open ("/dev/gpiomem", O_RDWR | O_SYNC | O_CLOEXEC) ) < 0)
-			return msg (MSG_ERR,
-				"wiringPiSetup: Unable to open /dev/gpiomem: %s\n",
-				strerror (errno)) ;
-	} else {
-		if (geteuid () != 0)
-			return msg (MSG_ERR,
-				"wiringPiSetup: Must be root. (Did you forget sudo?)\n");
+	if (!getuid()) {
 		if ((fd = open ("/dev/mem", O_RDWR | O_SYNC | O_CLOEXEC) ) < 0)
 			return msg (MSG_ERR,
 				"wiringPiSetup: Unable to open /dev/mem: %s\n",
-				strerror (errno)) ;
+				strerror (errno));
+	} else {
+		if (access("/dev/gpiomem",0) == 0) {
+			if ((fd = open ("/dev/gpiomem", O_RDWR | O_SYNC | O_CLOEXEC) ) < 0)
+				return msg (MSG_ERR,
+					"wiringPiSetup: Unable to open /dev/gpiomem: %s\n",
+					strerror (errno));
+		} else
+			return msg (MSG_ERR,
+				"wiringPiSetup: /dev/gpiomem doesn't exist. Please try again with sudo.\n");
 	}
 
 	// GPIO{0, 1}
