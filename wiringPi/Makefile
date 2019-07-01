@@ -68,7 +68,8 @@ SRC	=	wiringPi.c						\
 		odroidc2.c						\
 		odroidxu3.c						\
 		odroidn1.c						\
-		odroidn2.c
+		odroidn2.c						\
+		odroidc4.c
 
 HEADERS =	$(shell ls *.h)
 
@@ -155,6 +156,7 @@ odroidc2.o  : wiringPi.h odroidc2.h
 odroidxu3.o : wiringPi.h odroidxu3.h
 odroidn1.o  : wiringPi.h odroidn1.h
 odroidn2.o  : wiringPi.h odroidn2.h
+odroidc4.o  : wiringPi.h odroidc4.h
 
 wiringPi.o: softPwm.h softTone.h wiringPi.h ../version.h
 wiringSerial.o: wiringSerial.h

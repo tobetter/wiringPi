@@ -37,6 +37,7 @@
 #include "odroidxu3.h"
 #include "odroidn1.h"
 #include "odroidn2.h"
+#include "odroidc4.h"
 
 /*----------------------------------------------------------------------------*/
 // Const string define
@@ -49,6 +50,7 @@ const char *piModelNames [16] =
 	"ODROID-XU3/4",
 	"ODROID-N1",
 	"ODROID-N2",
+	"ODROID-C4",
 };
 
 const char *piRevisionNames [16] =
@@ -441,6 +443,11 @@ int piGpioLayout (void)
 		libwiring.maker	= MAKER_AMLOGIC;
 		libwiring.mem	= 4;
 		libwiring.rev	= 1;
+	} else if (strncmp (c, "05", 2) == 0) {
+		libwiring.model	= MODEL_ODROID_C4;
+		libwiring.maker	= MAKER_AMLOGIC;
+		libwiring.mem	= 4;
+		libwiring.rev	= 1;
 	} else {
 		libwiring.model	= MODEL_UNKNOWN;
 		libwiring.maker	= MAKER_UNKNOWN;
@@ -474,6 +481,7 @@ int piBoardRev (void)
  *         Rev 1.1 : /sys/class/odroid/boardrev value is 1 (Mass board)
  *  03xx - Model ODROID N1, 4096M, Hardkernel
  *  04xx - Model ODROID N2, 4096M, Hardkernel
+ *  05xx - Model ODROID C4, 4096M, Hardkernel
  */
 /*----------------------------------------------------------------------------*/
 void piBoardId (int *model, int *rev, int *mem, int *maker, int *warranty)
@@ -1072,6 +1080,9 @@ int wiringPiSetup (void)
 	break;
 	case MODEL_ODROID_N2:
 		init_odroidn2(&libwiring);
+	break;
+	case MODEL_ODROID_C4:
+		init_odroidc4(&libwiring);
 	break;
 	default:
 		return wiringPiFailure (WPI_ALMOST,

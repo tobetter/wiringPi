@@ -52,6 +52,7 @@
 #define	MODEL_ODROID_XU3	3
 #define	MODEL_ODROID_N1		4
 #define	MODEL_ODROID_N2		5
+#define	MODEL_ODROID_C4		6
 
 #define	MAKER_UNKNOWN		0
 #define	MAKER_AMLOGIC		1
