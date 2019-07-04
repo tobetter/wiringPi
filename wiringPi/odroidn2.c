@@ -498,12 +498,22 @@ static int _analogRead (int pin)
 
 	/* wiringPi ADC number = pin 25, pin 29 */
 	switch (pin) {
+#if defined(ARDUINO)
+	/* To work with physical analog channel numbering */
+	case	3:	case	25:
+		pin = 0;
+	break;
+	case	2:	case	29:
+		pin = 1;
+	break;
+#else
 	case	0:	case	25:
 		pin = 0;
 	break;
 	case	1:	case	29:
 		pin = 1;
 	break;
+#endif
 	default:
 		return	0;
 	}
