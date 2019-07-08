@@ -353,7 +353,7 @@ static int _getAlt (int pin)
 		case	10:
 			if (*(gpio  + C1_MUX_REG_3_OFFSET) & (1 << 22))			{ mode = 1; break; }
 			if ((*(gpio + C1_MUX_REG_7_OFFSET) & (1 << 31)) &&
-			    (*(gpio + C1_MUX_REG_9_OFFSET) & (1 << 19))			{ mode = 2; break; }
+			    (*(gpio + C1_MUX_REG_9_OFFSET) & (1 << 19)))		{ mode = 2; break; }
 			if (*(gpio  + C1_MUX_REG_6_OFFSET) & (1 << 17))			{ mode = 3; break; }
 			if (*(gpio  + C1_MUX_REG_4_OFFSET) & (1 << 23))			{ mode = 4; break; }
 			if (*(gpio  + C1_MUX_REG_3_OFFSET) & (1 << 8))			{ mode = 5; break; }
