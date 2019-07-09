@@ -222,6 +222,7 @@ static void doI2Cdetect (UNU int argc, char *argv [])
 		break;
 	case MODEL_ODROID_N2:
 		port = 3;
+		break;
 	default:
 		break;
 	}
@@ -231,11 +232,13 @@ static void doI2Cdetect (UNU int argc, char *argv [])
 		return ;
 	}
 
-	switch (maker) {
-	case MAKER_AMLOGIC:
+	switch (model) {
+	case MODEL_ODROID_C1:
+	case MODEL_ODROID_C2:
 		if (!moduleLoaded (AML_MODULE_I2C)) {
 			fprintf (stderr, "%s: The I2C kernel module(s) are not loaded.\n", argv [0]) ;
 		}
+		break;
 	default:
 		break;
 	}
