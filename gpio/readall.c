@@ -415,7 +415,7 @@ void ReadallOdroid (int model, int rev, const char *physNames[])
 void doReadall (void)
 {
 	int model, rev, mem, maker, overVolted;
-	const char (*physNames)[];
+	char *physNames;
 
 	// External readall
 	if (wiringPiNodes != NULL) {
@@ -428,32 +428,32 @@ void doReadall (void)
 	switch (model) {
 	case MODEL_ODROID_C1:
 		printf (" +------+-----+----------+------+---+----+---- Model  ODROID-C1 ----+----+---+------+----------+-----+------+\n") ;
-		physNames = physNamesOdroidC1;
+		physNames = (char *) physNamesOdroidC1;
 	break;
 	case MODEL_ODROID_C2:
 		printf (" +------+-----+----------+------+---+----+---- Model  ODROID-C2 ----+----+---+------+----------+-----+------+\n") ;
 		if (rev == 1)
-			physNames = physNamesOdroidC2_Rev1;
+			physNames = (char *) physNamesOdroidC2_Rev1;
 		else
-			physNames = physNamesOdroidC2_Rev2;
+			physNames = (char *) physNamesOdroidC2_Rev2;
 	break;
 	case MODEL_ODROID_XU3:
 		printf (" +------+-----+----------+------+---+----+--- Model ODROID-XU3/4 ---+----+---+------+----------+-----+------+\n") ;
-		physNames = physNamesOdroidXU3;
+		physNames = (char *) physNamesOdroidXU3;
 	break;
 	case MODEL_ODROID_N1:
 		printf (" +------+-----+----------+------+---+----+---- Model  ODROID-N1 ----+----+---+------+----------+-----+------+\n") ;
-		physNames = physNamesOdroidN1;
+		physNames = (char *) physNamesOdroidN1;
 	break;
 	case MODEL_ODROID_N2:
 		printf (" +------+-----+----------+------+---+----+---- Model  ODROID-N2 ----+----+---+------+----------+-----+------+\n") ;
-		physNames = physNamesOdroidN2;
+		physNames = (char *) physNamesOdroidN2;
 	break;
 	default:
 		printf ("Oops - unable to determine board type... model: %d\n", model) ;
 	return;
 	}
-	ReadallOdroid(model, rev, physNames);
+	ReadallOdroid(model, rev, (const char **) physNames);
 }
 
 /*----------------------------------------------------------------------------*/

@@ -366,7 +366,9 @@ int piGpioLayout (void)
 				printf ("ERROR : file not found.(boardrev)\n");
 				libwiring.rev = 1;
 			} else {
-				(void)read (fd, buf, sizeof(buf));
+				if (read(fd, buf, sizeof(buf)) < 0) {
+					fprintf(stderr, "Unable to read from the file descriptor: %s \n", strerror(errno));
+				}
 				close(fd);
 				libwiring.rev = atoi(buf) + 1;
 			}
@@ -467,7 +469,8 @@ int physPinToGpio (int physPin)
 void setPadDrive (int pin, int value)
 {
 	if (libwiring.setPadDrive)
-		return	libwiring.setPadDrive(pin, value);
+		if (libwiring.setPadDrive(pin, value) < 0)
+			msg(MSG_WARN, "%s: Not available for pin %d. \n", __func__, pin);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -522,7 +525,8 @@ int getPUPD (int pin)
 void pinMode (int pin, int mode)
 {
 	if (libwiring.pinMode)
-		return	libwiring.pinMode(pin, mode);
+		if (libwiring.pinMode(pin, mode) < 0)
+			msg(MSG_WARN, "%s: Not available for pin %d. \n", __func__, pin);
 
 }
 
@@ -530,7 +534,8 @@ void pinMode (int pin, int mode)
 void pullUpDnControl (int pin, int pud)
 {
 	if (libwiring.pullUpDnControl)
-		return	libwiring.pullUpDnControl(pin, pud);
+		if (libwiring.pullUpDnControl(pin, pud) < 0)
+			msg(MSG_WARN, "%s: Not available for pin %d. \n", __func__, pin);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -546,7 +551,8 @@ int digitalRead (int pin)
 void digitalWrite (int pin, int value)
 {
 	if (libwiring.digitalWrite)
-		return	libwiring.digitalWrite(pin, value);
+		if (libwiring.digitalWrite(pin, value) < 0)
+			msg(MSG_WARN, "%s: Not available for pin %d. \n", __func__, pin);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -562,7 +568,8 @@ int analogRead (int pin)
 void digitalWriteByte (const int value)
 {
 	if (libwiring.digitalWriteByte)
-		return	libwiring.digitalWriteByte(value);
+		if (libwiring.digitalWriteByte(value) < 0)
+			msg(MSG_WARN, "%s: Not available. \n", __func__);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -595,7 +602,9 @@ int waitForInterrupt (int pin, int mS)
 	//	A one character read appars to be enough.
 	if (x > 0) {
 		lseek (fd, 0, SEEK_SET) ;	// Rewind
-		(void)read (fd, &c, 1) ;	// Read & clear
+		if (read (fd, &c, 1) < 0) {	// Read & clear
+			fprintf(stderr, "Unable to read from the file descriptor: %s \n", strerror(errno));
+		}
 	}
 	return x ;
 }
@@ -706,7 +715,9 @@ int wiringPiISR (int pin, int mode, void (*function)(void))
 	// Clear any initial pending interrupt
 	ioctl (libwiring.sysFds [PIN_NUM_CALC_SYSFD(GpioPin)], FIONREAD, &count) ;
 	for (i = 0 ; i < count ; ++i)
-		(void)read (libwiring.sysFds [PIN_NUM_CALC_SYSFD(GpioPin)], &c, 1) ;
+		if (read(libwiring.sysFds [PIN_NUM_CALC_SYSFD(GpioPin)], &c, 1) < 0) {
+			fprintf(stderr, "Unable to read from the sysfs GPIO node: %s \n", strerror(errno));
+		}
 
 	libwiring.isrFunctions [PIN_NUM_CALC_SYSFD(GpioPin)] = function ;
 

@@ -208,7 +208,6 @@ static void doUnLoad (int UNU argc, char *argv [])
 static void doI2Cdetect (UNU int argc, char *argv [])
 {
 	int model, rev, mem, maker, overVolted, port;
-	const char *device = NULL;
 	char *c, *command ;
 
 	piBoardId(&model, &rev, &mem, &maker, &overVolted);
@@ -216,15 +215,12 @@ static void doI2Cdetect (UNU int argc, char *argv [])
 	switch (model) {
 	case MODEL_ODROID_C1:	case MODEL_ODROID_C2:
 	case MODEL_ODROID_XU3:
-		device = "/dev/i2c-1";
 		port = 1;
 		break;
 	case MODEL_ODROID_N1:
-		device = "/dev/i2c-4";
 		port = 4;
 		break;
 	case MODEL_ODROID_N2:
-		device = "/dev/i2c-3";
 		port = 3;
 	default:
 		break;
@@ -239,7 +235,6 @@ static void doI2Cdetect (UNU int argc, char *argv [])
 	case MAKER_AMLOGIC:
 		if (!moduleLoaded (AML_MODULE_I2C)) {
 			fprintf (stderr, "%s: The I2C kernel module(s) are not loaded.\n", argv [0]) ;
-			return ;
 		}
 	default:
 		break;
@@ -279,7 +274,7 @@ static void doExports (UNU int argc, UNU char *argv [])
 
 		if ((l = read (fd, buf, 16)) == 0)
 			sprintf (buf, "%s", "?") ;
- 
+
 		buf [l] = 0 ;
 		if ((buf [strlen (buf) - 1]) == '\n')
 			buf [strlen (buf) - 1] = 0 ;
@@ -789,7 +784,7 @@ static void doReadByte (int argc, char *argv [], int printHex)
  *********************************************************************************
  */
 
-void doRead (int argc, char *argv []) 
+void doRead (int argc, char *argv [])
 {
 	int pin, val ;
 
@@ -810,7 +805,7 @@ void doRead (int argc, char *argv [])
  *********************************************************************************
  */
 
-void doAread (int argc, char *argv []) 
+void doAread (int argc, char *argv [])
 {
 	if (argc != 3) {
 		fprintf (stderr, "Usage: %s aread pin\n", argv [0]) ;
@@ -1014,7 +1009,7 @@ static void doVersion (char *argv [])
 
 	printf ("ODROID Board Details:\n") ;
 	printf ("  Type: %s, Revision: %s, Memory: %dMB\n" \
-	        "  Maker: %s, Chip-Vendor: %s\n", 
+	        "  Maker: %s, Chip-Vendor: %s\n",
 		piModelNames [model],
 		piRevisionNames [rev],
 		piMemorySize [mem],
@@ -1028,7 +1023,8 @@ static void doVersion (char *argv [])
 	// Output Kernel idea of board type
 	if (stat ("/proc/device-tree/model", &statBuf) == 0) {
 		if ((fd = fopen ("/proc/device-tree/model", "r")) != NULL) {
-			fgets (name, 80, fd) ;
+			if (fgets (name, 80, fd) == NULL)
+				fprintf(stderr, "Unable to read from the file descriptor: %s \n", strerror(errno));
 			fclose (fd) ;
 			printf ("  *--> %s\n", name) ;
 		}

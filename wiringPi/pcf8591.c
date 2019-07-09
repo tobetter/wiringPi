@@ -24,6 +24,8 @@
  */
 
 #include <unistd.h>
+#include <string.h>
+#include <errno.h>
 
 #include "wiringPi.h"
 #include "wiringPiI2C.h"
@@ -41,7 +43,9 @@ static void myAnalogWrite (struct wiringPiNodeStruct *node, UNU int pin, int val
   unsigned char b [2] ;
   b [0] = 0x40 ;
   b [1] = value & 0xFF ;
-  write (node->fd, b, 2) ;
+  if (write(node->fd, b, 2) < 0) {
+    fprintf(stderr, "Unable to write to the file descriptor: %s \n", strerror(errno));
+  }
 }
 
 

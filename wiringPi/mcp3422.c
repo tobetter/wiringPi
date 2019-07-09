@@ -29,6 +29,8 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <fcntl.h>
+#include <string.h>
+#include <errno.h>
 #include <sys/ioctl.h>
 
 #include <wiringPi.h>
@@ -47,7 +49,9 @@ void waitForConversion (int fd, unsigned char *buffer, int n)
 {
   for (;;)
   {
-    read (fd, buffer, n) ;
+    if (read(fd, buffer, n) < 0) {
+      fprintf(stderr, "Unable to read from the file descriptor: %s \n", strerror(errno));
+    }
     if ((buffer [n-1] & 0x80) == 0)
       break ;
     delay (1) ;
@@ -70,7 +74,7 @@ int myAnalogRead (struct wiringPiNodeStruct *node, int chan)
 // One-shot mode, trigger plus the other configs.
 
   config = 0x80 | (realChan << 5) | (node->data0 << 2) | (node->data1) ;
-  
+
   wiringPiI2CWrite (node->fd, config) ;
 
   switch (node->data0)	// Sample rate
