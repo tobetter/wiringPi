@@ -247,7 +247,6 @@ extern		int  wiringPiSetupSys	(void);
 extern		int  wiringPiSetupGpio	(void);
 extern		int  wiringPiSetupPhys	(void);
 
-extern		int  getModeToGpio	(int wpiPin);
 extern		void setPadDrive	(int pin, int value);
 extern		int  getPadDrive	(int pin);
 extern		int  getAlt		(int pin);
