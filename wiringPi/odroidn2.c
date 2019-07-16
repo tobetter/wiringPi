@@ -17,9 +17,6 @@
 #include <sys/mman.h>
 #include <sys/utsname.h>
 
-#include "softPwm.h"
-#include "softTone.h"
-
 /*----------------------------------------------------------------------------*/
 #include "softPwm.h"
 #include "softTone.h"
