@@ -30,18 +30,18 @@ vMaj=`cut -d. -f1 VERSION`
 vMin=`cut -d. -f2 VERSION`
 echo "#define VERSION \"`cat VERSION`\"" > version.h
 echo "#define VERSION_MAJOR $vMaj"		>> version.h
-echo "#define VERSION_MINOR $vMin"		>> version.h
+echo "#define VERSION_MINOR \"$vMin\""		>> version.h
 
 rm -f debian-template/wiringPi/DEBIAN/control
 cat > debian-template/wiringPi/DEBIAN/control <<EOF
-Package: wiringpi
-Version: `cat VERSION`
+Package: odroid-wiringpi
+Version: $(cat VERSION)
 Section: libraries
 Priority: optional
-Architecture: armhf
+Architecture: arm64
 Depends: libc6
-Maintainer: Gordon Henderson <projects@drogon.net>
+Maintainer: Joshua Yang <joshua.yang@hardkernel.com>
 Description: The wiringPi libraries, headers and gpio command
-  Libraries to allow GPIO access on a Raspberry Pi from C and C++
+  Libraries to allow GPIO access on a ODROID from C and C++
   and BASIC programs as well as from the command-line
 EOF

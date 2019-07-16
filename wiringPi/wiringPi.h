@@ -241,7 +241,7 @@ extern		int msg			(int type, const char *message, ...);
 extern		int moduleLoaded	(char *);
 
 // Core WiringPi functions
-extern		void wiringPiVersion	(int *major, int *minor);
+extern		void wiringPiVersion	(int *major, char **minor);
 extern		int  wiringPiSetup	(void);
 extern		int  wiringPiSetupSys	(void);
 extern		int  wiringPiSetupGpio	(void);

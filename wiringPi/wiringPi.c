@@ -840,7 +840,7 @@ unsigned int micros (void)
 }
 
 /*----------------------------------------------------------------------------*/
-void wiringPiVersion (int *major, int *minor)
+void wiringPiVersion (int *major, char **minor)
 {
 	*major = VERSION_MAJOR ;
 	*minor = VERSION_MINOR ;

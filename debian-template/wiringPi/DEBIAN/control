@@ -1,10 +1,10 @@
-Package: wiringpi
-Version: 2.44
+Package: odroid-wiringpi
+Version: 2.44-1
 Section: libraries
 Priority: optional
-Architecture: armhf
+Architecture: arm64
 Depends: libc6
-Maintainer: Gordon Henderson <projects@drogon.net>
+Maintainer: Joshua Yang <joshua.yang@hardkernel.com>
 Description: The wiringPi libraries, headers and gpio command
-  Libraries to allow GPIO access on a Raspberry Pi from C and C++
+  Libraries to allow GPIO access on a ODROID from C and C++
   and BASIC programs as well as from the command-line

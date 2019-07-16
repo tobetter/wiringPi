@@ -1,3 +1,9 @@
+odroid-wiringpi (2.44-1) odroid-unstable; urgency=low
+
+  * Initial version with real Debian source package build for ODROID boards.
+
+ -- Joshua Yang <joshua.yang@hardkernel.com>  Tue, 16 Jul 2019 11:13:49 +0900
+
 wiringpi (2.26~iwj) rpi-unstable; urgency=low
 
   * Initial version with real Debian source package build.
