@@ -25,6 +25,8 @@ VERSION=$(shell cat ../VERSION)
 DESTDIR?=/usr
 PREFIX?=/local
 
+MAJOR=$(shell cat ../VERSION | cut -d'.' -f1)
+
 LDCONFIG?=ldconfig
 
 ifneq ($V,1)
@@ -93,7 +95,8 @@ install:	$(DYNAMIC)
 	$Q echo "[Install Dynamic Lib]"
 	$Q install -m 0755 -d						$(DESTDIR)$(PREFIX)/lib
 	$Q install -m 0755 libwiringPiDev.so.$(VERSION)			$(DESTDIR)$(PREFIX)/lib/libwiringPiDev.so.$(VERSION)
-	$Q ln -sf $(DESTDIR)$(PREFIX)/lib/libwiringPiDev.so.$(VERSION)	$(DESTDIR)/lib/libwiringPiDev.so
+	$Q ln -sf libwiringPiDev.so.$(VERSION)				$(DESTDIR)/lib/libwiringPiDev.so.$(MAJOR)
+	$Q ln -sf libwiringPiDev.so.$(MAJOR)				$(DESTDIR)/lib/libwiringPiDev.so
 	$Q $(LDCONFIG)
 
 .PHONY:	install-static
