@@ -1,3 +1,10 @@
+odroid-wiringpi (2.44-1.1) stable; urgency=medium
+
+  * Non-maintainer upload.
+  * Fix to build package without running extra 'build'
+
+ -- Dongjin Kim <tobetter@gmail.com>  Tue, 16 Jul 2019 05:55:29 -0400
+
 odroid-wiringpi (2.44-1) odroid-unstable; urgency=low
 
   * Initial version with real Debian source package build for ODROID boards.
