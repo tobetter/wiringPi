@@ -28,9 +28,10 @@ echo Updating to version: `cat VERSION`
 rm -f version.h
 vMaj=`cut -d. -f1 VERSION`
 vMin=`cut -d. -f2 VERSION`
+vMinFix=$(cut -d. -f3 VERSION)
 echo "#define VERSION \"`cat VERSION`\"" > version.h
 echo "#define VERSION_MAJOR $vMaj"		>> version.h
-echo "#define VERSION_MINOR \"$vMin\""		>> version.h
+echo "#define VERSION_MINOR \"$vMin.$vMinFix\""		>> version.h
 
 rm -f debian-template/wiringPi/DEBIAN/control
 cat > debian-template/wiringPi/DEBIAN/control <<EOF
