@@ -31,3 +31,6 @@ Andre Crone
 
 Rik Teerling
   Pointing out some silly mistooks in the I2C code...
+
+Hardkernel co., Ltd.
+  Porting to ODROID boards to work with our Android/Linux system
