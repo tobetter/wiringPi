@@ -29,6 +29,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 /*----------------------------------------------------------------------------*/
 
@@ -139,6 +140,7 @@ struct libodroid
 
 	/* ISR Function pointer */
 	void 	(*isrFunctions[256])(void);
+	pthread_t isrThreadIds[256];
 
 	/* GPIO sysfs file discripter */
 	int 	sysFds[256];
@@ -283,6 +285,7 @@ extern		void digitalWriteByte2	(int value) UNU;
 // Interrupt
 extern		int  waitForInterrupt	(int pin, int mS);
 extern		int  wiringPiISR	(int pin, int mode, void (*function)(void));
+extern		int  wiringPiISRCancel	(int pin);
 
 // Threads
 extern		int  piThreadCreate	(void *(*fn)(void *));

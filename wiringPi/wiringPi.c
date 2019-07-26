@@ -721,8 +721,6 @@ int wiringPiISR (int pin, int mode, void (*function)(void))
 			fprintf(stderr, "Unable to read from the sysfs GPIO node: %s \n", strerror(errno));
 		}
 
-	libwiring.isrFunctions [PIN_NUM_CALC_SYSFD(GpioPin)] = function ;
-
 	pthread_mutex_lock (&pinMutex) ;
 	pinPass = GpioPin ;
 	pthread_create (&threadId, NULL, interruptHandler, NULL) ;
@@ -730,7 +728,43 @@ int wiringPiISR (int pin, int mode, void (*function)(void))
 		delay (1) ;
 	pthread_mutex_unlock (&pinMutex) ;
 
+	libwiring.isrFunctions [PIN_NUM_CALC_SYSFD(GpioPin)] = function ;
+	libwiring.isrThreadIds [PIN_NUM_CALC_SYSFD(GpioPin)] = threadId ;
+
 	return 0 ;
+}
+
+/*----------------------------------------------------------------------------*/
+int wiringPiISRCancel(int pin) {
+	int GpioPin = -1;
+
+	if (libwiring.mode == MODE_UNINITIALISED)
+		return wiringPiFailure (
+			WPI_FATAL,
+			"wiringPiISRCancel: wiringPi has not been initialised. " \
+			"Unable to continue.\n") ;
+
+	if (libwiring.getModeToGpio)
+		GpioPin = libwiring.getModeToGpio(libwiring.mode, pin);
+	else
+		return wiringPiFailure (
+			WPI_FATAL,
+			"%s: getModeToGpio function not initialize!\n",
+			__func__);
+
+	pthread_t threadId = libwiring.isrThreadIds[PIN_NUM_CALC_SYSFD(GpioPin)];
+
+	if (pthread_cancel(threadId) < 0)
+		return wiringPiFailure (
+			WPI_FATAL,
+			"%s: wiringPiISRCancel: Unregister for the interrupt pin failed!\n",
+			__func__);
+	else {
+		libwiring.isrFunctions[PIN_NUM_CALC_SYSFD(GpioPin)] = NULL;
+		libwiring.isrThreadIds[PIN_NUM_CALC_SYSFD(GpioPin)] = 0;
+	}
+
+	return 0;
 }
 
 /*----------------------------------------------------------------------------*/
