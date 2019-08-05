@@ -134,9 +134,14 @@ struct libodroid
 	int	(*pullUpDnControl)	(int pin, int pud);
 	int	(*digitalRead)		(int pin);
 	int	(*digitalWrite)		(int pin, int value);
+	int	(*pwmWrite)		(int pin, int value);
 	int	(*analogRead)		(int pin);
 	int	(*digitalWriteByte)	(const unsigned int value);
 	unsigned int (*digitalReadByte)	(void);
+
+	void (*pwmSetMode)	(int mode);
+	void (*pwmSetRange)	(unsigned int range);
+	void (*pwmSetClock)	(int divisor);
 
 	/* ISR Function pointer */
 	void 	(*isrFunctions[256])(void);
@@ -238,9 +243,12 @@ extern struct wiringPiNodeStruct *wiringPiFindNode (int pin);
 extern struct wiringPiNodeStruct *wiringPiNewNode  (int pinBase, int numPins);
 
 // Internal WiringPi functions
-extern		int wiringPiFailure	(int fatal, const char *message, ...);
-extern		int msg			(int type, const char *message, ...);
-extern		int moduleLoaded	(char *);
+extern		int  wiringPiFailure	(int fatal, const char *message, ...);
+extern		int  msg		(int type, const char *message, ...);
+extern		int  moduleLoaded	(char *);
+extern		void setupCheck		(const char *fName);
+extern		void usingGpioMemCheck	(const char *what);
+extern		void setUsingGpioMem	( const unsigned int value );
 
 // Core WiringPi functions
 extern		void wiringPiVersion	(int *major, char **minor);
