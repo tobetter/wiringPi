@@ -138,10 +138,9 @@ struct libodroid
 	int	(*analogRead)		(int pin);
 	int	(*digitalWriteByte)	(const unsigned int value);
 	unsigned int (*digitalReadByte)	(void);
-
-	void (*pwmSetMode)	(int mode);
-	void (*pwmSetRange)	(unsigned int range);
-	void (*pwmSetClock)	(int divisor);
+	void	(*pwmSetMode)		(int mode);
+	void	(*pwmSetRange)		(unsigned int range);
+	void	(*pwmSetClock)		(int divisor);
 
 	/* ISR Function pointer */
 	void 	(*isrFunctions[256])(void);
@@ -269,6 +268,9 @@ extern unsigned int  digitalReadByte	(void);
 extern		void digitalWriteByte	(const int value);
 extern		void pwmWrite		(int pin, int value);
 extern		int  analogRead		(int pin);
+extern		void pwmSetMode		(int mode);
+extern		void pwmSetRange	(unsigned int range);
+extern		void pwmSetClock	(int divisor);
 
 // Hardware specific stuffs
 extern		int  piGpioLayout	(void);
@@ -281,9 +283,6 @@ extern		int  physPinToGpio	(int physPin);
 extern		void pinModeAlt		(int pin, int mode) UNU;
 extern		void analogWrite	(int pin, int value) UNU;
 extern		void pwmToneWrite	(int pin, int freq) UNU;
-extern		void pwmSetMode		(int mode) UNU;
-extern		void pwmSetRange	(unsigned int range) UNU;
-extern		void pwmSetClock	(int divisor) UNU;
 extern		void gpioClockSet	(int pin, int freq) UNU;
 extern unsigned int  digitalReadByte	(void) UNU;
 extern unsigned int  digitalReadByte2	(void) UNU;

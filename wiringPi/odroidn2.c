@@ -205,9 +205,8 @@ static int		_pwmWrite		(int pin, int value);
 static int		_analogRead		(int pin);
 static int		_digitalWriteByte	(const unsigned int value);
 static unsigned int	_digitalReadByte	(void);
-
-static void _pwmSetRange (unsigned int range);
-static void _pwmSetClock (int divisor);
+static void		_pwmSetRange		(unsigned int range);
+static void		_pwmSetClock		(int divisor);
 
 /*----------------------------------------------------------------------------*/
 // board init function
@@ -724,7 +723,7 @@ static int _digitalWriteByte (const unsigned int value)
 }
 
 /*----------------------------------------------------------------------------*/
-void _pwmSetRange (unsigned int range)
+static void _pwmSetRange (unsigned int range)
 {
 	range = range & 0xFFFF;
 	for( int i = 0; i < 6; ++i )
@@ -734,7 +733,7 @@ void _pwmSetRange (unsigned int range)
 }
 
 /*----------------------------------------------------------------------------*/
-void _pwmSetClock (int divisor)
+static void _pwmSetClock (int divisor)
 {
 	divisor = (divisor - 1) & 0x7F;
 
@@ -800,7 +799,7 @@ static void init_gpio_mmap (void)
 			msg(MSG_ERR, "wiringPiSetup: mmap (GPIO) failed: %s \n", strerror (errno));
 		else
 			gpio = (uint32_t *) mapped;
-		
+
 		for(uint16_t i = 1; i < 3; ++i) {
 			pwm[i] = ( uint32_t * )mmap( 0, BLOCK_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, N2_GPIO_PWM_BASE + (0x1000 * (2 - i)) );
 			if( ( void * )pwm == MAP_FAILED )
@@ -846,9 +845,8 @@ void init_odroidn2 (struct libodroid *libwiring)
 	libwiring->analogRead		= _analogRead;
 	libwiring->digitalWriteByte	= _digitalWriteByte;
 	libwiring->digitalReadByte	= _digitalReadByte;
-
-	libwiring->pwmSetRange		=_pwmSetRange;
-	libwiring->pwmSetClock		=_pwmSetClock;
+	libwiring->pwmSetRange		= _pwmSetRange;
+	libwiring->pwmSetClock		= _pwmSetClock;
 
 	/* specify pin base number */
 	libwiring->pinBase		= N2_GPIO_PIN_BASE;

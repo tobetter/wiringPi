@@ -49,18 +49,18 @@
 #define N2_PWM_MISC_REG_01_OFFSET	0x02
 
 /// PWM_MISC_REG_CD
-#define N2_PWM_1_INV_EN		( 27 )
-#define N2_PWM_0_INV_EN		( 26 )
-#define N2_PWM_1_CLK_EN		( 23 )
-#define N2_PWM_1_CLK_DIV0	( 16 )	/// 22 ~ 16
-#define N2_PWM_0_CLK_EN		( 15 )
-#define N2_PWM_0_CLK_DIV0	( 8 )	/// 14 ~ 8
-#define N2_PWM_1_CLK_SEL0	( 6 )	/// 7 ~ 6
-#define N2_PWM_0_CLK_SEL0	( 4 )	/// 5 ~ 4
-#define N2_PWM_1_DS_EN		( 3 )
-#define N2_PWM_0_DS_EN		( 2 )
-#define N2_PWM_1_EN		( 1 )
-#define N2_PWM_0_EN		( 0 )
+#define N2_PWM_1_INV_EN			( 27 )
+#define N2_PWM_0_INV_EN			( 26 )
+#define N2_PWM_1_CLK_EN			( 23 )
+#define N2_PWM_1_CLK_DIV0		( 16 )	/// 22 ~ 16
+#define N2_PWM_0_CLK_EN			( 15 )
+#define N2_PWM_0_CLK_DIV0		( 8 )	/// 14 ~ 8
+#define N2_PWM_1_CLK_SEL0		( 6 )	/// 7 ~ 6
+#define N2_PWM_0_CLK_SEL0		( 4 )	/// 5 ~ 4
+#define N2_PWM_1_DS_EN			( 3 )
+#define N2_PWM_0_DS_EN			( 2 )
+#define N2_PWM_1_EN			( 1 )
+#define N2_PWM_0_EN			( 0 )
 
 #ifdef __cplusplus
 extern "C" {
