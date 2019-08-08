@@ -1,3 +1,11 @@
+odroid-wiringpi (2.44-3.0) stable; urgency=medium
+
+  * Add new support for hardware PWM, works only with N2 for now.
+  * Add wiringPiSPISetupInterface function for specifying SPI device as a parameter.
+  * Improve stability/compatibility for Android support.
+
+ -- Joshua Yang <joshua.yang@hardkernel.com>  Thu, 08 Aug 2019 10:58:42 +0900
+
 odroid-wiringpi (2.44-2.0) stable; urgency=medium
 
   * Add wiringPiISRCancel function.
