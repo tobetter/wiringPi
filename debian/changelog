@@ -1,3 +1,10 @@
+odroid-wiringpi (2.44-4.0) stable; urgency=medium
+
+  * Add wiringPiI2CReadBlock/wiringPiI2CWriteBlock functions
+  * Add INPUT_PULLUP and INPUT_PULLDOWN parameters for pinMode function
+
+ -- Joshua Yang <joshua.yang@hardkernel.com>  Wed, 14 Aug 2019 17:02:55 +0900
+
 odroid-wiringpi (2.44-3.0) stable; urgency=medium
 
   * Add new support for hardware PWM, works only with N2 for now.
