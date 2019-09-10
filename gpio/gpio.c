@@ -1005,7 +1005,7 @@ static void doVersion (char *argv [])
 
 	wiringPiVersion (&vMaj, vMin) ;
 	printf ("gpio version: %d.%s\n", vMaj, *vMin) ;
-	printf ("Copyright (c) 2012-2017 Gordon Henderson, 2017-2019 Hardkernel co., Ltd.\n") ;
+	printf ("Copyright (c) 2012-2017 Gordon Henderson, 2017-2019 Hardkernel Co., Ltd.\n") ;
 	printf ("This is free software with ABSOLUTELY NO WARRANTY.\n") ;
 	printf ("For details type: %s -warranty\n", argv [0]) ;
 	printf ("\n") ;
@@ -1083,7 +1083,7 @@ int main (int argc, char *argv [])
 
 	if (strcasecmp (argv [1], "-warranty") == 0) {
 		printf ("gpio version: %s\n", VERSION) ;
-		printf ("Copyright (c) 2012-2017 Gordon Henderson, 2017-2019 Hardkernel co., Ltd.\n") ;
+		printf ("Copyright (c) 2012-2017 Gordon Henderson, 2017-2019 Hardkernel Co., Ltd.\n") ;
 		printf ("\n") ;
 		printf ("    This program is free software; you can redistribute it and/or modify\n") ;
 		printf ("    it under the terms of the GNU Leser General Public License as published\n") ;
