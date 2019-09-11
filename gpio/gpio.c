@@ -1051,6 +1051,7 @@ static void doVersion (char *argv [])
 int main (int argc, char *argv [])
 {
 	int i ;
+	struct stat statBuf ;
 
 	if (getenv ("WIRINGPI_DEBUG") != NULL) {
 		printf ("gpio: wiringPi debug mode enabled\n") ;
@@ -1101,7 +1102,7 @@ int main (int argc, char *argv [])
 		return 0 ;
 	}
 
-	if (geteuid () != 0) {
+	if (geteuid () != 0 && stat("/dev/gpiomem", &statBuf) != 0) {
 		fprintf (stderr, "%s: Must be root to run. Program should be suid root. This is an error.\n", argv [0]) ;
 		return 1 ;
 	}
