@@ -1,3 +1,9 @@
+odroid-wiringpi (2.44-4.1) stable; urgency=medium
+
+  * Fix non-root user who has /dev/gpiomem cannot use gpio command properly 
+
+ -- Yang Deokgyu <secugyu@gmail.com>  Wed, 11 Sep 2019 11:44:13 +0900
+
 odroid-wiringpi (2.44-4.0) stable; urgency=medium
 
   * Add wiringPiI2CReadBlock/wiringPiI2CWriteBlock functions
