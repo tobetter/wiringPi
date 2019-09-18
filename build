@@ -43,7 +43,36 @@ check_make_ok() {
   fi
 }
 
+configure_gpiomem() {
+  GPIOMEM="/dev/gpiomem"
+
+  if [ -z $1 ] && [ "$(stat -c "%a %G" "$GPIOMEM")" != "660"*"odroid" ]; then
+    case "$(echo $hardware | tr [:upper:] [:lower:])" in
+      *xu4)
+        $sudo cp -f udev/rules.d/99-odroid-wiringpi-exynos.rules /etc/udev/rules.d/
+        ;;
+      *c1|*c2|*n2)
+        $sudo cp -f udev/rules.d/99-odroid-wiringpi-aml.rules /etc/udev/rules.d/
+        ;;
+      *)
+        echo "This system seems not ODROID"
+        ;;
+    esac
+
+    echo "Reload udev..."
+    [ -x "$(command -v udevadm)" ] \
+      && $sudo udevadm trigger \
+      || echo "udevadm not found. Please reboot to take effect"
+  elif [ "$1" = "uninstall" ]; then
+    $sudo rm -f /etc/udev/rules.d/99-odroid-wiringpi-*
+  else
+    echo "Not found $GPIOMEM"
+    echo "You will not be able to use WiringPi without root permission"
+  fi
+}
+
 sudo=${WIRINGPI_SUDO-sudo}
+hardware=$(fgrep Hardware /proc/cpuinfo | head -1 | awk '{ printf("%s %s %s\n", $3, $4, $5) }' | xargs)
 
 if [ x$1 = "xclean" ]; then
   cd wiringPi
@@ -74,6 +103,9 @@ if [ x$1 = "xuninstall" ]; then
   echo -n "DevLib:   " ; $sudo make uninstall
   cd ../gpio
   echo -n "gpio:     " ; $sudo make uninstall
+  cd ..
+  echo -n "Deconfigure /dev/gpiomem" ; configure_gpiomem uninstall
+  echo
   exit
 fi
 
@@ -104,7 +136,6 @@ fi
   echo "====================="
   echo
 
-  hardware=`fgrep Hardware /proc/cpuinfo | head -1 | awk '{ print $3 }'`
 
 #  if [ x$hardware != "xBCM2708" ]; then
 #    echo ""
@@ -159,6 +190,11 @@ fi
   check_make_ok
   $sudo make install
   check_make_ok
+
+  echo
+  echo "Configure /dev/gpiomem"
+  cd ..
+  configure_gpiomem
 
 # echo
 # echo "wiringPi Daemon"
