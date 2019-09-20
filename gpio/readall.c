@@ -296,8 +296,7 @@ static const char *physNamesOdroidN2 [64] =
 } ;
 
 /*----------------------------------------------------------------------------*/
-static void readallPhysOdroid (int model, int UNU rev, int physPin, const char *physNames[])
-{
+static void readallPhys(int model, int UNU rev, int physPin, const char *physNames[], int isAll) {
 	int pin ;
 
 	// GPIO, wPi pin number
@@ -311,10 +310,12 @@ static void readallPhysOdroid (int model, int UNU rev, int physPin, const char *
 	// GPIO pin name
 	printf (" | %s", physNames [physPin]) ;
 
-	// GPIO pin mode, value, drive strength, pupd
-	if ((physToWpi [physPin] == -1) || (physPinToGpio (physPin) == -1))
-		printf (" |      |   |    |      ") ;
-	else {
+	// GPIO pin mode, value
+	if ((physToWpi [physPin] == -1) || (physPinToGpio (physPin) == -1)) {
+		printf(" |      |  ");
+		if (isAll == TRUE)
+			printf(" |    |      ");
+	} else {
 		if (wpMode == MODE_GPIO)
 			pin = physPinToGpio (physPin);
 		else if (wpMode == MODE_PHYS)
@@ -324,20 +325,24 @@ static void readallPhysOdroid (int model, int UNU rev, int physPin, const char *
 
 		printf (" | %4s", alts [getAlt (pin)]) ;
 		printf (" | %d", digitalRead (pin)) ;
-		switch (model) {
-		case MODEL_ODROID_N1:
-			printf (" |    |      ");
-			break;
-		case MODEL_ODROID_C1:
-		case MODEL_ODROID_C2:
-			printf (" |    | %5s", pupd[getPUPD(pin)]);
-			break;
-		case MODEL_ODROID_XU3:
-		case MODEL_ODROID_N2:
-			printf (" | %2d | %5s", getPadDrive(pin), pupd[getPUPD(pin)]);
-			break;
-		default:
-			break;
+
+		// GPIO pin drive strength, pu/pd
+		if (isAll == TRUE) {
+			switch (model) {
+			case MODEL_ODROID_N1:
+				printf (" |    |      ");
+				break;
+			case MODEL_ODROID_C1:
+			case MODEL_ODROID_C2:
+				printf (" |    | %5s", pupd[getPUPD(pin)]);
+				break;
+			case MODEL_ODROID_XU3:
+			case MODEL_ODROID_N2:
+				printf (" | %2d | %5s", getPadDrive(pin), pupd[getPUPD(pin)]);
+				break;
+			default:
+				break;
+			}
 		}
 	}
 
@@ -346,10 +351,13 @@ static void readallPhysOdroid (int model, int UNU rev, int physPin, const char *
 	++physPin ;
 	printf (" || %-2d", physPin) ;
 
-	// GPIO pin mode, value, drive strength, pupd
-	if ((physToWpi [physPin] == -1) || (physPinToGpio (physPin) == -1))
-		printf (" |       |    |   |     ") ;
-	else {
+	// GPIO pin mode, value
+	if ((physToWpi [physPin] == -1) || (physPinToGpio (physPin) == -1)) {
+		printf(" |");
+		if (isAll == TRUE)
+			printf("       |    |");
+		printf ("   |     ");
+	} else {
 		if (wpMode == MODE_GPIO)
 			pin = physPinToGpio (physPin);
 		else if (wpMode == MODE_PHYS)
@@ -357,20 +365,24 @@ static void readallPhysOdroid (int model, int UNU rev, int physPin, const char *
 		else
 			pin = physToWpi [physPin];
 
-		switch (model) {
-		case MODEL_ODROID_N1:
-			printf (" |       |   ");
-			break;
-		case MODEL_ODROID_C1:
-		case MODEL_ODROID_C2:
-			printf (" | %-5s |   ", pupd[getPUPD(pin)]);
-			break;
-		case MODEL_ODROID_XU3:
-		case MODEL_ODROID_N2:
-			printf (" | %-5s | %-2d", pupd[getPUPD(pin)], getPadDrive(pin));
-			break;
-		default:
-			break;
+
+		// GPIO pin drive strength, pu/pd
+		if (isAll == TRUE) {
+			switch (model) {
+			case MODEL_ODROID_N1:
+				printf (" |       |   ");
+				break;
+			case MODEL_ODROID_C1:
+			case MODEL_ODROID_C2:
+				printf (" | %-5s |   ", pupd[getPUPD(pin)]);
+				break;
+			case MODEL_ODROID_XU3:
+			case MODEL_ODROID_N2:
+				printf (" | %-5s | %-2d", pupd[getPUPD(pin)], getPadDrive(pin));
+				break;
+			default:
+				break;
+			}
 		}
 		printf (" | %d", digitalRead (pin));
 		printf (" | %-4s", alts [getAlt (pin)]);
@@ -391,15 +403,35 @@ static void readallPhysOdroid (int model, int UNU rev, int physPin, const char *
 }
 
 /*----------------------------------------------------------------------------*/
-void ReadallOdroid (int model, int rev, const char *physNames[])
-{
-	int pin ;
+static void printHeader(const char *headerName, int isAll) {
+	const char *headerLeft = " +------+-----+----------+------+---+";
+	const char *headerRight = "+---+------+----------+-----+------+\n";
+	const char *headerLeftAll = " +------+-----+----------+------+---+----+";
+	const char *headerRightAll = "+----+---+------+----------+-----+------+\n";
 
-	printf (" | GPIO | wPi |   Name   | Mode | V | DS | PU/PD | Physical | PU/PD | DS | V | Mode |   Name   | wPi | GPIO |\n") ;
-	printf (" +------+-----+----------+------+---+----+-------+----++----+-------+----+---+------+----------+-----+------+\n") ;
-	for (pin = 1 ; pin <= 40 ; pin += 2)
-		readallPhysOdroid (model, rev, pin, physNames) ;
-	printf (" +------+-----+----------+------+---+----+-------+----++----+-------+----+---+------+----------+-----+------+\n") ;
+	(isAll == FALSE) ? printf("%s", headerLeft) : printf("%s", headerLeftAll);
+	printf("%s", headerName);
+	(isAll == FALSE) ? printf("%s", headerRight) : printf("%s", headerRightAll);
+}
+
+/*----------------------------------------------------------------------------*/
+static void printBody(int model, int rev, const char *physNames[], int isAll) {
+	(isAll == FALSE)
+		? printf(
+			" | GPIO | wPi |   Name   | Mode | V | Physical | V | Mode |   Name   | wPi | GPIO |\n"
+			" +------+-----+----------+------+---+----++----+---+------+----------+-----+------+\n")
+		: printf(
+			" | GPIO | wPi |   Name   | Mode | V | DS | PU/PD | Physical | PU/PD | DS | V | Mode |   Name   | wPi | GPIO |\n"
+			" +------+-----+----------+------+---+----+-------+----++----+-------+----+---+------+----------+-----+------+\n");
+	for (int pin = 1; pin <= 40; pin += 2)
+		readallPhys(model, rev, pin, physNames, isAll);
+	(isAll == FALSE)
+		? printf(
+			" +------+-----+----------+------+---+----++----+---+------+----------+-----+------+\n"
+			" | GPIO | wPi |   Name   | Mode | V | Physical | V | Mode |   Name   | wPi | GPIO |\n")
+		: printf(
+			" +------+-----+----------+------+---+----+-------+----++----+-------+----+---+------+----------+-----+------+\n"
+			" | GPIO | wPi |   Name   | Mode | V | DS | PU/PD | Physical | PU/PD | DS | V | Mode |   Name   | wPi | GPIO |\n");
 }
 
 /*----------------------------------------------------------------------------*/
@@ -412,48 +444,62 @@ void ReadallOdroid (int model, int rev, const char *physNames[])
  *	one external device at a time, we'll use that to our advantage...
  */
 /*----------------------------------------------------------------------------*/
-void doReadall (void)
-{
-	int model, rev, mem, maker, overVolted;
-	char *physNames;
+void doReadall(int argc, char *argv[]) {
+	int model, rev, mem, maker, overVolted, isAll;
+	char *headerName, *physNames;
 
 	// External readall
 	if (wiringPiNodes != NULL) {
-		doReadallExternal ();
-		return ;
+		doReadallExternal();
+		return;
 	}
 
-	piBoardId (&model, &rev, &mem, &maker, &overVolted) ;
+	if (argc <= 2) {
+		isAll = FALSE;
+	} else if (argc == 3 && (strcasecmp(argv[2], "-a") == 0 || strcasecmp(argv[2], "--all") == 0)) {
+		isAll = TRUE;
+	} else {
+		printf("Oops - unknown readall option:\n");
+		for (int i = 3; i < argc + 1; i++)
+			printf("\targv[%d]: %s\n", i, argv[i - 1]);
+
+		return;
+	}
+
+	piBoardId (&model, &rev, &mem, &maker, &overVolted);
 
 	switch (model) {
-	case MODEL_ODROID_C1:
-		printf (" +------+-----+----------+------+---+----+---- Model  ODROID-C1 ----+----+---+------+----------+-----+------+\n") ;
-		physNames = (char *) physNamesOdroidC1;
-	break;
-	case MODEL_ODROID_C2:
-		printf (" +------+-----+----------+------+---+----+---- Model  ODROID-C2 ----+----+---+------+----------+-----+------+\n") ;
-		if (rev == 1)
-			physNames = (char *) physNamesOdroidC2_Rev1;
-		else
-			physNames = (char *) physNamesOdroidC2_Rev2;
-	break;
-	case MODEL_ODROID_XU3:
-		printf (" +------+-----+----------+------+---+----+--- Model ODROID-XU3/4 ---+----+---+------+----------+-----+------+\n") ;
-		physNames = (char *) physNamesOdroidXU3;
-	break;
-	case MODEL_ODROID_N1:
-		printf (" +------+-----+----------+------+---+----+---- Model  ODROID-N1 ----+----+---+------+----------+-----+------+\n") ;
-		physNames = (char *) physNamesOdroidN1;
-	break;
-	case MODEL_ODROID_N2:
-		printf (" +------+-----+----------+------+---+----+---- Model  ODROID-N2 ----+----+---+------+----------+-----+------+\n") ;
-		physNames = (char *) physNamesOdroidN2;
-	break;
-	default:
-		printf ("Oops - unable to determine board type... model: %d\n", model) ;
-	return;
+		case MODEL_ODROID_C1:
+			headerName = (isAll == FALSE) ? "--- C1 ---" : "---- Model  ODROID-C1 ----";
+			physNames = (char *) physNamesOdroidC1;
+			break;
+		case MODEL_ODROID_C2:
+			headerName = (isAll == FALSE) ? "--- C2 ---" : "---- Model  ODROID-C2 ----";
+			if (rev == 1)
+				physNames = (char *) physNamesOdroidC2_Rev1;
+			else
+				physNames = (char *) physNamesOdroidC2_Rev2;
+			break;
+		case MODEL_ODROID_XU3:
+			headerName = (isAll == FALSE) ? "- XU3, 4 -" : "--- Model ODROID-XU3/4 ---";
+			physNames = (char *) physNamesOdroidXU3;
+			break;
+		case MODEL_ODROID_N1:
+			headerName = (isAll == FALSE) ? "--- N1 ---" : "---- Model  ODROID-N1 ----";
+			physNames = (char *) physNamesOdroidN1;
+			break;
+		case MODEL_ODROID_N2:
+			headerName = (isAll == FALSE) ? "--- N2 ---" : "---- Model  ODROID-N2 ----";
+			physNames = (char *) physNamesOdroidN2;
+			break;
+		default:
+			printf("Oops - unknown model: %d\n", model);
+			return;
 	}
-	ReadallOdroid(model, rev, (const char **) physNames);
+
+	printHeader((const char *) headerName, isAll);
+	printBody(model, rev, (const char **) physNames, isAll);
+	printHeader((const char *) headerName, isAll);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -462,9 +508,10 @@ void doReadall (void)
  *	Force reading of all pins regardless of Pi model
  */
 /*----------------------------------------------------------------------------*/
-void doAllReadall (void)
-{
-	doReadall();
+void doAllReadall(void) {
+	char *fakeArgv[3] = { "", "", "--all" };
+
+	doReadall(3, fakeArgv);
 }
 
 /*----------------------------------------------------------------------------*/

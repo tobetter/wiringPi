@@ -44,7 +44,7 @@ extern int wiringPiDebug ;
 
 // External functions I can't be bothered creating a separate .h file for:
 
-extern void doReadall    (void) ;
+extern void doReadall    (int argc, char *argv []);
 extern void doAllReadall (void) ;
 extern void doPins       (void) ;
 extern void doUnexport   (int argc, char *agrv []);
@@ -1208,8 +1208,8 @@ int main (int argc, char *argv [])
 	else if (strcasecmp (argv [1], "pwmc"     ) == 0) doNothing    (argc, argv) ;
 	else if (strcasecmp (argv [1], "pwmTone"  ) == 0) doNothing    (argc, argv) ;
 	else if (strcasecmp (argv [1], "drive"    ) == 0) doPadDrive   (argc, argv) ;
-	else if (strcasecmp (argv [1], "readall"  ) == 0) doReadall    () ;
-	else if (strcasecmp (argv [1], "nreadall" ) == 0) doReadall    () ;
+	else if (strcasecmp (argv [1], "readall"  ) == 0) doReadall    (argc, argv) ;
+	else if (strcasecmp (argv [1], "nreadall" ) == 0) doReadall    (argc, argv) ;
 	else if (strcasecmp (argv [1], "pins"     ) == 0) doPins       () ;
 	else if (strcasecmp (argv [1], "i2cdetect") == 0) doI2Cdetect  (argc, argv) ;
 	else if (strcasecmp (argv [1], "i2cd"     ) == 0) doI2Cdetect  (argc, argv) ;
