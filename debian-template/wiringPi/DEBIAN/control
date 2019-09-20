@@ -1,5 +1,5 @@
 Package: odroid-wiringpi
-Version: 2.44-4.1
+Version: 2.44-5.0
 Section: libraries
 Priority: optional
 Architecture: arm64

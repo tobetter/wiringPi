@@ -1,6 +1,17 @@
+odroid-wiringpi (2.44-5.0) stable; urgency=medium
+
+  * Add readall '--all' option
+    so that 'gpio readall' without any option shows a mini table having width
+    length 79
+  * Add udev rules to configure /dev/gpiomem if it is set with wrong permission
+  * Tune make job counts to improve build speed
+  * Refactor gpio/readall.c
+
+ -- Yang Deokgyu <secugyu@gmail.com>  Fri, 20 Sep 2019 15:01:57 +0900
+
 odroid-wiringpi (2.44-4.1) stable; urgency=medium
 
-  * Fix non-root user who has /dev/gpiomem cannot use gpio command properly 
+  * Fix non-root user who has /dev/gpiomem cannot use gpio command properly
 
  -- Yang Deokgyu <secugyu@gmail.com>  Wed, 11 Sep 2019 11:44:13 +0900
 
