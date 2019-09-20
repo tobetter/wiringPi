@@ -110,7 +110,7 @@ static const int physToWpi [64] =
 } ;
 
 /*----------------------------------------------------------------------------*/
-static const char *physNamesOdroidC1 [64] =
+static const char *physNamesOdroidC1All [64] =
 {
 	NULL,
 
@@ -138,10 +138,41 @@ static const char *physNamesOdroidC1 [64] =
 	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
 	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
 	NULL,NULL,NULL,
-} ;
+};
 
 /*----------------------------------------------------------------------------*/
-static const char *physNamesOdroidC2_Rev2 [64] =
+static const char *physNamesOdroidC1 [64] =
+{
+	NULL,
+
+	"   3.3V", "5V     ",
+	"  SDA.1", "5V     ",
+	"  SCL.1", "0V     ",
+	" IO. 83", "TxD1   ",
+	"     0V", "RxD1   ",
+	" IO. 88", "IO. 87 ",
+	" IO.116", "0V     ",
+	" IO.115", "IO.104 ",
+	"   3.3V", "IO.102 ",
+	"   MOSI", "0V     ",
+	"   MISO", "IO.103 ",
+	"   SCLK", "CE0    ",
+	"     0V", "IO.118 ",
+	"  SDA.2", "SCL.2  ",
+	" IO.101", "0V     ",
+	" IO.100", "IO. 99 ",
+	" IO.108", "0V     ",
+	" IO.97 ", "IO. 98 ",
+	"  AIN.1", "1V8    ",
+	"     0V", "AIN.0  ",
+
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,
+};
+
+/*----------------------------------------------------------------------------*/
+static const char *physNamesOdroidC2All_Rev2 [64] =
 {
 	NULL,
 
@@ -169,10 +200,41 @@ static const char *physNamesOdroidC2_Rev2 [64] =
 	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
 	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
 	NULL,NULL,NULL,
+};
+
+/*----------------------------------------------------------------------------*/
+static const char *physNamesOdroidC2_Rev2 [64] =
+{
+	NULL,
+
+	"   3.3V", "5V     ",
+	"  SDA.1", "5V     ",
+	"  SCL.1", "0V     ",
+	" IO.249", "TxD1   ",
+	"     0V", "RxD1   ",
+	" IO.247", "IO.238 ",
+	" IO.239", "0V     ",
+	" IO.237", "IO.236 ",
+	"   3.3V", "IO.233 ",
+	" IO.235", "0V     ",
+	" IO.232", "IO.231 ",
+	" IO.230", "IO.229 ",
+	"     0V", "IO.225 ",
+	"  SDA.2", "SCL.2  ",
+	" IO.228", "0V     ",
+	" IO.219", "IO.224 ",
+	" IO.234", "0V     ",
+	" IO.214", "IO.218 ",
+	"  AIN.1", "1V8    ",
+	"     0V", "AIN.0  ",
+
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,
 } ;
 
 /*----------------------------------------------------------------------------*/
-static const char *physNamesOdroidC2_Rev1 [64] =
+static const char *physNamesOdroidC2All_Rev1 [64] =
 {
 	NULL,
 
@@ -200,10 +262,41 @@ static const char *physNamesOdroidC2_Rev1 [64] =
 	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
 	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
 	NULL,NULL,NULL,
-} ;
+};
 
 /*----------------------------------------------------------------------------*/
-static const char *physNamesOdroidXU3 [64] =
+static const char *physNamesOdroidC2_Rev1 [64] =
+{
+	NULL,
+
+	"   3.3V", "5V     ",
+	"  SDA.1", "5V     ",
+	"  SCL.1", "0V     ",
+	" IO.214", "-------",
+	"     0V", "-------",
+	" IO.219", "IO.218 ",
+	" IO.247", "0V     ",
+	"-------", "IO.235 ",
+	"   3.3V", "IO.233 ",
+	" IO.238", "0V     ",
+	" IO.237", "IO.234 ",
+	" IO.236", "IO.248 ",
+	"     0V", "IO.249 ",
+	"  SDA.2", "SCL.2  ",
+	" IO.232", "0V     ",
+	" IO.231", "IO.230 ",
+	" IO.239", "0V     ",
+	" IO.228", "IO.229 ",
+	"  AIN.1", "1V8    ",
+	"     0V", "AIN.0  ",
+
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,
+};
+
+/*----------------------------------------------------------------------------*/
+static const char *physNamesOdroidXU3All [64] =
 {
 	NULL,
 
@@ -231,10 +324,41 @@ static const char *physNamesOdroidXU3 [64] =
 	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
 	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
 	NULL,NULL,NULL,
-} ;
+};
 
 /*----------------------------------------------------------------------------*/
-static const char *physNamesOdroidN1 [64] =
+static const char *physNamesOdroidXU3 [64] =
+{
+	NULL,
+
+	"   3.3V", "5V     ",
+	"I2C1.DA", "5V     ",
+	"I2C1.CL", "0V     ",
+	" IO. 18", "UART.TX",
+	"     0V", "UART.RX",
+	" IO.174", "IO.173 ",
+	" IO. 21", "0V     ",
+	" IO. 22", "IO. 19 ",
+	"   3.3V", "IO. 23 ",
+	"   MOSI", "0V     ",
+	"   MISO", "IO. 24 ",
+	"   SCLK", "CE0    ",
+	"     0V", "IO. 25 ",
+	"I2C5.DA", "I2C5.CL",
+	" IO. 28", "0V     ",
+	" IO. 30", "IO. 29 ",
+	" IO. 31", "0V     ",
+	" PWR ON", "IO. 33 ",
+	"  AIN.0", "1V8    ",
+	"     0V", "AIN.3  ",
+
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,
+};
+
+/*----------------------------------------------------------------------------*/
+static const char *physNamesOdroidN1All [64] =
 {
 	NULL,
 
@@ -262,10 +386,41 @@ static const char *physNamesOdroidN1 [64] =
 	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
 	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
 	NULL,NULL,NULL,
-} ;
+};
 
 /*----------------------------------------------------------------------------*/
-static const char *physNamesOdroidN2 [64] =
+static const char *physNamesOdroidN1 [64] =
+{
+	NULL,
+
+	"   3.0V", "5V     ",
+	"I2C4.DA", "5V     ",
+	"I2C4.CL", "0V     ",
+	" IO1A.0", "UART.TX",
+	"     0V", "UART.RX",
+	" IO1A.1", "IO1A.2 ",
+	" IO1A.3", "0V     ",
+	" IO1A.4", "IO1B.5 ",
+	"   3.0V", "IO1C.2 ",
+	"SPI.TXD", "0V     ",
+	"SPI.RXD", "IO1D.0 ",
+	"SPI.CLK", "SPI.CSN",
+	"     0V", "IO1C.6 ",
+	"I2C8.DA", "I2C8.CL",
+	"SPDIF.T", "0V     ",
+	"   PWM1", "IO4D.4 ",
+	" IO4D.0", "0V     ",
+	" IO4D.5", "IO4D.6 ",
+	"   AIN1", "1V8    ",
+	"     0V", "AIN0   ",
+
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,
+};
+
+/*----------------------------------------------------------------------------*/
+static const char *physNamesOdroidN2All [64] =
 {
 	NULL,
 
@@ -293,19 +448,59 @@ static const char *physNamesOdroidN2 [64] =
 	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
 	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
 	NULL,NULL,NULL,
-} ;
+};
+
+/*----------------------------------------------------------------------------*/
+static const char *physNamesOdroidN2 [64] =
+{
+	NULL,
+
+	"   3.3V", "5V     ",
+	"  SDA.2", "5V     ",
+	"  SCL.2", "0V     ",
+	" IO.473", "TxD1   ",
+	"     0V", "RxD1   ",
+	" IO.479", "IO.492 ",
+	" IO.480", "0V     ",
+	" IO.483", "IO.476 ",
+	"   3.3V", "IO.477 ",
+	"   MOSI", "0V     ",
+	"   MISO", "IO.478 ",
+	"   SCLK", "CE0    ",
+	"     0V", "IO.464 ",
+	"  SDA.3", "SCL.3  ",
+	" IO.490", "0V     ",
+	" IO.491", "IO.472 ",
+	" IO.481", "0V     ",
+	" IO.482", "IO.495 ",
+	"  AIN.3", "1V8    ",
+	"     0V", "AIN.2  ",
+
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,
+};
 
 /*----------------------------------------------------------------------------*/
 static void readallPhys(int model, int UNU rev, int physPin, const char *physNames[], int isAll) {
 	int pin ;
 
 	// GPIO, wPi pin number
-	if ((physPinToGpio (physPin) == -1) && (physToWpi [physPin] == -1))
-		printf (" |      |    ") ;
-	else if (physPinToGpio (physPin) != -1)
-		printf (" |  %3d | %3d", physPinToGpio (physPin), physToWpi [physPin]);
-	else
-		printf (" |      | %3d", physToWpi [physPin]);
+	if (isAll == TRUE) {
+		if ((physPinToGpio (physPin) == -1) && (physToWpi [physPin] == -1))
+			printf(" |      |    ");
+		else if (physPinToGpio (physPin) != -1) {
+			printf(" |  %3d | %3d", physPinToGpio(physPin), physToWpi[physPin]);
+		} else
+			printf(" |      | %3d", physToWpi [physPin]);
+	} else {
+		if ((physPinToGpio (physPin) == -1) && (physToWpi [physPin] == -1))
+			printf(" |     |    ");
+		else if (physPinToGpio (physPin) != -1) {
+			printf(" | %3d | %3d", physPinToGpio(physPin), physToWpi[physPin]);
+		} else
+			printf(" |     | %3d", physToWpi [physPin]);
+	}
 
 	// GPIO pin name
 	printf (" | %s", physNames [physPin]) ;
@@ -356,7 +551,7 @@ static void readallPhys(int model, int UNU rev, int physPin, const char *physNam
 		printf(" |");
 		if (isAll == TRUE)
 			printf("       |    |");
-		printf ("   |     ");
+		printf("   |     ");
 	} else {
 		if (wpMode == MODE_GPIO)
 			pin = physPinToGpio (physPin);
@@ -384,28 +579,37 @@ static void readallPhys(int model, int UNU rev, int physPin, const char *physNam
 				break;
 			}
 		}
-		printf (" | %d", digitalRead (pin));
-		printf (" | %-4s", alts [getAlt (pin)]);
+		printf(" | %d", digitalRead (pin));
+		printf(" | %-4s", alts [getAlt (pin)]);
 	}
 
 	// GPIO pin name
 	printf (" | %-6s", physNames [physPin]);
 
 	// GPIO, wPi pin number
-	if ((physPinToGpio (physPin) == -1) && (physToWpi [physPin] == -1))
-		printf (" |     |     ") ;
-	else if (physPinToGpio (physPin) != -1)
-		printf (" | %-3d |  %-3d", physToWpi [physPin], physPinToGpio (physPin));
-	else
-		printf (" | %-3d |     ", physToWpi [physPin]);
+	if (isAll == TRUE) {
+		if ((physPinToGpio (physPin) == -1) && (physToWpi [physPin] == -1))
+			printf(" |     |     ");
+		else if (physPinToGpio (physPin) != -1)
+			printf(" | %-3d | %-3d ", physToWpi [physPin], physPinToGpio (physPin));
+		else
+			printf(" | %-3d |     ", physToWpi [physPin]);
+	} else {
+		if ((physPinToGpio (physPin) == -1) && (physToWpi [physPin] == -1))
+			printf(" |     |    ");
+		else if (physPinToGpio (physPin) != -1)
+			printf(" | %-3d | %-3d", physToWpi [physPin], physPinToGpio (physPin));
+		else
+			printf(" | %-3d |    ", physToWpi [physPin]);
+	}
 
 	printf (" |\n") ;
 }
 
 /*----------------------------------------------------------------------------*/
 static void printHeader(const char *headerName, int isAll) {
-	const char *headerLeft = " +------+-----+----------+------+---+";
-	const char *headerRight = "+---+------+----------+-----+------+\n";
+	const char *headerLeft = " +-----+-----+---------+------+---+";
+	const char *headerRight = "+---+------+---------+-----+-----+\n";
 	const char *headerLeftAll = " +------+-----+----------+------+---+----+";
 	const char *headerRightAll = "+----+---+------+----------+-----+------+\n";
 
@@ -418,8 +622,8 @@ static void printHeader(const char *headerName, int isAll) {
 static void printBody(int model, int rev, const char *physNames[], int isAll) {
 	(isAll == FALSE)
 		? printf(
-			" | GPIO | wPi |   Name   | Mode | V | Physical | V | Mode |   Name   | wPi | GPIO |\n"
-			" +------+-----+----------+------+---+----++----+---+------+----------+-----+------+\n")
+			" | I/O | wPi |   Name  | Mode | V | Physical | V | Mode |  Name   | wPi | I/O |\n"
+			" +-----+-----+---------+------+---+----++----+---+------+---------+-----+-----+\n")
 		: printf(
 			" | GPIO | wPi |   Name   | Mode | V | DS | PU/PD | Physical | PU/PD | DS | V | Mode |   Name   | wPi | GPIO |\n"
 			" +------+-----+----------+------+---+----+-------+----++----+-------+----+---+------+----------+-----+------+\n");
@@ -427,8 +631,8 @@ static void printBody(int model, int rev, const char *physNames[], int isAll) {
 		readallPhys(model, rev, pin, physNames, isAll);
 	(isAll == FALSE)
 		? printf(
-			" +------+-----+----------+------+---+----++----+---+------+----------+-----+------+\n"
-			" | GPIO | wPi |   Name   | Mode | V | Physical | V | Mode |   Name   | wPi | GPIO |\n")
+			" +-----+-----+---------+------+---+----++----+---+------+---------+-----+-----+\n"
+			" | I/O | wPi |   Name  | Mode | V | Physical | V | Mode |  Name   | wPi | I/O |\n")
 		: printf(
 			" +------+-----+----------+------+---+----+-------+----++----+-------+----+---+------+----------+-----+------+\n"
 			" | GPIO | wPi |   Name   | Mode | V | DS | PU/PD | Physical | PU/PD | DS | V | Mode |   Name   | wPi | GPIO |\n");
@@ -471,26 +675,26 @@ void doReadall(int argc, char *argv[]) {
 	switch (model) {
 		case MODEL_ODROID_C1:
 			headerName = (isAll == FALSE) ? "--- C1 ---" : "---- Model  ODROID-C1 ----";
-			physNames = (char *) physNamesOdroidC1;
+			physNames = (char *) ((isAll == FALSE) ? physNamesOdroidC1 : physNamesOdroidC1All);
 			break;
 		case MODEL_ODROID_C2:
 			headerName = (isAll == FALSE) ? "--- C2 ---" : "---- Model  ODROID-C2 ----";
 			if (rev == 1)
-				physNames = (char *) physNamesOdroidC2_Rev1;
+				physNames = (char *) ((isAll == FALSE) ? physNamesOdroidC2_Rev1 : physNamesOdroidC2All_Rev1);
 			else
-				physNames = (char *) physNamesOdroidC2_Rev2;
+				physNames = (char *) ((isAll == FALSE) ? physNamesOdroidC2_Rev2 : physNamesOdroidC2All_Rev2);
 			break;
 		case MODEL_ODROID_XU3:
 			headerName = (isAll == FALSE) ? "- XU3, 4 -" : "--- Model ODROID-XU3/4 ---";
-			physNames = (char *) physNamesOdroidXU3;
+			physNames = (char *) ((isAll == FALSE) ? physNamesOdroidXU3 : physNamesOdroidXU3All);
 			break;
 		case MODEL_ODROID_N1:
 			headerName = (isAll == FALSE) ? "--- N1 ---" : "---- Model  ODROID-N1 ----";
-			physNames = (char *) physNamesOdroidN1;
+			physNames = (char *) ((isAll == FALSE) ? physNamesOdroidN1 : physNamesOdroidN1All);
 			break;
 		case MODEL_ODROID_N2:
 			headerName = (isAll == FALSE) ? "--- N2 ---" : "---- Model  ODROID-N2 ----";
-			physNames = (char *) physNamesOdroidN2;
+			physNames = (char *) ((isAll == FALSE) ? physNamesOdroidN2 : physNamesOdroidN2All);
 			break;
 		default:
 			printf("Oops - unknown model: %d\n", model);
