@@ -73,7 +73,7 @@ configure_gpiomem() {
 
 sudo=${WIRINGPI_SUDO-sudo}
 make="make -j $(( $(nproc) + 1 ))"
-hardware=$(fgrep Hardware /proc/cpuinfo | head -1 | awk '{ printf("%s %s %s\n", $3, $4, $5) }' | xargs)
+hardware=$(fgrep -a Hardware /proc/cpuinfo | head -1 | awk '{ printf("%s %s %s\n", $3, $4, $5) }' | xargs)
 
 if [ x$1 = "xclean" ]; then
   cd wiringPi
