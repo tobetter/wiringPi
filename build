@@ -51,7 +51,10 @@ configure_gpiomem() {
       *xu4)
         $sudo cp -f udev/rules.d/99-odroid-wiringpi-exynos.rules /etc/udev/rules.d/
         ;;
-      *c|*c1|*c2|*n2)
+      *c|*c1|*c2)
+        $sudo cp -f udev/rules.d/99-odroid-wiringpi-meson.rules /etc/udev/rules.d/
+        ;;
+      *n2)
         $sudo cp -f udev/rules.d/99-odroid-wiringpi-aml.rules /etc/udev/rules.d/
         ;;
       *)
