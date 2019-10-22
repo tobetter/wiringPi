@@ -14,7 +14,7 @@ case "$1" in
 				*xu4)
 					cp -f /tmp/odroid-wiringpi/rules.d/99-odroid-wiringpi-exynos.rules /etc/udev/rules.d
 					;;
-				*c1|*c2|*n2)
+				*c|*c1|*c2|*n2)
 					cp -f /tmp/odroid-wiringpi/rules.d/99-odroid-wiringpi-aml.rules	/etc/udev/rules.d
 					;;
 				*)
