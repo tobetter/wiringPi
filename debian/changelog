@@ -1,3 +1,9 @@
+odroid-wiringpi (2.44-5.1) stable; urgency=medium
+
+  * Fix for parsing /proc/cpuinfo properly
+
+ -- Yang Deokgyu <secugyu@gmail.com>  Tue, 22 Oct 2019 14:47:20 +0900
+
 odroid-wiringpi (2.44-5.0) stable; urgency=medium
 
   * Add readall '--all' option
