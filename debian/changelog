@@ -1,3 +1,9 @@
+odroid-wiringpi (2.44-5.2) stable; urgency=medium
+
+  * Fix for parsing /proc/cpuinfo on ODROID-C
+
+ -- Yang Deokgyu <secugyu@gmail.com>  Tue, 22 Oct 2019 15:27:13 +0900
+
 odroid-wiringpi (2.44-5.1) stable; urgency=medium
 
   * Fix for parsing /proc/cpuinfo properly
