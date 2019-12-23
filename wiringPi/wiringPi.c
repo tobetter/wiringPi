@@ -315,7 +315,7 @@ void setUsingGpioMem( const unsigned int value )
 /*----------------------------------------------------------------------------*/
 int piGpioLayout (void)
 {
-	FILE *cpuFd ;
+	FILE *cpuFd, *dtFd;
 	char line [120] ;
 	char *c ;
 	static int  gpioLayout = -1 ;
@@ -325,21 +325,34 @@ int piGpioLayout (void)
 
 	gpioLayout = 1;
 
-	if ((cpuFd = fopen ("/proc/cpuinfo", "r")) == NULL)
+	if ((cpuFd = fopen ("/proc/cpuinfo", "r")) != NULL) {
+		while (fgets (line, 120, cpuFd) != NULL)
+			if (strncmp (line, "Hardware", 8) == 0)
+				break ;
+
+		if (strncmp (line, "Hardware", 8) != 0)
+			wiringPiFailure (WPI_FATAL, "No \"Hardware\" line") ;
+
+		if (wiringPiDebug)
+			printf ("piGpioLayout: Hardware: %s\n", line) ;
+
+		if (!(strstr (line, "ODROID"))) {
+			if ((dtFd = fopen("/sys/firmware/devicetree/base/model", "r")) != NULL) {
+				if (fgets(line, 30, dtFd) == NULL)
+					wiringPiFailure (WPI_FATAL, "Unable to read /sys/firmware/devicetree/base/model");
+
+				if (wiringPiDebug)
+					printf ("piGpioLayout: devicetree/base/model: %s\n", line) ;
+
+				if (!(strstr (line, "Odroid")))
+					wiringPiFailure (WPI_FATAL, "** This board is not ODROID. **") ;
+			} else {
+				wiringPiFailure (WPI_FATAL, "Unable to open /sys/firmware/devicetree/base/model") ;
+			}
+		}
+	} else {
 		wiringPiFailure (WPI_FATAL, "Unable to open /proc/cpuinfo") ;
-
-	while (fgets (line, 120, cpuFd) != NULL)
-		if (strncmp (line, "Hardware", 8) == 0)
-			break ;
-
-	if (strncmp (line, "Hardware", 8) != 0)
-		wiringPiFailure (WPI_FATAL, "No \"Hardware\" line") ;
-
-	if (wiringPiDebug)
-		printf ("piGpioLayout: Hardware: %s\n", line) ;
-
-	if (!(strstr (line, "ODROID")))
-		wiringPiFailure (WPI_FATAL, "** This board is not ODROID. **") ;
+	}
 
 	rewind (cpuFd) ;
 	while (fgets (line, 120, cpuFd) != NULL)
