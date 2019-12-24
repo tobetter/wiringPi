@@ -1,3 +1,12 @@
+odroid-wiringpi (2.44-6.0) stable; urgency=medium
+
+  * WiringPi: Get model name from Device Tree if not able from cpuinfo
+  * wiringPi/Makefile: Remove legacy files when uninstallation
+  * build: Clean up build script and do uninstall/clean before install
+  * debian: libwiringpi2: Remove previous built header files after installing
+
+ -- Yang Deokgyu <secugyu@gmail.com>  Tue, 24 Dec 2019 11:13:43 +0900
+
 odroid-wiringpi (2.44-5.3) stable; urgency=medium
 
   * Add a udev rules file for meson-gpiomem for ODROID-C/C2 boards
