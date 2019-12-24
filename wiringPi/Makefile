@@ -138,7 +138,7 @@ install-deb:	$(DYNAMIC)
 .PHONY:	uninstall
 uninstall:
 	$Q echo "[UnInstall]"
-	$Q cd $(DESTDIR)$(PREFIX)/include/ && rm -f $(HEADERS)
+	$Q cd $(DESTDIR)$(PREFIX)/include/ && rm -f $(HEADERS) wiringOdroid*.h
 	$Q cd $(DESTDIR)$(PREFIX)/lib/     && rm -f libwiringPi.*
 	$Q $(LDCONFIG)
 
