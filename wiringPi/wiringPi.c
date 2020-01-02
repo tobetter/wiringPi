@@ -336,7 +336,7 @@ int piGpioLayout (void)
 		if (wiringPiDebug)
 			printf ("piGpioLayout: Hardware: %s\n", line) ;
 
-		if (!(strstr (line, "ODROID"))) {
+		if (!(strcasestr (line, "odroid"))) {
 			if ((dtFd = fopen("/sys/firmware/devicetree/base/model", "r")) != NULL) {
 				if (fgets(line, 30, dtFd) == NULL)
 					wiringPiFailure (WPI_FATAL, "Unable to read /sys/firmware/devicetree/base/model");
@@ -344,7 +344,7 @@ int piGpioLayout (void)
 				if (wiringPiDebug)
 					printf ("piGpioLayout: devicetree/base/model: %s\n", line) ;
 
-				if (!(strstr (line, "Odroid")))
+				if (!(strcasestr (line, "odroid")))
 					wiringPiFailure (WPI_FATAL, "** This board is not ODROID. **") ;
 			} else {
 				wiringPiFailure (WPI_FATAL, "Unable to open /sys/firmware/devicetree/base/model") ;
