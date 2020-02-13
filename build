@@ -51,9 +51,12 @@ check_make_ok() {
 }
 
 configure_gpiomem() {
+  [ $(env | grep DEB_BUILD | wc -l) -ne 0 ] && return
+
   GPIOMEM="/dev/gpiomem"
 
   if [ -z $1 ] && [ "$(stat -c "%a %G" "$GPIOMEM")" != "660"*"odroid" ]; then
+    echo "Configure /dev/gpiomem"
     case "$(echo $hardware | tr [:upper:] [:lower:])" in
       *xu4)
         $sudo cp -f udev/rules.d/99-odroid-wiringpi-exynos.rules /etc/udev/rules.d/
@@ -74,6 +77,7 @@ configure_gpiomem() {
       && $sudo udevadm trigger \
       || echo "udevadm not found. Please reboot to take effect"
   elif [ "$1" = "uninstall" ]; then
+    echo "Deconfigure /dev/gpiomem"
     $sudo rm -f /etc/udev/rules.d/99-odroid-wiringpi-*
   else
     echo "Not found $GPIOMEM"
@@ -125,7 +129,6 @@ install() {
   check_make_ok
 
   echo
-  echo "Configure /dev/gpiomem"
   cd ..
   configure_gpiomem
 
@@ -149,7 +152,7 @@ uninstall() {
   cd ../gpio
   echo -n "gpio:     " ; $sudo $make uninstall
   cd ..
-  echo -n "Deconfigure /dev/gpiomem" ; configure_gpiomem uninstall
+  configure_gpiomem uninstall
   echo
 }
 
