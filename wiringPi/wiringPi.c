@@ -783,8 +783,7 @@ int wiringPiISR (int pin, int mode, void (*function)(void))
 	// a full installation of wiringPi. It's a bit 'clunky', but it
 	// is a way that will work when we're running in "Sys" mode, as
 	// a non-root user. (without sudo)
-	if (mode != INT_EDGE_SETUP)
-	{
+	if (mode != INT_EDGE_SETUP) {
 		if (mode == INT_EDGE_FALLING)
 			modeS = "falling" ;
 		else if (mode == INT_EDGE_RISING)
@@ -794,56 +793,44 @@ int wiringPiISR (int pin, int mode, void (*function)(void))
 
 		sprintf (pinS, "%d", GpioPin) ;
 
-#ifndef __ANDROID__
-		if ((pid = fork ()) < 0)	// Fail
-			return wiringPiFailure (
-				WPI_FATAL,
-				"wiringPiISR: fork failed: %s\n",
-				strerror (errno));
-
-		// Child, exec
-		if (pid == 0) {
-			if (access ("/usr/local/bin/gpio", X_OK) == 0) {
-				execl ("/usr/local/bin/gpio", "gpio", "edge",
-					pinS, modeS, (char *)NULL) ;
-				return wiringPiFailure (
-					WPI_FATAL,
-					"wiringPiISR: execl failed: %s\n",
-					strerror (errno));
-			} else if (access ("/usr/bin/gpio", X_OK) == 0) {
-				execl ("/usr/bin/gpio", "gpio", "edge",
-					pinS, modeS, (char *)NULL) ;
-				return wiringPiFailure (
-					WPI_FATAL,
-					"wiringPiISR: execl failed: %s\n",
-					strerror (errno));
-			} else
-				return wiringPiFailure (
-					WPI_FATAL,
-					"wiringPiISR: Can't find gpio program\n");
-		}
-		else	// Parent, wait
-			wait (NULL) ;
-#else
 		FILE *export, *direct, *edge;
+		int count;
+
 		export = fopen("/sys/class/gpio/export", "w") ;
 		fprintf (export, "%d\n", GpioPin) ;
 		fclose (export) ;
 
 		char fDirection[64];
 		sprintf (fDirection, "/sys/class/gpio/gpio%d/direction", GpioPin) ;
-		while ((direct= fopen(fDirection, "w")) == NULL) {
-			sleep(1);
+		for(count = 5; count > 0; --count) {
+			if((direct = fopen(fDirection, "w")) != NULL)
+				break;
+			else
+				if(count != 1)
+					sleep(1);
+				else
+					return wiringPiFailure (
+						WPI_FATAL,
+						"wiringPiISR: unable to open %s: %s\n",
+						fDirection, strerror (errno)) ;
 		}
 		fprintf (direct, "in\n") ;
 		fclose (direct) ;
 
 		char fEdge[64];
 		sprintf (fEdge, "/sys/class/gpio/gpio%d/edge", GpioPin) ;
-		while ((edge= fopen(fEdge, "w")) == NULL) {
-			sleep(1);
+		for(count = 5; count > 0; --count) {
+			if((edge = fopen(fEdge, "w")) != NULL)
+				break;
+			else
+				if(count != 1)
+					sleep(1);
+				else
+					return wiringPiFailure (
+						WPI_FATAL,
+						"wiringPiISR: unable to open %s: %s\n",
+						fEdge, strerror (errno)) ;
 		}
-
 		if (mode  == INT_EDGE_FALLING)
 			fprintf (edge, "falling\n");
 		else if (mode  == INT_EDGE_RISING)
@@ -853,7 +840,6 @@ int wiringPiISR (int pin, int mode, void (*function)(void))
 		else
 			fprintf (edge, "none\n");
 		fclose (edge) ;
-#endif
 	}
 
 	// Now pre-open the /sys/class node - but it may already be open if
