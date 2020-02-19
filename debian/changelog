@@ -1,3 +1,9 @@
+odroid-wiringpi (2.44-6.2) stable; urgency=medium
+
+  * WiringPi: Fix issue where 'wiringPiISR' can't run without sudo
+
+ -- Deokgyu Yang <secugyu@gmail.com>  Wed, 19 Feb 2020 14:37:50 +0900
+
 odroid-wiringpi (2.44-6.1) stable; urgency=medium
 
   * WiringPi: Ignore case when identifying a board
