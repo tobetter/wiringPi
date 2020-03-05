@@ -44,10 +44,13 @@
 /*----------------------------------------------------------------------------*/
 const char *piModelNames [16] =
 {
+	// These names must be full name of the board.
+	// And, the model name on the target board has to be a part of an item of the array.
+	// e.g, ODROID-C or ODROID-XU3/4 may not be used for recognizing a board.
 	"Unknown",
 	"ODROID-C1/C1+",
 	"ODROID-C2",
-	"ODROID-XU3/4",
+	"ODROID-XU3/XU4",
 	"ODROID-N1",
 	"ODROID-N2",
 	"ODROID-C4",
@@ -315,148 +318,148 @@ void setUsingGpioMem( const unsigned int value )
 }
 
 /*----------------------------------------------------------------------------*/
-int piGpioLayout (void)
-{
-	FILE *cpuFd, *dtFd;
-	char line [120] ;
-	char *c ;
-	static int  gpioLayout = -1 ;
+int getModelFromCpuinfo(char *line, FILE *cpuFd) {
+	char *model;
 
-	if (gpioLayout != -1)
-		return	gpioLayout;
+	if ((cpuFd = fopen("/proc/cpuinfo", "r")) != NULL) {
+		while (fgets(line, 120, cpuFd) != NULL) {
+			if (strncmp(line, "Hardware", 8) == 0)
+				break;
+		}
 
-	gpioLayout = 1;
+		if (!(strncmp(line, "Hardware", 8) != 0)) {
+			if (wiringPiDebug)
+				printf("piGpioLayout: %s: Hardware: %s\n", __func__, line);
 
-	if ((cpuFd = fopen ("/proc/cpuinfo", "r")) != NULL) {
-		while (fgets (line, 120, cpuFd) != NULL)
-			if (strncmp (line, "Hardware", 8) == 0)
-				break ;
+			model = strcasestr(line, "odroid");
+			if (!model)
+				return -1;
 
-		if (strncmp (line, "Hardware", 8) != 0)
-			wiringPiFailure (WPI_FATAL, "No \"Hardware\" line") ;
+			strcpy(line, model);
+			return 0;
+		}
+	}
+
+	return -1;
+}
+
+/*----------------------------------------------------------------------------*/
+int getModelFromDt(char *line, FILE *dtFd) {
+	char *model;
+
+	if ((dtFd = fopen("/sys/firmware/devicetree/base/model", "r")) != NULL) {
+		if (fgets(line, 120, dtFd) == NULL)
+			return -1;
 
 		if (wiringPiDebug)
-			printf ("piGpioLayout: Hardware: %s\n", line) ;
+			printf("piGpioLayout: %s: Hardware: %s\n", __func__, line);
 
-		if (!(strcasestr (line, "odroid"))) {
-			if ((dtFd = fopen("/sys/firmware/devicetree/base/model", "r")) != NULL) {
-				if (fgets(line, 30, dtFd) == NULL)
-					wiringPiFailure (WPI_FATAL, "Unable to read /sys/firmware/devicetree/base/model");
+		model = strcasestr(line, "odroid");
+		if (!model)
+			return -1;
 
-				if (wiringPiDebug)
-					printf ("piGpioLayout: devicetree/base/model: %s\n", line) ;
-
-				if (!(strcasestr (line, "odroid")))
-					wiringPiFailure (WPI_FATAL, "** This board is not ODROID. **") ;
-			} else {
-				wiringPiFailure (WPI_FATAL, "Unable to open /sys/firmware/devicetree/base/model") ;
-			}
-		}
-	} else {
-		wiringPiFailure (WPI_FATAL, "Unable to open /proc/cpuinfo") ;
+		strcpy(line, model);
+		return 0;
 	}
 
-	rewind (cpuFd) ;
-	while (fgets (line, 120, cpuFd) != NULL)
-		if (strncmp (line, "Revision", 8) == 0)
-			break ;
-	fclose (cpuFd) ;
+	return -1;
+}
 
-	if (strncmp (line, "Revision", 8) != 0)
-		wiringPiFailure (WPI_FATAL, "No \"Revision\" line") ;
+/*----------------------------------------------------------------------------*/
+int piGpioLayout (void) {
+	FILE *cpuFd = NULL, *dtFd = NULL;
+	char line[120];
+	char *model, *modelCodename, *buf, *seps = "\t\n\v\f\r ";
+	int sizeOfAssignedModelNames = 0;
+	int i;
 
-	for (c = &line [strlen (line) - 1] ; (*c == '\n') || (*c == '\r') ; --c)
-		*c = 0 ;
+	if (getModelFromCpuinfo(line, cpuFd) != 0 && getModelFromDt(line, dtFd) != 0)
+		wiringPiFailure(WPI_FATAL, "** This board is not an Odroid **");
 
-	if (wiringPiDebug)
-		printf ("piGpioLayout: Revision string: %s\n", line) ;
+	for (i = 1; i < (int)(sizeof(piModelNames) / sizeof(char*)); i++) {
+		if (piModelNames[i] == NULL) {
+			sizeOfAssignedModelNames = i - 1;
+			break;
+		}
+	}
 
-	// Scan to the first character of the revision number
-	for (c = line ; *c ; ++c)
-		if (*c == ':')
-			break ;
+	i = strlen(line) - 1;
+	while (i >= 0 && strchr(seps, line[i]) != NULL) {
+		line[i] = '\0';
+		i--;
+	}
 
-	if (*c != ':')
-		wiringPiFailure (WPI_FATAL, "Bogus \"Revision\" line (no colon)") ;
+	buf = strchr(line, '-');
+	modelCodename = buf != NULL ? buf : strchr(line, ' ');
+	if (modelCodename == NULL)
+		wiringPiFailure(WPI_FATAL, "** Model string on this board is not well formatted **");
+	modelCodename++;
 
-	// Chomp spaces
-	++c ;
-	while (isspace (*c))
-		++c ;
+	libwiring.model = 0;
+	for (i = 1; i <= sizeOfAssignedModelNames; i++) {
+		model = strstr(piModelNames[i], "-");
 
-	if (!isxdigit (*c))
-		wiringPiFailure (WPI_FATAL, "Bogus \"Revision\" line (no hex digit at start of revision)") ;
+		if (strcasestr(model, modelCodename) != NULL) {
+			libwiring.model = i;
+			break;
+		}
+	}
 
-	// Make sure its long enough
-	if (strlen (c) < 4)
-		wiringPiFailure (WPI_FATAL, "Bogus revision line (too small)") ;
+	switch (libwiring.model) {
+		case MODEL_ODROID_C1:
+			libwiring.maker = MAKER_AMLOGIC;
+			libwiring.mem = 2;
+			libwiring.rev = 1;
+			break;
+		case MODEL_ODROID_C2:
+			libwiring.maker = MAKER_AMLOGIC;
+			libwiring.mem = 3;
+			{
+				int fd = 0;
+				char buf[2];
 
-	// Isolate  last 4 characters: (in-case of overvolting or new encoding scheme)
-	c = c + strlen (c) - 4 ;
-
-	if (wiringPiDebug)
-		printf ("piGpioLayout: last4Chars are: \"%s\"\n", c) ;
-
-	if ((strcmp (c, "0002") == 0) || (strcmp (c, "0003") == 0) ||
-	    (strcmp (c, "000a") == 0) || (strcmp (c, "0100") == 0) ||
-	    (strcmp (c, "0400") == 0) )
-		gpioLayout = 1;
-	else
-		gpioLayout = 2;
-
-	if (strcmp (c, "000a") == 0) {
-		libwiring.model	= MODEL_ODROID_C1;
-		libwiring.maker	= MAKER_AMLOGIC;
-		libwiring.mem	= 2;
-		libwiring.rev	= 1;
-	} else if (strcmp (c, "0100") == 0) {
-		libwiring.model	= MODEL_ODROID_XU3;
-		libwiring.maker	= MAKER_SAMSUNG;
-		libwiring.mem	= 3;
-		libwiring.rev	= 1;
-	} else if (strncmp (c, "02", 2) == 0) {
-		libwiring.model	= MODEL_ODROID_C2;
-		libwiring.maker	= MAKER_AMLOGIC;
-		libwiring.mem	= 3;
-		{
-			int fd = 0;
-			char buf[2];
-
-			if ((fd = open ("/sys/class/odroid/boardrev", O_RDONLY)) < 0) {
-				printf ("ERROR : file not found.(boardrev)\n");
-				libwiring.rev = 1;
-			} else {
-				if (read(fd, buf, sizeof(buf)) < 0) {
-					fprintf(stderr, "Unable to read from the file descriptor: %s \n", strerror(errno));
+				if ((fd = open("/sys/class/odroid/boardrev", O_RDONLY)) < 0) {
+					printf ("ERROR : file not found.(boardrev)\n");
+					libwiring.rev = 1;
+				} else {
+					if (read(fd, buf, sizeof(buf)) < 0) {
+						fprintf(stderr, "Unable to read from the file descriptor: %s \n", strerror(errno));
+					}
+					close(fd);
+					libwiring.rev = atoi(buf) + 1;
 				}
-				close(fd);
-				libwiring.rev = atoi(buf) + 1;
 			}
-		}
-	} else if (strncmp (c, "03", 2) == 0) {
-		libwiring.model	= MODEL_ODROID_N1;
-		libwiring.maker	= MAKER_ROCKCHIP;
-		libwiring.mem	= 4;
-		libwiring.rev	= 1;
-	} else if (strncmp (c, "04", 2) == 0) {
-		libwiring.model	= MODEL_ODROID_N2;
-		libwiring.maker	= MAKER_AMLOGIC;
-		libwiring.mem	= 4;
-		libwiring.rev	= 1;
-	} else if (strncmp (c, "05", 2) == 0) {
-		libwiring.model	= MODEL_ODROID_C4;
-		libwiring.maker	= MAKER_AMLOGIC;
-		libwiring.mem	= 4;
-		libwiring.rev	= 1;
-	} else {
-		libwiring.model	= MODEL_UNKNOWN;
-		libwiring.maker	= MAKER_UNKNOWN;
-		libwiring.mem	= 0;
-		libwiring.rev	= 0;
+			break;
+		case MODEL_ODROID_XU3:
+			libwiring.maker = MAKER_SAMSUNG;
+			libwiring.mem = 3;
+			libwiring.rev = 1;
+			break;
+		case MODEL_ODROID_N1:
+			libwiring.maker = MAKER_ROCKCHIP;
+			libwiring.mem = 4;
+			libwiring.rev = 1;
+			break;
+		case MODEL_ODROID_N2:
+			libwiring.maker = MAKER_AMLOGIC;
+			libwiring.mem = 4;
+			libwiring.rev = 1;
+			break;
+		case MODEL_ODROID_C4:
+			libwiring.maker = MAKER_AMLOGIC;
+			libwiring.mem = 4;
+			libwiring.rev = 1;
+			break;
+		case MODEL_UNKNOWN:
+		default:
+			libwiring.model = MAKER_UNKNOWN;
+			libwiring.maker = MAKER_UNKNOWN;
+			libwiring.mem = 0;
+			libwiring.rev = 0;
 	}
 
 	if (wiringPiDebug)
-		printf ("BoardRev: Returning revision: %d\n", libwiring.rev) ;
+		printf("BoardRev: Returning revision: %d\n", libwiring.rev);
 
 	return libwiring.rev;
 }
