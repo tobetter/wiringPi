@@ -32,17 +32,3 @@ vMinFix=$(cut -d. -f3 VERSION)
 echo "#define VERSION \"`cat VERSION`\"" > version.h
 echo "#define VERSION_MAJOR $vMaj"		>> version.h
 echo "#define VERSION_MINOR \"$vMin.$vMinFix\""		>> version.h
-
-rm -f debian-template/wiringPi/DEBIAN/control
-cat > debian-template/wiringPi/DEBIAN/control <<EOF
-Package: odroid-wiringpi
-Version: $(cat VERSION)
-Section: libraries
-Priority: optional
-Architecture: arm64
-Depends: libc6
-Maintainer: Yang Deokgyu <secugyu@gmail.com>
-Description: The wiringPi libraries, headers and gpio command
-  Libraries to allow GPIO access on a ODROID from C and C++
-  and BASIC programs as well as from the command-line
-EOF
