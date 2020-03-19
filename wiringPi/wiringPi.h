@@ -26,9 +26,7 @@
 
 /*----------------------------------------------------------------------------*/
 #include <stdio.h>
-#include <stdarg.h>
 #include <stdint.h>
-#include <stdlib.h>
 #include <pthread.h>
 
 /*----------------------------------------------------------------------------*/
@@ -84,6 +82,10 @@
 #define	PUD_OFF			0
 #define	PUD_DOWN		1
 #define	PUD_UP			2
+
+// PWM
+#define	PWM_MODE_MS		0
+#define	PWM_MODE_BAL		1
 
 // Interrupt levels
 #define	INT_EDGE_SETUP		0
@@ -198,41 +200,6 @@ union	reg_bitfield {
 };
 
 /*----------------------------------------------------------------------------*/
-// wiringPiNodeStruct:
-//	This describes additional device nodes in the extended wiringPi
-//	2.0 scheme of things.
-//	It's a simple linked list for now, but will hopefully migrate to
-//	a binary tree for efficiency reasons - but then again, the chances
-//	of more than 1 or 2 devices being added are fairly slim, so who
-//	knows....
-/*----------------------------------------------------------------------------*/
-struct wiringPiNodeStruct
-{
-	int	pinBase;
-	int	pinMax;
-
-	int	fd;		// Node specific
-	unsigned int data0;	//  ditto
-	unsigned int data1;	//  ditto
-	unsigned int data2;	//  ditto
-	unsigned int data3;	//  ditto
-
-	void		(*pinMode)		(struct wiringPiNodeStruct *node, int pin, int mode);
-	void		(*pullUpDnControl)	(struct wiringPiNodeStruct *node, int pin, int mode);
-	int		(*digitalRead)		(struct wiringPiNodeStruct *node, int pin);
-	// unsigned int	(*digitalRead8)		(struct wiringPiNodeStruct *node, int pin);
-	void		(*digitalWrite)		(struct wiringPiNodeStruct *node, int pin, int value);
-	// void		(*digitalWrite8)	(struct wiringPiNodeStruct *node, int pin, int value);
-	void		(*pwmWrite)		(struct wiringPiNodeStruct *node, int pin, int value);
-	int		(*analogRead)		(struct wiringPiNodeStruct *node, int pin);
-	void		(*analogWrite)		(struct wiringPiNodeStruct *node, int pin, int value);
-
-	struct wiringPiNodeStruct *next;
-};
-
-extern struct wiringPiNodeStruct *wiringPiNodes;
-
-/*----------------------------------------------------------------------------*/
 // Function prototypes
 //	c++ wrappers thanks to a comment by Nick Lott
 //	(and others on the Raspberry Pi forums)
@@ -241,16 +208,13 @@ extern struct wiringPiNodeStruct *wiringPiNodes;
 extern "C" {
 #endif
 
-extern struct wiringPiNodeStruct *wiringPiFindNode (int pin);
-extern struct wiringPiNodeStruct *wiringPiNewNode  (int pinBase, int numPins);
-
 // Internal WiringPi functions
 extern		int  wiringPiFailure	(int fatal, const char *message, ...);
 extern		int  msg		(int type, const char *message, ...);
 extern		int  moduleLoaded	(char *);
 extern		void setupCheck		(const char *fName);
 extern		void usingGpioMemCheck	(const char *what);
-extern		void setUsingGpioMem	( const unsigned int value );
+extern		void setUsingGpioMem	(const unsigned int value);
 
 // Core WiringPi functions
 extern		void wiringPiVersion	(int *major, char **minor);
@@ -271,26 +235,16 @@ extern unsigned int  digitalReadByte	(void);
 extern		void digitalWriteByte	(const int value);
 extern		void pwmWrite		(int pin, int value);
 extern		int  analogRead		(int pin);
-extern		void pwmSetMode		(int mode);
-extern		void pwmSetRange	(unsigned int range);
-extern		void pwmSetClock	(int divisor);
 
 // Hardware specific stuffs
 extern		int  piGpioLayout	(void);
-extern		int  piBoardRev		(void); // Deprecated
 extern		void piBoardId		(int *model, int *rev, int *mem, int *maker, int *warranty);
 extern		int  wpiPinToGpio	(int wpiPin);
 extern		int  physPinToGpio	(int physPin);
 
-// Unsupported
-extern		void pinModeAlt		(int pin, int mode) UNU;
-extern		void analogWrite	(int pin, int value) UNU;
-extern		void pwmToneWrite	(int pin, int freq) UNU;
-extern		void gpioClockSet	(int pin, int freq) UNU;
-extern unsigned int  digitalReadByte	(void) UNU;
-extern unsigned int  digitalReadByte2	(void) UNU;
-extern		void digitalWriteByte	(int value) UNU;
-extern		void digitalWriteByte2	(int value) UNU;
+extern		void pwmSetMode		(int mode);
+extern		void pwmSetRange	(unsigned int range);
+extern		void pwmSetClock	(int divisor);
 
 // Interrupt
 extern		int  waitForInterrupt	(int pin, int mS);

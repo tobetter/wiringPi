@@ -1,8 +1,9 @@
 /*
- * scrollPhat.h:
- *	Simple driver for the Pimoroni Scroll Phat device
+ * blink-thread.c:
+ *	Standard "blink" program in wiringPi. Blinks an LED connected
+ *	to the first GPIO pin.
  *
- * Copyright (c) 2015 Gordon Henderson.
+ * Copyright (c) 2012-2013 Gordon Henderson. <projects@drogon.net>
  ***********************************************************************
  * This file is part of wiringPi:
  *	https://projects.drogon.net/raspberry-pi/wiringpi/
@@ -22,18 +23,39 @@
  ***********************************************************************
  */
 
-extern void scrollPhatPoint      (int x, int y, int colour) ;
-extern void scrollPhatLine       (int x0, int y0, int x1, int y1, int colour) ;
-extern void scrollPhatLineTo     (int x, int y, int colour) ;
-extern void scrollPhatRectangle  (int x1, int y1, int x2, int y2, int colour, int filled) ;
-extern void scrollPhatUpdate     (void) ;
-extern void scrollPhatClear      (void) ;
+#include <stdio.h>
+#include <wiringPi.h>
 
-extern int  scrollPhatPutchar    (int c) ;
-//extern void scrollPhatPutchar    (int c) ;
-extern void scrollPhatPuts       (const char *str) ;
-extern void scrollPhatPrintf     (const char *message, ...) ;
-extern void scrollPhatPrintSpeed (const int cps10) ;
+// LED Pin - wiringPi pin 0 is BCM_GPIO 17.
 
-extern void scrollPhatIntensity  (const int percent) ;
-extern int  scrollPhatSetup      (void) ;
+#define	LED	0
+
+PI_THREAD (blinky)
+{
+  for (;;)
+  {
+    digitalWrite (LED, HIGH) ;	// On
+    delay (500) ;		// mS
+    digitalWrite (LED, LOW) ;	// Off
+    delay (500) ;
+  }
+}
+
+
+int main (void)
+{
+  printf ("Raspberry Pi blink\n") ;
+
+  wiringPiSetup () ;
+  pinMode (LED, OUTPUT) ;
+
+  piThreadCreate (blinky) ;
+
+  for (;;)
+  {
+    printf ("Hello, world\n") ;
+    delay (600) ;
+  }
+
+  return 0 ;
+}

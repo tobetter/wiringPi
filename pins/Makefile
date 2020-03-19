@@ -3,8 +3,7 @@ ifneq ($V,1)
 Q ?= @
 endif
 
-SRC	=	pins.tex	\
-		odroid_xu3.tex	\
+SRC	=	odroid_xu3.tex	\
 		odroid_c1.tex	\
 		odroid_c2.tex	\
 		odroid_n1.tex	\

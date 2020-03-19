@@ -32,6 +32,7 @@
 #include "wiringPi.h"
 #include "../version.h"
 
+/*----------------------------------------------------------------------------*/
 #include "odroidc1.h"
 #include "odroidc2.h"
 #include "odroidxu3.h"
@@ -80,10 +81,10 @@ const char *piMakerNames [16] =
 {
 	"Unknown",	// 0
 	"AMLogic",	// 1
-	"SAMSUNG",	// 2
-	"ROCKCHIP",	// 3
-	"INTEL",	// 4
-	"AMD",		// 5
+	"Samsung",	// 2
+	"Rockchip",	// 3
+	"Unknown04",	// 4
+	"Unknown05",	// 5
 	"Unknown06",	// 6
 	"Unknown07",	// 7
 	"Unknown08",	// 8
@@ -118,19 +119,18 @@ int pthread_cancel(pthread_t h) {
     return pthread_kill(h, 0);
 }
 #endif /* __ANDROID__ */
+
 /*----------------------------------------------------------------------------*/
 
 // Debugging & Return codes
 int wiringPiDebug       = FALSE ;
 int wiringPiReturnCodes = FALSE ;
 
-extern void delay (unsigned int howLong) ;
-
 // ODROID Wiring Library
 struct libodroid	libwiring;
 
-unsigned int 	usingGpioMem	= FALSE;
-int 		wiringPiSetuped	= FALSE;
+unsigned int	usingGpioMem	= FALSE;
+int		wiringPiSetuped	= FALSE;
 
 /*----------------------------------------------------------------------------*/
 //
@@ -187,72 +187,6 @@ int msg (int type, const char *message, ...)
 static void warn_msg(const char *func)
 {
 	msg(MSG_WARN, "(%s) : This function is not supported by ODROID Board.\n", func);
-}
-/*----------------------------------------------------------------------------*/
-//
-// Unsupport Function list on ODROIDs
-//
-/*----------------------------------------------------------------------------*/
-static 	void UNU piGpioLayoutOops	(const char UNU *why)	{ warn_msg(__func__); return; }
-	void gpioClockSet	(int UNU pin, int UNU freq)	{ warn_msg(__func__); return; }
-
-	/* core unsupport function */
-	void pinModeAlt		(int UNU pin, int UNU mode)	{ warn_msg(__func__); return; }
-	void analogWrite	(int UNU pin, int UNU value)	{ warn_msg(__func__); return; }
-	void pwmToneWrite	(int UNU pin, int UNU freq)	{ warn_msg(__func__); return; }
-	void digitalWriteByte2	(const int UNU value)	{ warn_msg(__func__); return; }
-	unsigned int digitalReadByte2 (void)		{ warn_msg(__func__); return -1; }
-/*----------------------------------------------------------------------------*/
-// Extend wiringPi with other pin-based devices and keep track of
-//	them in this structure
-/*----------------------------------------------------------------------------*/
-struct wiringPiNodeStruct *wiringPiNodes = NULL ;
-
-struct wiringPiNodeStruct *wiringPiFindNode (int UNU pin) {	return NULL; }
-
-static		void pinModeDummy		(UNU struct wiringPiNodeStruct *node, UNU int pin, UNU int mode)  { return ; }
-static		void pullUpDnControlDummy	(UNU struct wiringPiNodeStruct *node, UNU int pin, UNU int pud)   { return ; }
-static	unsigned int UNU digitalRead8Dummy		(UNU struct wiringPiNodeStruct *node, UNU int UNU pin)            { return 0 ; }
-static		void UNU digitalWrite8Dummy		(UNU struct wiringPiNodeStruct *node, UNU int pin, UNU int value) { return ; }
-static		int  digitalReadDummy		(UNU struct wiringPiNodeStruct *node, UNU int UNU pin)            { return LOW ; }
-static		void digitalWriteDummy		(UNU struct wiringPiNodeStruct *node, UNU int pin, UNU int value) { return ; }
-static		void pwmWriteDummy		(UNU struct wiringPiNodeStruct *node, UNU int pin, UNU int value) { return ; }
-static		int  analogReadDummy		(UNU struct wiringPiNodeStruct *node, UNU int pin)            { return 0 ; }
-static		void analogWriteDummy		(UNU struct wiringPiNodeStruct *node, UNU int pin, UNU int value) { return ; }
-
-struct wiringPiNodeStruct *wiringPiNewNode (int pinBase, int numPins)
-{
-	int	pin ;
-	struct wiringPiNodeStruct *node ;
-
-	// Minimum pin base is 64
-	if (pinBase < 64)
-		(void)wiringPiFailure (WPI_FATAL, "wiringPiNewNode: pinBase of %d is < 64\n", pinBase) ;
-
-	// Check all pins in-case there is overlap:
-	for (pin = pinBase ; pin < (pinBase + numPins) ; ++pin)
-		if (wiringPiFindNode (pin) != NULL)
-			(void)wiringPiFailure (WPI_FATAL, "wiringPiNewNode: Pin %d overlaps with existing definition\n", pin) ;
-
-	node = (struct wiringPiNodeStruct *)calloc (sizeof (struct wiringPiNodeStruct), 1) ;	// calloc zeros
-	if (node == NULL)
-		(void)wiringPiFailure (WPI_FATAL, "wiringPiNewNode: Unable to allocate memory: %s\n", strerror (errno)) ;
-
-	node->pinBase		= pinBase ;
-	node->pinMax		= pinBase + numPins - 1 ;
-	node->pinMode		= pinModeDummy ;
-	node->pullUpDnControl	= pullUpDnControlDummy ;
-	node->digitalRead	= digitalReadDummy ;
-	//node->digitalRead8	= digitalRead8Dummy ;
-	node->digitalWrite	= digitalWriteDummy ;
-	//node->digitalWrite8	= digitalWrite8Dummy ;
-	node->pwmWrite		= pwmWriteDummy ;
-	node->analogRead	= analogReadDummy ;
-	node->analogWrite	= analogWriteDummy ;
-	node->next		= wiringPiNodes ;
-	wiringPiNodes		= node ;
-
-	return node ;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -465,12 +399,6 @@ int piGpioLayout (void) {
 }
 
 /*----------------------------------------------------------------------------*/
-int piBoardRev (void)
-{
-	return	piGpioLayout ();
-}
-
-/*----------------------------------------------------------------------------*/
 /*
  * piBoardId:
  *	Return the real details of the board we have.
@@ -675,6 +603,7 @@ void digitalWrite (int pin, int value)
 			msg(MSG_WARN, "%s: Not available for pin %d. \n", __func__, pin);
 }
 
+/*----------------------------------------------------------------------------*/
 void pwmWrite(int pin, int value)
 {
 	if (libwiring.pwmWrite) {

@@ -33,20 +33,14 @@
 #include <sys/stat.h>
 
 #include <wiringPi.h>
-#include <wpiExtensions.h>
-
-#include <gertboard.h>
-#include <piFace.h>
 
 #include "../version.h"
 
 extern int wiringPiDebug ;
 
 // External functions I can't be bothered creating a separate .h file for:
-
 extern void doReadall    (int argc, char *argv []);
 extern void doAllReadall (void) ;
-extern void doPins       (void) ;
 extern void doUnexport   (int argc, char *agrv []);
 
 #ifndef TRUE
@@ -65,11 +59,10 @@ char *usage = "Usage: gpio -v\n"
 	"       gpio -h\n"
 	"       gpio [-g|-1] ...\n"
 	"       gpio [-d] ...\n"
-	"       [-x extension:params] [[ -x ...]] ...\n"
 	"       gpio [-p] <read/write/wb> ...\n"
-	"       gpio <read/write/aread/awritewb/pwm/clock/mode> ...\n"
+	"       gpio <read/write/aread/pwm/clock/mode> ...\n"
 	"       gpio <toggle/blink> <pin>\n"
-	"       gpio readall/reset [-a|--all]\n"
+	"       gpio readall [-a|--all]\n"
 	"       gpio unexportall/exports\n"
 	"       gpio export/edge/unexport ...\n"
 	"       gpio wfi <pin> <mode>\n"
@@ -81,10 +74,7 @@ char *usage = "Usage: gpio -v\n"
 	"       gpio unload spi/i2c\n"
 	"       gpio i2cd/i2cdetect\n"
 	"       gpio rbx/rbd\n"
-	"       gpio wb <value>\n"
-	"       gpio usbp high/low\n"
-	"       gpio gbr <channel>\n"
-	"       gpio gbw <channel> <value>" ;	// No trailing newline needed here.
+	"       gpio wb <value>\n";
 
 
 #ifdef	NOT_FOR_NOW
@@ -537,21 +527,6 @@ void doUnexportall (char *progName)
 	}
 }
 
-
-/*
- * doReset:
- *	Reset the GPIO pins - as much as we can do
- *********************************************************************************
- */
-
-static void doReset (UNU char *progName)
-{
-	printf ("GPIO Reset is dangerous and has been removed from the gpio command.\n") ;
-	printf (" - Please write a shell-script to reset the GPIO pins into the state\n") ;
-	printf ("   that you need them in for your applications.\n") ;
-}
-
-
 /*
  * doMode:
  *	gpio mode pin mode ...
@@ -576,18 +551,10 @@ void doMode (int argc, char *argv [])
 	else if (strcasecmp (mode, "out")     == 0) pinMode         (pin, OUTPUT) ;
 	else if (strcasecmp (mode, "output")  == 0) pinMode         (pin, OUTPUT) ;
 	else if (strcasecmp (mode, "pwm")     == 0) pinMode         (pin, PWM_OUTPUT) ;
-	else if (strcasecmp (mode, "pwmTone") == 0) pinMode         (pin, PWM_TONE_OUTPUT) ;
-	else if (strcasecmp (mode, "clock")   == 0) pinMode         (pin, GPIO_CLOCK) ;
 	else if (strcasecmp (mode, "up")      == 0) pullUpDnControl (pin, PUD_UP) ;
 	else if (strcasecmp (mode, "down")    == 0) pullUpDnControl (pin, PUD_DOWN) ;
 	else if (strcasecmp (mode, "tri")     == 0) pullUpDnControl (pin, PUD_OFF) ;
 	else if (strcasecmp (mode, "off")     == 0) pullUpDnControl (pin, PUD_OFF) ;
-	else if (strcasecmp (mode, "alt0")    == 0) pinModeAlt (pin, 0b100) ;
-	else if (strcasecmp (mode, "alt1")    == 0) pinModeAlt (pin, 0b101) ;
-	else if (strcasecmp (mode, "alt2")    == 0) pinModeAlt (pin, 0b110) ;
-	else if (strcasecmp (mode, "alt3")    == 0) pinModeAlt (pin, 0b111) ;
-	else if (strcasecmp (mode, "alt4")    == 0) pinModeAlt (pin, 0b011) ;
-	else if (strcasecmp (mode, "alt5")    == 0) pinModeAlt (pin, 0b010) ;
 	else {
 		fprintf (stderr, "%s: Invalid mode: %s. Should be in/out/pwm/clock/up/down/tri\n", argv [1], mode) ;
 		exit (1) ;
@@ -615,76 +582,6 @@ static void doPadDrive (int argc, char *argv [])
 
 	setPadDrive (pin, val) ;
 }
-
-
-/*
- * doGbw:
- *	gpio gbw channel value
- *	Gertboard Write - To the Analog output
- *********************************************************************************
- */
-
-static void doGbw (int argc, char *argv [])
-{
-	int channel, value ;
-
-	if (argc != 4) {
-		fprintf (stderr, "Usage: %s gbw <channel> <value>\n", argv [0]) ;
-		exit (1) ;
-	}
-
-	channel = atoi (argv [2]) ;
-	value   = atoi (argv [3]) ;
-
-	if ((channel < 0) || (channel > 1)) {
-		fprintf (stderr, "%s: gbw: Channel number must be 0 or 1\n", argv [0]) ;
-		exit (1) ;
-	}
-
-	if ((value < 0) || (value > 255)) {
-		fprintf (stderr, "%s: gbw: Value must be from 0 to 255\n", argv [0]) ;
-		exit (1) ;
-	}
-
-	if (gertboardAnalogSetup (64) < 0) {
-		fprintf (stderr, "Unable to initialise the Gertboard SPI interface: %s\n", strerror (errno)) ;
-		exit (1) ;
-	}
-
-	analogWrite (64 + channel, value) ;
-}
-
-
-/*
- * doGbr:
- *	gpio gbr channel
- *	From the analog input
- *********************************************************************************
- */
-static void doGbr (int argc, char *argv [])
-{
-	int channel ;
-
-	if (argc != 3) {
-		fprintf (stderr, "Usage: %s gbr <channel>\n", argv [0]) ;
-		exit (1) ;
-	}
-
-	channel = atoi (argv [2]) ;
-
-	if ((channel < 0) || (channel > 1)) {
-		fprintf (stderr, "%s: gbr: Channel number must be 0 or 1\n", argv [0]) ;
-		exit (1) ;
-	}
-
-	if (gertboardAnalogSetup (64) < 0) {
-		fprintf (stderr, "Unable to initialise the Gertboard SPI interface: %s\n", strerror (errno)) ;
-		exit (1) ;
-	}
-
-	printf ("%d\n", analogRead (64 + channel)) ;
-}
-
 
 /*
  * doWrite:
@@ -715,28 +612,6 @@ static void doWrite (int argc, char *argv [])
 	else
 		digitalWrite (pin, HIGH) ;
 }
-
-
-/*
- * doAwriterite:
- *	gpio awrite pin value
- *********************************************************************************
- */
-
-static void UNU doAwrite (int argc, char *argv [])
-{
-	int pin, val ;
-
-	if (argc != 4) {
-		fprintf (stderr, "Usage: %s awrite pin value\n", argv [0]) ;
-		exit (1) ;
-	}
-	pin = atoi (argv [2]) ;
-	val = atoi (argv [3]) ;
-
-	analogWrite (pin, val) ;
-}
-
 
 /*
  * doWriteByte:
@@ -862,52 +737,6 @@ void doBlink (int argc, char *argv [])
 	}
 }
 
-
-/*
- * doPwmTone:
- *	Output a tone in a PWM pin
- *********************************************************************************
- */
-
-void doPwmTone (int argc, char *argv [])
-{
-	int pin, freq ;
-
-	if (argc != 4) {
-		fprintf (stderr, "Usage: %s pwmTone <pin> <freq>\n", argv [0]) ;
-		exit (1) ;
-	}
-
-	pin = atoi (argv [2]) ;
-	freq = atoi (argv [3]) ;
-
-	pwmToneWrite (pin, freq) ;
-}
-
-
-/*
- * doClock:
- *	Output a clock on a pin
- *********************************************************************************
- */
-
-void doClock (int argc, char *argv [])
-{
-	int pin, freq ;
-
-	if (argc != 4) {
-		fprintf (stderr, "Usage: %s clock <pin> <freq>\n", argv [0]) ;
-		exit (1) ;
-	}
-
-	pin = atoi (argv [2]) ;
-
-	freq = atoi (argv [3]) ;
-
-	gpioClockSet (pin, freq) ;
-}
-
-
 /*
  * doPwm:
  *	Output a PWM value on a pin
@@ -935,12 +764,12 @@ void doPwm (int argc, char *argv [])
  *********************************************************************************
  */
 
-static void UNU doPwmMode (int mode)
+static void doPwmMode (int mode)
 {
 	pwmSetMode (mode) ;
 }
 
-static void UNU doPwmRange (int argc, char *argv [])
+static void doPwmRange (int argc, char *argv [])
 {
 	unsigned int range ;
 
@@ -958,7 +787,7 @@ static void UNU doPwmRange (int argc, char *argv [])
 	pwmSetRange (range) ;
 }
 
-static void UNU doPwmClock (int argc, char *argv [])
+static void doPwmClock (int argc, char *argv [])
 {
 	unsigned int clock ;
 
@@ -974,17 +803,6 @@ static void UNU doPwmClock (int argc, char *argv [])
 		exit (1) ;
 	}
 	pwmSetClock (clock) ;
-}
-
-/*
- * doNothing:
- *	function is not support by ODROID Board.
- *********************************************************************************
- */
-static void doNothing (int UNU argc, char *argv [])
-{
-	fprintf(stderr, "warn : (%s) : This function is not supported by ODROID Board.\n",
-		argv[1]);
 }
 
 /*
@@ -1005,7 +823,7 @@ static void doVersion (char *argv [])
 
 	wiringPiVersion (&vMaj, vMin) ;
 	printf ("gpio version: %d.%s\n", vMaj, *vMin) ;
-	printf ("Copyright (c) 2012-2017 Gordon Henderson, 2017-2019 Hardkernel Co., Ltd.\n") ;
+	printf ("Copyright (c) 2012-2017 Gordon Henderson, 2017-2020 Hardkernel Co., Ltd.\n") ;
 	printf ("This is free software with ABSOLUTELY NO WARRANTY.\n") ;
 	printf ("For details type: %s -warranty\n", argv [0]) ;
 	printf ("\n") ;
@@ -1084,7 +902,7 @@ int main (int argc, char *argv [])
 
 	if (strcasecmp (argv [1], "-warranty") == 0) {
 		printf ("gpio version: %s\n", VERSION) ;
-		printf ("Copyright (c) 2012-2017 Gordon Henderson, 2017-2019 Hardkernel Co., Ltd.\n") ;
+		printf ("Copyright (c) 2012-2017 Gordon Henderson, 2017-2020 Hardkernel Co., Ltd.\n") ;
 		printf ("\n") ;
 		printf ("    This program is free software; you can redistribute it and/or modify\n") ;
 		printf ("    it under the terms of the GNU Leser General Public License as published\n") ;
@@ -1118,13 +936,6 @@ int main (int argc, char *argv [])
 	if (strcasecmp (argv [1], "load"   ) == 0)	{ doLoad   (argc, argv) ; return 0 ; }
 	if (strcasecmp (argv [1], "unload" ) == 0)	{ doUnLoad (argc, argv) ; return 0 ; }
 
-	// Check for usb power command
-	if (strcasecmp (argv [1], "usbp"   ) == 0)	{ doNothing(argc, argv) ; return 0 ; }
-
-	// Gertboard commands
-	if (strcasecmp (argv [1], "gbr" ) == 0)	{ doGbr (argc, argv) ; return 0 ; }
-	if (strcasecmp (argv [1], "gbw" ) == 0)	{ doGbw (argc, argv) ; return 0 ; }
-
 	// Check for allreadall command, force Gpio mode
 	if (strcasecmp (argv [1], "allreadall") == 0) {
 		wiringPiSetupGpio () ;
@@ -1146,13 +957,6 @@ int main (int argc, char *argv [])
 			argv [i - 1] = argv [i] ;
 		--argc ;
 		wpMode = MODE_PHYS ;
-	} else if (strcasecmp (argv [1], "-p") == 0) {	// Check for -p argument for PiFace
-		piFaceSetup (200) ;
-
-		for (i = 2 ; i < argc ; ++i)
-			argv [i - 1] = argv [i] ;
-		--argc ;
-		wpMode = MODE_PIFACE ;
 	} else if (strcasecmp (argv [1], "-z") == 0) {	// Check for -z argument so we don't actually initialise wiringPi
 		for (i = 2 ; i < argc ; ++i)
 			argv [i - 1] = argv [i] ;
@@ -1161,27 +965,6 @@ int main (int argc, char *argv [])
 	} else {					// Default to wiringPi mode
 		wiringPiSetup () ;
 		wpMode = MODE_PINS ;
-	}
-
-	// Check for -x argument to load in a new extension
-	//	-x extension:base:args
-	//	Can load many modules, but unless daemon mode we can only send one
-	//	command at a time.
-	while (strcasecmp (argv [1], "-x") == 0) {
-		if (argc < 3) {
-			fprintf (stderr, "%s: -x missing extension command.\n", argv [0]) ;
-			exit (EXIT_FAILURE) ;
-		}
-
-		if (!loadWPiExtension (argv [0], argv [2], TRUE)) {
-			fprintf (stderr, "%s: Extension load failed: %s\n", argv [0], strerror (errno)) ;
-			exit (EXIT_FAILURE) ;
-		}
-
-		// Shift args down by 2
-		for (i = 3 ; i < argc ; ++i)
-			argv [i - 2] = argv [i] ;
-		argc -= 2 ;
 	}
 
 	if (argc <= 1) {
@@ -1193,8 +976,7 @@ int main (int argc, char *argv [])
 	/**/ if (strcasecmp (argv [1], "mode"   ) == 0) doMode      (argc, argv) ;
 	else if (strcasecmp (argv [1], "read"   ) == 0) doRead      (argc, argv) ;
 	else if (strcasecmp (argv [1], "write"  ) == 0) doWrite     (argc, argv) ;
-	else if (strcasecmp (argv [1], "pwm"    ) == 0) doNothing   (argc, argv) ;
-	else if (strcasecmp (argv [1], "awrite" ) == 0) doNothing   (argc, argv) ;
+	else if (strcasecmp (argv [1], "pwm"    ) == 0) doPwm       (argc, argv) ;
 	else if (strcasecmp (argv [1], "aread"  ) == 0) doAread     (argc, argv) ;
 
 	// GPIO Nicies
@@ -1202,22 +984,18 @@ int main (int argc, char *argv [])
 	else if (strcasecmp (argv [1], "blink"  ) == 0) doBlink     (argc, argv) ;
 
 	// Pi Specifics
-	else if (strcasecmp (argv [1], "pwm-bal"  ) == 0) doNothing    (argc, argv) ;
-	else if (strcasecmp (argv [1], "pwm-ms"   ) == 0) doNothing    (argc, argv) ;
-	else if (strcasecmp (argv [1], "pwmr"     ) == 0) doNothing    (argc, argv) ;
-	else if (strcasecmp (argv [1], "pwmc"     ) == 0) doNothing    (argc, argv) ;
-	else if (strcasecmp (argv [1], "pwmTone"  ) == 0) doNothing    (argc, argv) ;
+	else if (strcasecmp (argv [1], "pwm-bal"  ) == 0) doPwmMode    (PWM_MODE_BAL) ;
+	else if (strcasecmp (argv [1], "pwm-ms"   ) == 0) doPwmMode    (PWM_MODE_MS) ;
+	else if (strcasecmp (argv [1], "pwmr"     ) == 0) doPwmRange   (argc, argv) ;
+	else if (strcasecmp (argv [1], "pwmc"     ) == 0) doPwmClock   (argc, argv) ;
 	else if (strcasecmp (argv [1], "drive"    ) == 0) doPadDrive   (argc, argv) ;
 	else if (strcasecmp (argv [1], "readall"  ) == 0) doReadall    (argc, argv) ;
 	else if (strcasecmp (argv [1], "nreadall" ) == 0) doReadall    (argc, argv) ;
-	else if (strcasecmp (argv [1], "pins"     ) == 0) doPins       () ;
 	else if (strcasecmp (argv [1], "i2cdetect") == 0) doI2Cdetect  (argc, argv) ;
 	else if (strcasecmp (argv [1], "i2cd"     ) == 0) doI2Cdetect  (argc, argv) ;
-	else if (strcasecmp (argv [1], "reset"    ) == 0) doReset      (argv [0]) ;
 	else if (strcasecmp (argv [1], "wb"       ) == 0) doWriteByte  (argc, argv) ;
 	else if (strcasecmp (argv [1], "rbx"      ) == 0) doReadByte   (argc, argv, TRUE) ;
 	else if (strcasecmp (argv [1], "rbd"      ) == 0) doReadByte   (argc, argv, FALSE) ;
-	else if (strcasecmp (argv [1], "clock"    ) == 0) doNothing    (argc, argv) ;
 	else if (strcasecmp (argv [1], "wfi"      ) == 0) doWfi        (argc, argv) ;
 	else {
 		fprintf (stderr, "%s: Unknown command: %s.\n", argv [0], argv [1]) ;
