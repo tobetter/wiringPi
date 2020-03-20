@@ -36,9 +36,8 @@
 #define	FALSE	(!TRUE)
 #endif
 
+#define	UNU			__attribute__((unused))
 #define PIN_NUM_CALC_SYSFD(X)	(X > 255 ? X - libwiring.pinBase : X)
-
-#define	UNU	__attribute__((unused))
 
 #define	ENV_DEBUG		"WIRINGPI_DEBUG"
 #define	ENV_CODES		"WIRINGPI_CODES"
@@ -82,10 +81,6 @@
 #define	PUD_OFF			0
 #define	PUD_DOWN		1
 #define	PUD_UP			2
-
-// PWM
-#define	PWM_MODE_MS		0
-#define	PWM_MODE_BAL		1
 
 // Interrupt levels
 #define	INT_EDGE_SETUP		0
@@ -131,8 +126,8 @@ struct libodroid
 
 	/* wiringPi core func */
 	int	(*getModeToGpio)	(int mode, int pin);
-	int	(*setPadDrive)		(int pin, int value);
-	int	(*getPadDrive)		(int pin);
+	int	(*setDrive)		(int pin, int value);
+	int	(*getDrive)		(int pin);
 	int	(*pinMode)		(int pin, int mode);
 	int	(*getAlt)		(int pin);
 	int	(*getPUPD)		(int pin);
@@ -143,7 +138,6 @@ struct libodroid
 	int	(*analogRead)		(int pin);
 	int	(*digitalWriteByte)	(const unsigned int value);
 	unsigned int (*digitalReadByte)	(void);
-	void	(*pwmSetMode)		(int mode);
 	void	(*pwmSetRange)		(unsigned int range);
 	void	(*pwmSetClock)		(int divisor);
 
@@ -156,6 +150,9 @@ struct libodroid
 
 	/* GPIO pin base number */
 	int	pinBase;
+
+	/* Running with gpiomem */
+	char	usingGpiomem;
 
 	// Time for easy calculations
 	uint64_t epochMilli, epochMicro ;
@@ -213,8 +210,8 @@ extern		int  wiringPiFailure	(int fatal, const char *message, ...);
 extern		int  msg		(int type, const char *message, ...);
 extern		int  moduleLoaded	(char *);
 extern		void setupCheck		(const char *fName);
-extern		void usingGpioMemCheck	(const char *what);
-extern		void setUsingGpioMem	(const unsigned int value);
+extern		void usingGpiomemCheck	(const char *what);
+extern		void setUsingGpiomem	(const unsigned int value);
 
 // Core WiringPi functions
 extern		void wiringPiVersion	(int *major, char **minor);
@@ -223,8 +220,8 @@ extern		int  wiringPiSetupSys	(void);
 extern		int  wiringPiSetupGpio	(void);
 extern		int  wiringPiSetupPhys	(void);
 
-extern		void setPadDrive	(int pin, int value);
-extern		int  getPadDrive	(int pin);
+extern		void setDrive		(int pin, int value);
+extern		int  getDrive		(int pin);
 extern		int  getAlt		(int pin);
 extern		int  getPUPD		(int pin);
 extern		void pinMode		(int pin, int mode);
@@ -242,7 +239,6 @@ extern		void piBoardId		(int *model, int *rev, int *mem, int *maker, int *warran
 extern		int  wpiPinToGpio	(int wpiPin);
 extern		int  physPinToGpio	(int physPin);
 
-extern		void pwmSetMode		(int mode);
 extern		void pwmSetRange	(unsigned int range);
 extern		void pwmSetClock	(int divisor);
 

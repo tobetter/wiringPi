@@ -193,8 +193,8 @@ static int	gpioTophysPin	(int pin) UNU;
 // wiringPi core function
 /*----------------------------------------------------------------------------*/
 static int		_getModeToGpio		(int mode, int pin);
-static int		_setPadDrive		(int pin, int value);
-static int		_getPadDrive		(int pin);
+static int		_setDrive		(int pin, int value);
+static int		_getDrive		(int pin);
 static int		_pinMode		(int pin, int mode);
 static int		_getAlt			(int pin);
 static int		_getPUPD		(int pin);
@@ -383,7 +383,7 @@ static int _getModeToGpio (int mode, int pin)
 }
 
 /*----------------------------------------------------------------------------*/
-static int _setPadDrive (int pin, int value)
+static int _setDrive (int pin, int value)
 {
 	int ds, shift;
 
@@ -409,7 +409,7 @@ static int _setPadDrive (int pin, int value)
 }
 
 /*----------------------------------------------------------------------------*/
-static int _getPadDrive (int pin)
+static int _getDrive (int pin)
 {
 	int ds, shift;
 
@@ -472,7 +472,7 @@ static int _pinMode (int pin, int mode)
 		softToneCreate (origPin);
 		break;
 	case	PWM_OUTPUT:
-		usingGpioMemCheck ("pinMode PWM");
+		usingGpiomemCheck("pinMode PWM");
 
 		int pwm_pin, alt;
 		pwm_pin = gpioToPwmPin(pin);
@@ -495,7 +495,6 @@ static int _pinMode (int pin, int mode)
 		_pwmSetClock(120);
 		_pwmSetRange(500);
 #endif
-
 		break;
 	default:
 		msg(MSG_WARN, "%s : Unknown Mode %d\n", __func__, mode);
@@ -645,8 +644,6 @@ static int _pwmWrite (int pin, int value)
 	 * @todo Add node
 	 * struct wiringPiNodeStruct *node = wiringPiNodes;
 	 */
-
-	setupCheck ("pwmWrite") ;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return -1;
@@ -806,8 +803,7 @@ static void init_gpio_mmap (void)
 				msg(MSG_ERR,
 					"wiringPiSetup: Unable to open /dev/gpiomem: %s\n",
 					strerror (errno));
-
-			setUsingGpioMem( TRUE );
+			setUsingGpiomem(TRUE);
 		} else
 			msg(MSG_ERR,
 				"wiringPiSetup: /dev/gpiomem doesn't exist. Please try again with sudo.\n");
@@ -865,8 +861,8 @@ void init_odroidn2 (struct libodroid *libwiring)
 
 	/* wiringPi Core function initialize */
 	libwiring->getModeToGpio	= _getModeToGpio;
-	libwiring->setPadDrive		= _setPadDrive;
-	libwiring->getPadDrive		= _getPadDrive;
+	libwiring->setDrive		= _setDrive;
+	libwiring->getDrive		= _getDrive;
 	libwiring->pinMode		= _pinMode;
 	libwiring->getAlt		= _getAlt;
 	libwiring->getPUPD		= _getPUPD;

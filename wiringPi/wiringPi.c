@@ -125,12 +125,10 @@ int pthread_cancel(pthread_t h) {
 // Debugging & Return codes
 int wiringPiDebug       = FALSE ;
 int wiringPiReturnCodes = FALSE ;
+int wiringPiSetuped     = FALSE ;
 
 // ODROID Wiring Library
 struct libodroid	libwiring;
-
-unsigned int	usingGpioMem	= FALSE;
-int		wiringPiSetuped	= FALSE;
 
 /*----------------------------------------------------------------------------*/
 //
@@ -221,7 +219,7 @@ int wiringPiFailure (int fatal, const char *message, ...)
  *	function. Mosty because they need feeding C drip by drip )-:
  */
 /*----------------------------------------------------------------------------*/
-void setupCheck (const char *fName)
+void setupCheck(const char *fName)
 {
 	if (!wiringPiSetuped) {
 		fprintf (stderr, "%s: You have not called one of the wiringPiSetup\n"
@@ -232,23 +230,22 @@ void setupCheck (const char *fName)
 
 /*----------------------------------------------------------------------------*/
 /*
- * gpioMemCheck:
+ * usingGpiomemCheck: setUsingGpiomem:
  *	See if we're using the /dev/gpiomem interface, if-so then some operations
  *	can't be done and will crash the Pi.
  */
 /*----------------------------------------------------------------------------*/
-void usingGpioMemCheck (const char *what)
+void usingGpiomemCheck(const char *what)
 {
-	if (usingGpioMem) {
-	fprintf (stderr, "%s: Unable to do this when using /dev/gpiomem. Try sudo?\n", what) ;
-	exit (EXIT_FAILURE) ;
+	if (libwiring.usingGpiomem) {
+		fprintf (stderr, "%s: Unable to do this when using /dev/gpiomem. Try sudo?\n", what) ;
+		exit (EXIT_FAILURE) ;
 	}
 }
 
-/*----------------------------------------------------------------------------*/
-void setUsingGpioMem( const unsigned int value )
+void setUsingGpiomem(const unsigned int value)
 {
-	usingGpioMem = value;
+	libwiring.usingGpiomem = value;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -436,6 +433,8 @@ void piBoardId (int *model, int *rev, int *mem, int *maker, int *warranty)
 /*----------------------------------------------------------------------------*/
 int wpiPinToGpio (int wpiPin)
 {
+	setupCheck(__func__);
+
 	if (libwiring.getModeToGpio)
 		return	libwiring.getModeToGpio(MODE_PINS, wpiPin);
 
@@ -451,6 +450,8 @@ int wpiPinToGpio (int wpiPin)
 /*----------------------------------------------------------------------------*/
 int physPinToGpio (int physPin)
 {
+	setupCheck(__func__);
+
 	if (libwiring.getModeToGpio)
 		return	libwiring.getModeToGpio(MODE_PHYS, physPin);
 
@@ -459,27 +460,31 @@ int physPinToGpio (int physPin)
 
 /*----------------------------------------------------------------------------*/
 /*
- * setPadDrive:
- *	Set the PAD driver value
+ * setDrive:
+ *	Set the pin driver value
  */
 /*----------------------------------------------------------------------------*/
-void setPadDrive (int pin, int value)
+void setDrive (int pin, int value)
 {
-	if (libwiring.setPadDrive)
-		if (libwiring.setPadDrive(pin, value) < 0)
+	setupCheck(__func__);
+
+	if (libwiring.setDrive)
+		if (libwiring.setDrive(pin, value) < 0)
 			msg(MSG_WARN, "%s: Not available for pin %d. \n", __func__, pin);
 }
 
 /*----------------------------------------------------------------------------*/
 /*
- * getPadDrive:
- *	Get the PAD driver value
+ * getDrive:
+ *	Get the pin driver value
  */
 /*----------------------------------------------------------------------------*/
-int getPadDrive (int pin)
+int getDrive (int pin)
 {
-	if (libwiring.getPadDrive)
-		return	libwiring.getPadDrive(pin);
+	setupCheck(__func__);
+
+	if (libwiring.getDrive)
+		return	libwiring.getDrive(pin);
 
 	return	-1;
 }
@@ -493,26 +498,12 @@ int getPadDrive (int pin)
 /*----------------------------------------------------------------------------*/
 int getAlt (int pin)
 {
+	setupCheck(__func__);
+
 	if (libwiring.getAlt)
 		return	libwiring.getAlt(pin);
 
 	return	-1;
-}
-
-/*----------------------------------------------------------------------------*/
-/*
- * pwmSetMode:
- *	Select the native "balanced" mode, or standard mark:space mode
- */
-/*----------------------------------------------------------------------------*/
-
-void pwmSetMode (int mode)
-{
-	if (libwiring.pwmSetMode) {
-		libwiring.pwmSetMode(mode);
-	} else {
-		warn_msg(__func__);
-	}
 }
 
 /*----------------------------------------------------------------------------*/
@@ -522,9 +513,10 @@ void pwmSetMode (int mode)
  *	value. If you want different in your own code, then write your own.
  */
 /*----------------------------------------------------------------------------*/
-
 void pwmSetRange (unsigned int range)
 {
+	setupCheck(__func__);
+
 	if (libwiring.pwmSetRange) {
 		libwiring.pwmSetRange(range);
 	} else {
@@ -540,9 +532,10 @@ void pwmSetRange (unsigned int range)
  *	after further study of the manual and testing with a 'scope
  */
 /*----------------------------------------------------------------------------*/
-
 void pwmSetClock (int divisor)
 {
+	setupCheck(__func__);
+
 	if (libwiring.pwmSetClock) {
 		libwiring.pwmSetClock(divisor);
 	} else {
@@ -559,6 +552,8 @@ void pwmSetClock (int divisor)
 /*----------------------------------------------------------------------------*/
 int getPUPD (int pin)
 {
+	setupCheck(__func__);
+
 	if (libwiring.getPUPD)
 		return	libwiring.getPUPD(pin);
 
@@ -572,6 +567,8 @@ int getPUPD (int pin)
 /*----------------------------------------------------------------------------*/
 void pinMode (int pin, int mode)
 {
+	setupCheck(__func__);
+
 	if (libwiring.pinMode)
 		if (libwiring.pinMode(pin, mode) < 0)
 			msg(MSG_WARN, "%s: Not available for pin %d. \n", __func__, pin);
@@ -581,6 +578,8 @@ void pinMode (int pin, int mode)
 /*----------------------------------------------------------------------------*/
 void pullUpDnControl (int pin, int pud)
 {
+	setupCheck(__func__);
+
 	if (libwiring.pullUpDnControl)
 		if (libwiring.pullUpDnControl(pin, pud) < 0)
 			msg(MSG_WARN, "%s: Not available for pin %d. \n", __func__, pin);
@@ -589,6 +588,8 @@ void pullUpDnControl (int pin, int pud)
 /*----------------------------------------------------------------------------*/
 int digitalRead (int pin)
 {
+	setupCheck(__func__);
+
 	if (libwiring.digitalRead)
 		return	libwiring.digitalRead(pin);
 
@@ -598,6 +599,8 @@ int digitalRead (int pin)
 /*----------------------------------------------------------------------------*/
 void digitalWrite (int pin, int value)
 {
+	setupCheck(__func__);
+
 	if (libwiring.digitalWrite)
 		if (libwiring.digitalWrite(pin, value) < 0)
 			msg(MSG_WARN, "%s: Not available for pin %d. \n", __func__, pin);
@@ -606,6 +609,8 @@ void digitalWrite (int pin, int value)
 /*----------------------------------------------------------------------------*/
 void pwmWrite(int pin, int value)
 {
+	setupCheck(__func__);
+
 	if (libwiring.pwmWrite) {
 		if (libwiring.pwmWrite(pin, value) < 0)
 			msg(MSG_WARN, "%s: Not available for pin %d. \n", __func__, pin);
@@ -617,6 +622,8 @@ void pwmWrite(int pin, int value)
 /*----------------------------------------------------------------------------*/
 int analogRead (int pin)
 {
+	setupCheck(__func__);
+
 	if (libwiring.analogRead)
 		return	libwiring.analogRead(pin);
 
@@ -626,6 +633,8 @@ int analogRead (int pin)
 /*----------------------------------------------------------------------------*/
 void digitalWriteByte (const int value)
 {
+	setupCheck(__func__);
+
 	if (libwiring.digitalWriteByte)
 		if (libwiring.digitalWriteByte(value) < 0)
 			msg(MSG_WARN, "%s: Not available. \n", __func__);
@@ -634,6 +643,8 @@ void digitalWriteByte (const int value)
 /*----------------------------------------------------------------------------*/
 unsigned int digitalReadByte (void)
 {
+	setupCheck(__func__);
+
 	if (libwiring.digitalReadByte)
 		return	libwiring.digitalReadByte();
 
@@ -696,10 +707,8 @@ static void *interruptHandler (void *arg)
 int wiringPiISR (int pin, int mode, void (*function)(void))
 {
 	pthread_t threadId;
-	const char *modeS;
 	char fName   [64];
 	char  pinS [8];
-	pid_t pid;
 	int   count, i;
 	char  c;
 	int   GpioPin;
@@ -724,13 +733,6 @@ int wiringPiISR (int pin, int mode, void (*function)(void))
 	// is a way that will work when we're running in "Sys" mode, as
 	// a non-root user. (without sudo)
 	if (mode != INT_EDGE_SETUP) {
-		if (mode == INT_EDGE_FALLING)
-			modeS = "falling" ;
-		else if (mode == INT_EDGE_RISING)
-			modeS = "rising" ;
-		else
-			modeS = "both" ;
-
 		sprintf (pinS, "%d", GpioPin) ;
 
 		FILE *export, *direct, *edge;
@@ -968,9 +970,9 @@ void wiringPiVersion (int *major, char **minor)
 int wiringPiSetup (void)
 {
 	int i;
+
 	if (wiringPiSetuped)
 		return 0;
-
 	wiringPiSetuped = TRUE;
 
 	// libwiring init
@@ -980,6 +982,7 @@ int wiringPiSetup (void)
 		libwiring.sysFds[i] = -1;
 	// init wiringPi mode
 	libwiring.mode = MODE_UNINITIALISED;
+	libwiring.usingGpiomem = FALSE;
 
 	if (getenv (ENV_DEBUG) != NULL)
 		wiringPiDebug = TRUE;

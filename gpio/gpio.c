@@ -67,7 +67,6 @@ char *usage = "Usage: gpio -v\n"
 	"       gpio export/edge/unexport ...\n"
 	"       gpio wfi <pin> <mode>\n"
 	"       gpio drive <pin> <value>\n"
-	"       gpio pwm-bal/pwm-ms \n"
 	"       gpio pwmr <range> \n"
 	"       gpio pwmc <divider> \n"
 	"       gpio load spi/i2c\n"
@@ -563,12 +562,12 @@ void doMode (int argc, char *argv [])
 
 
 /*
- * doPadDrive:
+ * doDrive:
  *	gpio drive pin value for ODROIDs since it depends on the SoC
  *********************************************************************************
  */
 
-static void doPadDrive (int argc, char *argv [])
+static void doDrive (int argc, char *argv [])
 {
 	int pin, val;
 
@@ -580,7 +579,7 @@ static void doPadDrive (int argc, char *argv [])
 	pin = atoi (argv [2]) ;
 	val = atoi (argv [3]) ;
 
-	setPadDrive (pin, val) ;
+	setDrive (pin, val) ;
 }
 
 /*
@@ -759,15 +758,10 @@ void doPwm (int argc, char *argv [])
 
 
 /*
- * doPwmMode: doPwmRange: doPwmClock:
+ * doPwmRange: doPwmClock:
  *	Change the PWM mode, range and clock divider values
  *********************************************************************************
  */
-
-static void doPwmMode (int mode)
-{
-	pwmSetMode (mode) ;
-}
 
 static void doPwmRange (int argc, char *argv [])
 {
@@ -984,11 +978,9 @@ int main (int argc, char *argv [])
 	else if (strcasecmp (argv [1], "blink"  ) == 0) doBlink     (argc, argv) ;
 
 	// Pi Specifics
-	else if (strcasecmp (argv [1], "pwm-bal"  ) == 0) doPwmMode    (PWM_MODE_BAL) ;
-	else if (strcasecmp (argv [1], "pwm-ms"   ) == 0) doPwmMode    (PWM_MODE_MS) ;
 	else if (strcasecmp (argv [1], "pwmr"     ) == 0) doPwmRange   (argc, argv) ;
 	else if (strcasecmp (argv [1], "pwmc"     ) == 0) doPwmClock   (argc, argv) ;
-	else if (strcasecmp (argv [1], "drive"    ) == 0) doPadDrive   (argc, argv) ;
+	else if (strcasecmp (argv [1], "drive"    ) == 0) doDrive   (argc, argv) ;
 	else if (strcasecmp (argv [1], "readall"  ) == 0) doReadall    (argc, argv) ;
 	else if (strcasecmp (argv [1], "nreadall" ) == 0) doReadall    (argc, argv) ;
 	else if (strcasecmp (argv [1], "i2cdetect") == 0) doI2Cdetect  (argc, argv) ;

@@ -574,7 +574,7 @@ static void readallPhys(int model, int UNU rev, int physPin, const char *physNam
 			case MODEL_ODROID_XU3:
 			case MODEL_ODROID_N2:
 			case MODEL_ODROID_C4:
-				printf (" | %2d | %5s", getPadDrive(pin), pupd[getPUPD(pin)]);
+				printf (" | %2d | %5s", getDrive(pin), pupd[getPUPD(pin)]);
 				break;
 			default:
 				break;
@@ -615,7 +615,7 @@ static void readallPhys(int model, int UNU rev, int physPin, const char *physNam
 			case MODEL_ODROID_XU3:
 			case MODEL_ODROID_N2:
 			case MODEL_ODROID_C4:
-				printf (" | %-5s | %-2d", pupd[getPUPD(pin)], getPadDrive(pin));
+				printf (" | %-5s | %-2d", pupd[getPUPD(pin)], getDrive(pin));
 				break;
 			default:
 				break;

@@ -112,8 +112,8 @@ static int	gpioToMuxReg	(int pin);
 // wiringPi core function
 /*----------------------------------------------------------------------------*/
 static int		_getModeToGpio		(int mode, int pin);
-static int		_setPadDrive		(int pin, int value);
-static int		_getPadDrive		(int pin);
+static int		_setDrive		(int pin, int value);
+static int		_getDrive		(int pin);
 static int		_pinMode		(int pin, int mode);
 static int		_getAlt			(int pin);
 static int		_getPUPD		(int pin);
@@ -303,7 +303,7 @@ static int _getModeToGpio (int mode, int pin)
 }
 
 /*----------------------------------------------------------------------------*/
-static int _setPadDrive (int pin, int value)
+static int _setDrive (int pin, int value)
 {
 	int ds, shift;
 
@@ -329,7 +329,7 @@ static int _setPadDrive (int pin, int value)
 }
 
 /*----------------------------------------------------------------------------*/
-static int _getPadDrive (int pin)
+static int _getDrive (int pin)
 {
 	int ds, shift;
 
@@ -633,6 +633,7 @@ static void init_gpio_mmap (void)
 				msg (MSG_ERR,
 					"wiringPiSetup: Unable to open /dev/gpiomem: %s\n",
 					strerror (errno));
+			setUsingGpiomem(TRUE);
 		} else
 			msg (MSG_ERR,
 				"wiringPiSetup: /dev/gpiomem doesn't exist. Please try again with sudo.\n");
@@ -681,8 +682,8 @@ void init_odroidc4 (struct libodroid *libwiring)
 
 	/* wiringPi Core function initialize */
 	libwiring->getModeToGpio	= _getModeToGpio;
-	libwiring->setPadDrive		= _setPadDrive;
-	libwiring->getPadDrive		= _getPadDrive;
+	libwiring->setDrive		= _setDrive;
+	libwiring->getDrive		= _getDrive;
 	libwiring->pinMode		= _pinMode;
 	libwiring->getAlt		= _getAlt;
 	libwiring->getPUPD		= _getPUPD;
