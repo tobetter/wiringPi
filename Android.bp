@@ -43,6 +43,29 @@ cc_library_shared {
     ],
 }
 
+cc_library_shared {
+    header_libs: ["wiringPi-headers"],
+
+    name: "libwiringPiDev",
+    srcs: [
+        "devLib/lcd128x64.c",
+        "devLib/lcd.c",
+    ],
+
+    shared_libs: ["libwiringPi"],
+
+    host_ldlibs: [
+        "-ldl",
+        "-llog",
+    ],
+
+    cflags: [
+        "-UNDEBUG",
+        "-DANDROID",
+        "-Wno-return-type",
+    ],
+}
+
 cc_binary {
 
     name: "gpio",
@@ -52,12 +75,19 @@ cc_binary {
     ],
     header_libs: ["wiringPi-headers"],
 
+    local_include_dirs: [
+        "devLib",
+    ],
+
     cflags: [
         "-UNDEBUG",
         "-DANDROID",
         "-Wno-return-type",
     ],
     host_ldlibs: ["-llog"],
-    shared_libs: ["libwiringPi"],
+    shared_libs: [
+        "libwiringPi",
+        "libwiringPiDev",
+    ],
 
 }
