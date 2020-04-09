@@ -1,3 +1,14 @@
+odroid-wiringpi (9:2.44-7.0) stable; urgency=medium
+
+  * Odroid-C4: New support for Odroid-C4
+  * WiringPi: Improve logic of getting board information
+  * WiringPi: Remove files that seem won't be used or already have not been used
+  * WiringPi: Remove unused codes from newVersion script
+  * WiringPi: Minor changes
+  * WiringPi: Add definition _GNU_SOURCE to remove warnings to do with implicit functions
+
+ -- Deokgyu Yang <secugyu@gmail.com>  Thu, 09 Apr 2020 16:15:28 +0900
+
 odroid-wiringpi (2.44-6.2) stable; urgency=medium
 
   * WiringPi: Fix issue where 'wiringPiISR' can't run without sudo
