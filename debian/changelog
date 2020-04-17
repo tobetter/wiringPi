@@ -1,3 +1,9 @@
+odroid-wiringpi (9:3.0) stable; urgency=medium
+
+  * WiringPi: Bump up version to 3.0
+
+ -- Deokgyu Yang <joshua@joshua-desktop>  Fri, 17 Apr 2020 16:57:37 +0900
+
 odroid-wiringpi (9:2.44-7.0) stable; urgency=medium
 
   * Odroid-C4: New support for Odroid-C4
