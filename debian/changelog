@@ -1,3 +1,9 @@
+odroid-wiringpi (9:3.1) stable; urgency=medium
+
+  * debian: Add explicit package dependency
+
+ -- Deokgyu Yang <secugyu@gmail.com>  Tue, 21 Apr 2020 11:34:20 +0900
+
 odroid-wiringpi (9:3.0) stable; urgency=medium
 
   * WiringPi: Bump up version to 3.0
