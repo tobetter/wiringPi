@@ -15,15 +15,14 @@ Description: GPIO libraries for ODROID (runtime).
 
 Package: odroid-wiringpi
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, libwiringpi2 (= ${binary:Version})
 Description: gpio utility for ODROID
  The wiringPi gpio command line utility, for GPIO access on a
  ODROID from the command line.
 
 Package: libwiringpi-dev
 Architecture: any
-Depends: libwiringpi2 (= ${binary:Version}), libc6-dev, ${misc:Depends}
-Suggests: odroid-wiringpi
+Depends: libc6-dev, ${misc:Depends}, libwiringpi2 (= ${binary:Version}), odroid-wiringpi (= ${binary:Version}),
 Description: GPIO development library for ODROID
  Development libraries to allow GPIO access on a ODROID from C
  and C++ programs.
