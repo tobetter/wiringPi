@@ -98,6 +98,11 @@
 #define	WPI_FATAL		(1==1)
 #define	WPI_ALMOST		(1==2)
 
+// Legacy compatibility
+// Mask for the bottom 64 pins which belong to the Raspberry Pi
+//	The others are available for the other devices
+#define	PI_GPIO_MASK		(0xFFFFFFC0)
+
 extern const char *piModelNames    [16];
 extern const char *piRevisionNames [16];
 extern const char *piMakerNames    [16];
@@ -197,6 +202,41 @@ union	reg_bitfield {
 };
 
 /*----------------------------------------------------------------------------*/
+// wiringPiNodeStruct:
+//	This describes additional device nodes in the extended wiringPi
+//	2.0 scheme of things.
+//	It's a simple linked list for now, but will hopefully migrate to
+//	a binary tree for efficiency reasons - but then again, the chances
+//	of more than 1 or 2 devices being added are fairly slim, so who
+//	knows....
+/*----------------------------------------------------------------------------*/
+struct wiringPiNodeStruct
+{
+	int	pinBase;
+	int	pinMax;
+
+	int	fd;		// Node specific
+	unsigned int data0;	//  ditto
+	unsigned int data1;	//  ditto
+	unsigned int data2;	//  ditto
+	unsigned int data3;	//  ditto
+
+	void		(*pinMode)		(struct wiringPiNodeStruct *node, int pin, int mode);
+	void		(*pullUpDnControl)	(struct wiringPiNodeStruct *node, int pin, int mode);
+	int		(*digitalRead)		(struct wiringPiNodeStruct *node, int pin);
+	// unsigned int	(*digitalRead8)		(struct wiringPiNodeStruct *node, int pin);
+	void		(*digitalWrite)		(struct wiringPiNodeStruct *node, int pin, int value);
+	// void		(*digitalWrite8)	(struct wiringPiNodeStruct *node, int pin, int value);
+	void		(*pwmWrite)		(struct wiringPiNodeStruct *node, int pin, int value);
+	int		(*analogRead)		(struct wiringPiNodeStruct *node, int pin);
+	void		(*analogWrite)		(struct wiringPiNodeStruct *node, int pin, int value);
+
+	struct wiringPiNodeStruct *next;
+};
+
+extern struct wiringPiNodeStruct *wiringPiNodes;
+
+/*----------------------------------------------------------------------------*/
 // Function prototypes
 //	c++ wrappers thanks to a comment by Nick Lott
 //	(and others on the Raspberry Pi forums)
@@ -204,6 +244,10 @@ union	reg_bitfield {
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// Node supports for external boards
+extern struct wiringPiNodeStruct *wiringPiFindNode (int pin);
+extern struct wiringPiNodeStruct *wiringPiNewNode  (int pinBase, int numPins);
 
 // Internal WiringPi functions
 extern		int  wiringPiFailure	(int fatal, const char *message, ...);
@@ -260,6 +304,16 @@ extern		void delay		(unsigned int howLong);
 extern		void delayMicroseconds	(unsigned int howLong);
 extern unsigned int  millis		(void);
 extern unsigned int  micros		(void);
+
+// Unsupoorted
+extern		void pinModeAlt		(int pin, int mode) UNU;
+extern		void analogWrite	(int pin, int value) UNU;
+extern		void pwmToneWrite	(int pin, int freq) UNU;
+extern		void gpioClockSet	(int pin, int freq) UNU;
+extern unsigned int  digitalReadByte	(void) UNU;
+extern unsigned int  digitalReadByte2	(void) UNU;
+extern		void digitalWriteByte	(int value) UNU;
+extern		void digitalWriteByte2	(int value) UNU;
 
 #ifdef __cplusplus
 }

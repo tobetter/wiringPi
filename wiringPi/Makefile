@@ -41,7 +41,7 @@ DEBUG	= -O2
 CC	= gcc
 INCLUDE	= -I.
 DEFS	= -D_GNU_SOURCE
-CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Wextra -Winline $(INCLUDE) -pipe -fPIC
+CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Wextra -Winline -Wno-format-truncation $(INCLUDE) -pipe -fPIC
 
 LIBS    = -lm -lpthread -lrt -lcrypt
 
@@ -52,6 +52,17 @@ SRC	=	wiringPi.c						\
 		wiringPiSPI.c wiringPiI2C.c				\
 		piHiPri.c piThread.c					\
 		softPwm.c softTone.c softServo.c			\
+		mcp23008.c mcp23016.c mcp23017.c			\
+		mcp23s08.c mcp23s17.c					\
+		sr595.c							\
+		pcf8574.c pcf8591.c					\
+		mcp3002.c mcp3004.c mcp4802.c mcp3422.c			\
+		max31855.c max5322.c ads1115.c				\
+		sn3218.c						\
+		bmp180.c htu21d.c ds18b20.c rht03.c			\
+		drcSerial.c drcNet.c					\
+		pseudoPins.c						\
+		wpiExtensions.c					\
 		odroidc1.c						\
 		odroidc2.c						\
 		odroidxu3.c						\
@@ -137,6 +148,32 @@ piThread.o: wiringPi.h
 softPwm.o: wiringPi.h softPwm.h
 softTone.o: wiringPi.h softTone.h
 softServo.o: wiringPi.h softServo.h
+mcp23008.o: wiringPi.h wiringPiI2C.h mcp23x0817.h mcp23008.h
+mcp23016.o: wiringPi.h wiringPiI2C.h mcp23016.h mcp23016reg.h
+mcp23017.o: wiringPi.h wiringPiI2C.h mcp23x0817.h mcp23017.h
+mcp23s08.o: wiringPi.h wiringPiSPI.h mcp23x0817.h mcp23s08.h
+mcp23s17.o: wiringPi.h wiringPiSPI.h mcp23x0817.h mcp23s17.h
+sr595.o: wiringPi.h sr595.h
+pcf8574.o: wiringPi.h wiringPiI2C.h pcf8574.h
+pcf8591.o: wiringPi.h wiringPiI2C.h pcf8591.h
+mcp3002.o: wiringPi.h wiringPiSPI.h mcp3002.h
+mcp3004.o: wiringPi.h wiringPiSPI.h mcp3004.h
+mcp4802.o: wiringPi.h wiringPiSPI.h mcp4802.h
+mcp3422.o: wiringPi.h wiringPiI2C.h mcp3422.h
+max31855.o: wiringPi.h wiringPiSPI.h max31855.h
+max5322.o: wiringPi.h wiringPiSPI.h max5322.h
+ads1115.o: wiringPi.h wiringPiI2C.h ads1115.h
+sn3218.o: wiringPi.h wiringPiI2C.h sn3218.h
+bmp180.o: wiringPi.h wiringPiI2C.h bmp180.h
+htu21d.o: wiringPi.h wiringPiI2C.h htu21d.h
+ds18b20.o: wiringPi.h ds18b20.h
+drcSerial.o: wiringPi.h wiringSerial.h drcSerial.h
+pseudoPins.o: wiringPi.h pseudoPins.h
+wpiExtensions.o: wiringPi.h mcp23008.h mcp23016.h mcp23017.h mcp23s08.h
+wpiExtensions.o: mcp23s17.h sr595.h pcf8574.h pcf8591.h mcp3002.h mcp3004.h
+wpiExtensions.o: mcp4802.h mcp3422.h max31855.h max5322.h ads1115.h sn3218.h
+wpiExtensions.o: drcSerial.h pseudoPins.h bmp180.h htu21d.h ds18b20.h
+wpiExtensions.o: wpiExtensions.h
 
 # ODROID Boards
 odroidc1.o  : wiringPi.h odroidc1.h

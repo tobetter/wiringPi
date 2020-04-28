@@ -43,6 +43,28 @@ extern int wpMode ;
 #endif
 
 /*----------------------------------------------------------------------------*/
+/*
+ * doReadallExternal:
+ *	A relatively crude way to read the pins on an external device.
+ *	We don't know the input/output mode of pins, but we can tell
+ *	if it's an analog pin or a digital one...
+ */
+/*----------------------------------------------------------------------------*/
+static void doReadallExternal (void)
+{
+	int pin ;
+
+	printf ("+------+---------+--------+\n") ;
+	printf ("|  Pin | Digital | Analog |\n") ;
+	printf ("+------+---------+--------+\n") ;
+
+	for (pin = wiringPiNodes->pinBase ; pin <= wiringPiNodes->pinMax ; ++pin)
+		printf ("| %4d |  %4d   |  %4d  |\n", pin, digitalRead (pin), analogRead (pin)) ;
+
+	printf ("+------+---------+--------+\n") ;
+}
+
+/*----------------------------------------------------------------------------*/
 static const char *alts [] =
 {
 	"IN", "OUT", "ALT1", "ALT2", "ALT3", "ALT4", "ALT5", "ALT6", "ALT7"
@@ -693,6 +715,12 @@ static void printBody(int model, int rev, const char *physNames[], int isAll) {
 void doReadall(int argc, char *argv[]) {
 	int model, rev, mem, maker, overVolted, isAll;
 	char *headerName, *physNames;
+
+	// External readall
+	if (wiringPiNodes != NULL) {
+		doReadallExternal();
+		return;
+	}
 
 	if (argc <= 2) {
 		isAll = FALSE;

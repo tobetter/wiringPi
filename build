@@ -107,6 +107,21 @@ install() {
   echo
   echo "WiringPi Devices Library"
   cd ../devLib
+  $sudo $make uninstall
+  if [ x$1 = "xstatic" ]; then
+    $make static
+    check_make_ok
+    $sudo $make install-static
+  else
+    $make
+    check_make_ok
+    $sudo $make install
+  fi
+  check_make_ok
+
+  echo
+  echo "WiringPi Devices Library"
+  cd ../devLib
   if [ x$1 = "xstatic" ]; then
     $make static
     check_make_ok
@@ -135,6 +150,9 @@ install() {
   echo ""
   echo "NOTE: To compile programs with wiringPi, you need to add:"
   echo "    -lwiringPi -wiringPiDev"
+  echo "  to your compile line(s) To use the Gertboard, MaxDetect, etc."
+  echo "  code (the devLib), you need to also add:"
+  echo "    -lwiringPiDev"
   echo "  to your compile line(s)."
   echo ""
 }
@@ -159,8 +177,18 @@ clean() {
   cd ../gpio
   echo -n "gpio:       "	; $make clean
   cd ../examples
-  echo -n "examples:   "	; $make clean
-  cd ..
+  echo -n "Examples:   "	; $make clean
+  cd Gertboard
+  echo -n "Gertboard:  "	; $make clean
+  cd ../PiFace
+  echo -n "PiFace:     "	; $make clean
+  cd ../q2w
+  echo -n "Quick2Wire: "	; $make clean
+  cd ../PiGlow
+  echo -n "PiGlow:     "	; $make clean
+  cd ../scrollPhat
+  echo -n "scrollPhat: "	; $make clean
+  cd ../..
 }
 
 if [ x$1 = "xclean" ]; then
