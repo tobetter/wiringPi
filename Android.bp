@@ -47,7 +47,6 @@ cc_library_shared {
         "wiringPi/mcp3422.c",
         "wiringPi/pcf8591.c",
         "wiringPi/softTone.c",
-        "wiringPi/wpiExtensions.c",
     ],
 
     vendor_available: true,

@@ -31,6 +31,11 @@
 
 /*----------------------------------------------------------------------------*/
 
+#ifdef __ANDROID__
+#define __bswap_16(x)	bswap_16(x)
+#define __bswap_32(x)	bswap_32(x)
+#endif
+
 #ifndef	TRUE
 #define	TRUE	(1==1)
 #define	FALSE	(!TRUE)
