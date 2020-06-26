@@ -282,7 +282,7 @@ int getModelFromCpuinfo(char *line, FILE *cpuFd) {
 int getModelFromDt(char *line, FILE *dtFd) {
 	char *model;
 
-	if ((dtFd = fopen("/sys/firmware/devicetree/base/model", "r")) != NULL) {
+	if ((dtFd = fopen("/proc/device-tree/model", "r")) != NULL) {
 		if (fgets(line, 120, dtFd) == NULL)
 			return -1;
 
@@ -308,7 +308,7 @@ int piGpioLayout (void) {
 	int sizeOfAssignedModelNames = 0;
 	int i;
 
-	if (getModelFromCpuinfo(line, cpuFd) != 0 && getModelFromDt(line, dtFd) != 0)
+	if (getModelFromDt(line, dtFd) != 0 && getModelFromCpuinfo(line, cpuFd) != 0)
 		wiringPiFailure(WPI_FATAL, "** This board is not an Odroid **");
 
 	for (i = 1; i < (int)(sizeof(piModelNames) / sizeof(char*)); i++) {
