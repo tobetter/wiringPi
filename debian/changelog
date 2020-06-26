@@ -1,3 +1,10 @@
+odroid-wiringpi (9:3.3) stable; urgency=medium
+
+  * WiringPi: Check Device Tree first to recognize and change the referenced DT path
+  * WiringPi: Android: Redefine some function that's not supported
+
+ -- Deokgyu Yang <secugyu@gmail.com>  Fri, 26 Jun 2020 14:48:28 +0900
+
 odroid-wiringpi (9:3.2) stable; urgency=medium
 
   * WiringPi: Bring back all of the stuffs I removed to do with peripherals
