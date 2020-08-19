@@ -26,6 +26,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <sys/ioctl.h>
+#include <sys/utsname.h>
 #include <asm/ioctl.h>
 
 /*----------------------------------------------------------------------------*/
@@ -133,6 +134,14 @@ int wiringPiSetuped     = FALSE ;
 
 // ODROID Wiring Library
 struct libodroid	libwiring;
+
+// Current kernel version
+struct kernelVersionStruct *kernelVersion = &(struct kernelVersionStruct) {
+	.major = 0,
+	.minor = 0,
+	.revision = 0,
+	.patch = 0
+};
 
 /*----------------------------------------------------------------------------*/
 //
@@ -250,6 +259,38 @@ void usingGpiomemCheck(const char *what)
 void setUsingGpiomem(const unsigned int value)
 {
 	libwiring.usingGpiomem = value;
+}
+
+/*----------------------------------------------------------------------------*/
+/*
+ * setKernelVersion:
+ *	It sets current operating kernel version to the global struct variable.
+ */
+/*----------------------------------------------------------------------------*/
+void setKernelVersion() {
+	struct utsname uname_buf;
+
+	char* buf;
+	char* delimiter[] = { ".", "-" };
+	int i, kernelNumbers[4] = { 0, };
+
+	uname(&uname_buf);
+
+	buf = strtok(uname_buf.release, delimiter[0]);
+	for (i = 0; i < 4; i++) {
+		if (i < 1) {
+			kernelNumbers[i] = atoi(buf);
+			buf = strtok(NULL, delimiter[0]);
+		} else {
+			kernelNumbers[i] = atoi(buf);
+			buf = strtok(NULL, delimiter[1]);
+		}
+	}
+
+	kernelVersion->major = kernelNumbers[0];
+	kernelVersion->minor = kernelNumbers[1];
+	kernelVersion->revision = kernelNumbers[2];
+	kernelVersion->patch = kernelNumbers[3];
 }
 
 /*----------------------------------------------------------------------------*/
@@ -396,6 +437,7 @@ int piGpioLayout (void) {
 	if (wiringPiDebug)
 		printf("BoardRev: Returning revision: %d\n", libwiring.rev);
 
+	setKernelVersion();
 	return libwiring.rev;
 }
 

@@ -242,6 +242,20 @@ struct wiringPiNodeStruct
 extern struct wiringPiNodeStruct *wiringPiNodes;
 
 /*----------------------------------------------------------------------------*/
+// kernelVersionStruct:
+//	Contains the kernel version of the operating board's.
+/*----------------------------------------------------------------------------*/
+struct kernelVersionStruct
+{
+	int major;
+	int minor;
+	int revision;
+	int patch;
+};
+
+extern struct kernelVersionStruct *kernelVersion;
+
+/*----------------------------------------------------------------------------*/
 // Function prototypes
 //	c++ wrappers thanks to a comment by Nick Lott
 //	(and others on the Raspberry Pi forums)
@@ -261,6 +275,7 @@ extern		int  moduleLoaded	(char *);
 extern		void setupCheck		(const char *fName);
 extern		void usingGpiomemCheck	(const char *what);
 extern		void setUsingGpiomem	(const unsigned int value);
+extern		void setKernelVersion	(void);
 
 // Core WiringPi functions
 extern		void wiringPiVersion	(int *major, char **minor);
