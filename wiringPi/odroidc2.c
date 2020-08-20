@@ -15,7 +15,6 @@
 #include <sys/ioctl.h>
 #include <asm/ioctl.h>
 #include <sys/mman.h>
-#include <sys/utsname.h>
 
 /*----------------------------------------------------------------------------*/
 #include "softPwm.h"

@@ -15,7 +15,6 @@
 #include <sys/ioctl.h>
 #include <asm/ioctl.h>
 #include <sys/mman.h>
-#include <sys/utsname.h>
 
 /*----------------------------------------------------------------------------*/
 #include "softPwm.h"
@@ -709,20 +708,19 @@ static void init_gpio_mmap (void)
 static void init_adc_fds (void)
 {
 	const char *AIN0_NODE, *AIN1_NODE;
-	struct utsname uname_buf;
 
-	/* ADC node setup */
-	uname(&uname_buf);
-	if (strncmp(uname_buf.release, "4.14", 4) == 0) {
+	if ((kernelVersion->major == 4 && kernelVersion->minor == 14) ||
+	     kernelVersion->major == 5) {
 		AIN0_NODE = "/sys/devices/platform/soc/12d10000.adc/iio:device0/in_voltage0_raw";
 		AIN1_NODE = "/sys/devices/platform/soc/12d10000.adc/iio:device0/in_voltage3_raw";
-	} else if (strncmp(uname_buf.release, "4.9", 3) == 0) {
+	} else if (kernelVersion->major == 4 && kernelVersion->minor == 9) {
 		AIN0_NODE = "/sys/devices/platform/soc:/12d10000.adc:/iio:device0/in_voltage0_raw";
 		AIN1_NODE = "/sys/devices/platform/soc:/12d10000.adc:/iio:device0/in_voltage3_raw";
 	} else { // 3.10 kernel
 		AIN0_NODE = "/sys/devices/12d10000.adc/iio:device0/in_voltage0_raw";
 		AIN1_NODE = "/sys/devices/12d10000.adc/iio:device0/in_voltage3_raw";
 	}
+
 	adcFds[0] = open(AIN0_NODE, O_RDONLY);
 	adcFds[1] = open(AIN1_NODE, O_RDONLY);
 }

@@ -15,7 +15,6 @@
 #include <sys/ioctl.h>
 #include <asm/ioctl.h>
 #include <sys/mman.h>
-#include <sys/utsname.h>
 
 /*----------------------------------------------------------------------------*/
 #include "softPwm.h"
@@ -761,10 +760,6 @@ static void init_gpio_mmap (void)
 static void init_adc_fds (void)
 {
 	const char *AIN0_NODE, *AIN1_NODE;
-	struct utsname uname_buf;
-
-	/* ADC node setup */
-	uname(&uname_buf);
 
 	AIN0_NODE = "/sys/devices/platform/ff100000.saradc/iio:device0/in_voltage1_raw";
 	AIN1_NODE = "/sys/devices/platform/ff100000.saradc/iio:device0/in_voltage0_raw";
