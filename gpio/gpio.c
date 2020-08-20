@@ -832,6 +832,13 @@ static void doVersion (char *argv [])
 		"Hardkernel",
 		piMakerNames [maker]);
 
+	// Show current kernel version
+	printf("  * Current devices' kernel version: %d.%d.%d-%d\n",
+		kernelVersion->major,
+		kernelVersion->minor,
+		kernelVersion->revision,
+		kernelVersion->patch);
+
 	// Check for device tree
 	if (stat ("/proc/device-tree", &statBuf) == 0)	// We're on a devtree system ...
 		printf ("  * Device tree is enabled.\n") ;
