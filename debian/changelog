@@ -1,3 +1,14 @@
+odroid-wiringpi (9:3.5) stable; urgency=medium
+
+  * Odroid-XU4: Use cmpKernelVersion to determine ADC node
+  * WiringPi: Update in response to the latest regulations about I2C/SPI nodes
+  * WiringPi: Add cmpKernelVersion and update the kernelVerion structure
+  * WiringPi: Remove utsname things from each board's file
+  * WiringPi: Add showing current kernel version to the help text
+  * WiringPi: Implement storing current operating board's kernel version
+
+ -- Deokgyu Yang <secugyu@gmail.com>  Mon, 24 Aug 2020 17:38:49 +0900
+
 odroid-wiringpi (9:3.4) stable; urgency=medium
 
   * WiringPi: Add support for Odroid-N2+
