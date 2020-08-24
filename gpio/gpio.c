@@ -202,15 +202,25 @@ static void doI2Cdetect (UNU int argc, char *argv [])
 	piBoardId(&model, &rev, &mem, &maker, &overVolted);
 
 	switch (model) {
-	case MODEL_ODROID_C1:	case MODEL_ODROID_C2:
-	case MODEL_ODROID_XU3:
+	case MODEL_ODROID_C1:
+	case MODEL_ODROID_C2:
 		port = 1;
+		break;
+	case MODEL_ODROID_XU3:
+		if (cmpKernelVersion(KERN_NUM_TO_REVISION, 5, 4, 0))
+			port = 0;
+		else
+			port = 1;
 		break;
 	case MODEL_ODROID_N1:
 		port = 4;
 		break;
 	case MODEL_ODROID_N2:
-		port = 3;
+	case MODEL_ODROID_C4:
+		if (cmpKernelVersion(KERN_NUM_TO_REVISION, 4, 9, 230))
+			port = 0;
+		else
+			port = 2;
 		break;
 	default:
 		break;
@@ -833,7 +843,7 @@ static void doVersion (char *argv [])
 		piMakerNames [maker]);
 
 	// Show current kernel version
-	printf("  * Current devices' kernel version: %d.%d.%d-%d\n",
+	printf("  * Current devices' kernel version: %d.%d.%d-%s\n",
 		kernelVersion->major,
 		kernelVersion->minor,
 		kernelVersion->revision,

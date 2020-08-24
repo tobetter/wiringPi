@@ -140,7 +140,7 @@ struct kernelVersionStruct *kernelVersion = &(struct kernelVersionStruct) {
 	.major = 0,
 	.minor = 0,
 	.revision = 0,
-	.patch = 0
+	.patch = ""
 };
 
 /*----------------------------------------------------------------------------*/
@@ -272,7 +272,10 @@ void setKernelVersion() {
 
 	char* buf;
 	char* delimiter[] = { ".", "-" };
-	int i, kernelNumbers[4] = { 0, };
+	int i;
+
+	int kernelNumbers[3] = { 0, };
+	char patchStringBuf[64];
 
 	uname(&uname_buf);
 
@@ -281,6 +284,8 @@ void setKernelVersion() {
 		if (i < 1) {
 			kernelNumbers[i] = atoi(buf);
 			buf = strtok(NULL, delimiter[0]);
+		} else if (i == 3) {
+			memcpy(patchStringBuf, buf, strlen(buf));
 		} else {
 			kernelNumbers[i] = atoi(buf);
 			buf = strtok(NULL, delimiter[1]);
@@ -290,7 +295,52 @@ void setKernelVersion() {
 	kernelVersion->major = kernelNumbers[0];
 	kernelVersion->minor = kernelNumbers[1];
 	kernelVersion->revision = kernelNumbers[2];
-	kernelVersion->patch = kernelNumbers[3];
+	memcpy(kernelVersion->patch, patchStringBuf, 64);
+}
+
+/*----------------------------------------------------------------------------*/
+/*
+ * cmpKernelVersion:
+ *	It compares kernel version between the current one and the passed in
+ *	numbers. If the current one is bigger than the arguments, it returns
+ *	true, or it returns false.
+ */
+/*----------------------------------------------------------------------------*/
+char cmpKernelVersion(int num, ...) {
+	va_list valist;
+	int versionCompareTo[3] = { 0, };
+	int i;
+	char ret = FALSE;
+
+	va_start(valist, num);
+
+	for (i = 0; i < num; i++) {
+		versionCompareTo[i] = va_arg(valist, int);
+	}
+
+	switch (num) {
+	case KERN_NUM_TO_MAJOR:
+		if (kernelVersion->major >= versionCompareTo[0])
+			ret = TRUE;
+	break;
+	case KERN_NUM_TO_MINOR:
+		if (kernelVersion->major > versionCompareTo[0] ||
+		    kernelVersion->minor >= versionCompareTo[1])
+			ret = TRUE;
+	break;
+	case KERN_NUM_TO_REVISION:
+		if (kernelVersion->major > versionCompareTo[0] ||
+		    kernelVersion->minor > versionCompareTo[1] ||
+		    kernelVersion->revision >= versionCompareTo[2])
+			ret = TRUE;
+	break;
+	default:
+		msg(MSG_ERR, "%s: Unknown fixed argument %d. \n", __func__, num);
+	break;
+	}
+
+	va_end(valist);
+	return ret;
 }
 
 /*----------------------------------------------------------------------------*/

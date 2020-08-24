@@ -48,6 +48,10 @@
 #define	ENV_CODES		"WIRINGPI_CODES"
 #define	ENV_GPIOMEM		"WIRINGPI_GPIOMEM"
 
+#define KERN_NUM_TO_MAJOR	1
+#define KERN_NUM_TO_MINOR	2
+#define KERN_NUM_TO_REVISION	3
+
 #define	MODEL_UNKNOWN		0
 #define	MODEL_ODROID_C1		1
 #define	MODEL_ODROID_C2		2
@@ -250,7 +254,7 @@ struct kernelVersionStruct
 	int major;
 	int minor;
 	int revision;
-	int patch;
+	char patch[64];
 };
 
 extern struct kernelVersionStruct *kernelVersion;
@@ -276,6 +280,7 @@ extern		void setupCheck		(const char *fName);
 extern		void usingGpiomemCheck	(const char *what);
 extern		void setUsingGpiomem	(const unsigned int value);
 extern		void setKernelVersion	(void);
+extern		char cmpKernelVersion	(int num, ...);
 
 // Core WiringPi functions
 extern		void wiringPiVersion	(int *major, char **minor);
