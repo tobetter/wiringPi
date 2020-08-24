@@ -709,11 +709,11 @@ static void init_adc_fds (void)
 {
 	const char *AIN0_NODE, *AIN1_NODE;
 
-	if ((kernelVersion->major == 4 && kernelVersion->minor == 14) ||
-	     kernelVersion->major == 5) {
+	if (cmpKernelVersion(KERN_NUM_TO_MINOR, 4, 14) ||
+	    cmpKernelVersion(KERN_NUM_TO_MAJOR, 5)) {
 		AIN0_NODE = "/sys/devices/platform/soc/12d10000.adc/iio:device0/in_voltage0_raw";
 		AIN1_NODE = "/sys/devices/platform/soc/12d10000.adc/iio:device0/in_voltage3_raw";
-	} else if (kernelVersion->major == 4 && kernelVersion->minor == 9) {
+	} else if (cmpKernelVersion(KERN_NUM_TO_MINOR, 4, 9)) {
 		AIN0_NODE = "/sys/devices/platform/soc:/12d10000.adc:/iio:device0/in_voltage0_raw";
 		AIN1_NODE = "/sys/devices/platform/soc:/12d10000.adc:/iio:device0/in_voltage3_raw";
 	} else { // 3.10 kernel
