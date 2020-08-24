@@ -207,7 +207,7 @@ static void doI2Cdetect (UNU int argc, char *argv [])
 		port = 1;
 		break;
 	case MODEL_ODROID_XU3:
-		if (cmpKernelVersion(KERN_NUM_TO_REVISION, 5, 4, 0))
+		if (cmpKernelVersion(KERN_NUM_TO_MAJOR, 5))
 			port = 0;
 		else
 			port = 1;

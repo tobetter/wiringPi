@@ -150,6 +150,11 @@ int wiringPiSPISetupMode (int channel, int speed, int mode)
 		sprintf(device, "%s%d", spiDevType0, channel);
 	break;
 	case MODEL_ODROID_XU3:
+		if (cmpKernelVersion(KERN_NUM_TO_MAJOR, 5))
+			sprintf(device, "%s%d", spiDevType0, channel);
+		else
+			sprintf(device, "%s%d", spiDevType1, channel);
+	break;
 	case MODEL_ODROID_N1:
 		sprintf(device, "%s%d", spiDevType1, channel);
 	break;
