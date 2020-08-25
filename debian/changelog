@@ -1,3 +1,10 @@
+odroid-wiringpi (9:3.6) stable; urgency=medium
+
+  * Odroid-C4: Correct ADC nodes and change their access number as to the Odroid convention
+  * WiringPi: Remove patch string in kernel number and add whole release string
+
+ -- Deokgyu Yang <secugyu@gmail.com>  Tue, 25 Aug 2020 17:22:35 +0900
+
 odroid-wiringpi (9:3.5) stable; urgency=medium
 
   * Odroid-XU4: Use cmpKernelVersion to determine ADC node
