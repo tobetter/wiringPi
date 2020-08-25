@@ -843,11 +843,7 @@ static void doVersion (char *argv [])
 		piMakerNames [maker]);
 
 	// Show current kernel version
-	printf("  * Current devices' kernel version: %d.%d.%d-%s\n",
-		kernelVersion->major,
-		kernelVersion->minor,
-		kernelVersion->revision,
-		kernelVersion->patch);
+	printf("  * Current devices' kernel version: %s\n", kernelVersion->release);
 
 	// Check for device tree
 	if (stat ("/proc/device-tree", &statBuf) == 0)	// We're on a devtree system ...

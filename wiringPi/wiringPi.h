@@ -254,7 +254,7 @@ struct kernelVersionStruct
 	int major;
 	int minor;
 	int revision;
-	char patch[64];
+	char release[64];
 };
 
 extern struct kernelVersionStruct *kernelVersion;

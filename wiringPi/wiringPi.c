@@ -140,7 +140,7 @@ struct kernelVersionStruct *kernelVersion = &(struct kernelVersionStruct) {
 	.major = 0,
 	.minor = 0,
 	.revision = 0,
-	.patch = ""
+	.release = ""
 };
 
 /*----------------------------------------------------------------------------*/
@@ -271,31 +271,49 @@ void setKernelVersion() {
 	struct utsname uname_buf;
 
 	char* buf;
-	char* delimiter[] = { ".", "-" };
+	char* delimiter = ".";
 	int i;
 
 	int kernelNumbers[3] = { 0, };
-	char patchStringBuf[64];
+	int revLastIndex = 0;
+	char revisionStringBuf[8];
 
 	uname(&uname_buf);
+	memcpy(kernelVersion->release, uname_buf.release, strlen(uname_buf.release));
 
-	buf = strtok(uname_buf.release, delimiter[0]);
-	for (i = 0; i < 4; i++) {
-		if (i < 1) {
+	buf = strtok(uname_buf.release, delimiter);
+	for (i = 0; i < 2; i++) {
+		switch (i) {
+		case 0:
 			kernelNumbers[i] = atoi(buf);
-			buf = strtok(NULL, delimiter[0]);
-		} else if (i == 3) {
-			memcpy(patchStringBuf, buf, strlen(buf));
-		} else {
+			buf = strtok(NULL, delimiter);
+		break;
+		case 1:
 			kernelNumbers[i] = atoi(buf);
-			buf = strtok(NULL, delimiter[1]);
+			buf = strtok(NULL, "\n");
+		break;
 		}
+	}
+
+	if (isdigit(buf[0])) {
+		for (i = 0; i < (int) strlen(buf); i++) {
+			if (!isdigit(buf[i])) {
+				revLastIndex = i - 1;
+				break;
+			}
+		}
+
+		memcpy(revisionStringBuf, buf, revLastIndex + 1);
+
+		revisionStringBuf[revLastIndex + 1] = '\n';
+		kernelNumbers[2] = atoi(revisionStringBuf);
+	} else {
+		kernelNumbers[2] = 0;
 	}
 
 	kernelVersion->major = kernelNumbers[0];
 	kernelVersion->minor = kernelNumbers[1];
 	kernelVersion->revision = kernelNumbers[2];
-	memcpy(kernelVersion->patch, patchStringBuf, 64);
 }
 
 /*----------------------------------------------------------------------------*/
