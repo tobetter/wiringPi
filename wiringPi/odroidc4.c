@@ -34,7 +34,7 @@ static const int pinToGpio[64] = {
 	476, 477,	//  4 |  5 : GPIOX.0, GPIOX.1
 	478, 481,	//  6 |  7 : GPIOX.2, GPIOX.5
 	493, 494,	//  8 |  9 : GPIOX.17(I2C-2_SDA), GPIOX.18(I2C-2_SCL)
-	486,  23,	// 10 | 11 : GPIOX.10(SPI_SS), GPIOH.6
+	486, 433,	// 10 | 11 : GPIOX.10(SPI_SS), GPIOH.6
 	484, 485,	// 12 | 13 : GPIOX.8(SPI_MOSI), GPIOX.9(SPI_MISO)
 	487, 488,	// 14 | 15 : GPIOX.11(SPI_CLK), GPIOX.12(UART_TX_B)
 	489,  -1,	// 16 | 17 : GPIOX.13(UART_RX_B),
@@ -42,7 +42,7 @@ static const int pinToGpio[64] = {
 	 -1, 490,	// 20 | 21 : , GPIOX.14
 	491, 482,	// 22 | 23 : GPIOX.15, GPIOX.6
 	495,  -1,	// 24 | 25 : GPIOX.19, ADC.AIN3
-	 24,  22,	// 26 | 27 : GPIOH.7, GPIOH.5
+	434, 432,	// 26 | 27 : GPIOH.7, GPIOH.5
 	 -1, - 1,	// 28 | 29 : REF1.8V OUT, ADC.AIC4
 	474, 475,	// 30 | 31 : GPIOA.14(I2C-3_SDA), GPIOA.15(I2C-3_SCL)
 	// Padding:
@@ -65,12 +65,12 @@ static const int phyToGpio[64] = {
 	484,  -1,	// 19 | 20 : GPIOX.8(SPI_MOSI), GND
 	485, 478,	// 21 | 22 : GPIOX.9(SPI_MISO), GPIOX.2
 	487, 486,	// 23 | 24 : GPIOX.11(SPI_CLK), GPIOX.10(SPI_SS)
-	 -1,  23,	// 25 | 26 : GND, GPIOH.6
+	 -1, 433,	// 25 | 26 : GND, GPIOH.6
 	474, 475,	// 27 | 28 : GPIOA.14(I2C-3_SDA), GPIOA.15(I2C-3_SCL)
 	490,  -1,	// 29 | 30 : GPIOX.14, GND
-	491,  24,	// 31 | 32 : GPIOX.15, GPIOH.7
+	491, 434,	// 31 | 32 : GPIOX.15, GPIOH.7
 	482,  -1,	// 33 | 34 : GPIOX.6, GND
-	495,  22,	// 35 | 36 : GPIOX.19, GPIOH.5
+	495, 432,	// 35 | 36 : GPIOX.19, GPIOH.5
 	 -1,  -1,	// 37 | 38 : ADC.AIN3, 1.8V REF OUT
 	 -1,  -1,	// 39 | 40 : GND, ADC.AIC4
 	// Not used
