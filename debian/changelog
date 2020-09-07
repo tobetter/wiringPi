@@ -1,3 +1,11 @@
+odroid-wiringpi (9:3.7) stable; urgency=medium
+
+  * Odroid-C1/C2: Add I2C support for mainline kernel
+  * Odroid-C1: Fix to keep compatibility with Odroid-C series
+  * Odroid-C4: Add base number to GPIO_H pad pins
+
+ -- Deokgyu Yang <secugyu@gmail.com>  Mon, 07 Sep 2020 18:00:26 +0900
+
 odroid-wiringpi (9:3.6) stable; urgency=medium
 
   * Odroid-C4: Correct ADC nodes and change their access number as to the Odroid convention
