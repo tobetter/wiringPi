@@ -244,7 +244,10 @@ int wiringPiI2CSetup (const int devId)
 	switch(model)	{
 	case MODEL_ODROID_C1:
 	case MODEL_ODROID_C2:
-		device = "/dev/i2c-1";
+		if (cmpKernelVersion(KERN_NUM_TO_MAJOR, 4))
+			device = "/dev/i2c-0";
+		else
+			device = "/dev/i2c-1";
 	break;
 	case MODEL_ODROID_XU3:
 		if (cmpKernelVersion(KERN_NUM_TO_MAJOR, 5))
