@@ -435,17 +435,24 @@ int piGpioLayout (void) {
 
 	buf = strchr(line, '-');
 	modelCodename = buf != NULL ? buf : strchr(line, ' ');
-	if (modelCodename == NULL)
-		wiringPiFailure(WPI_FATAL, "** Model string on this board is not well formatted **");
-	modelCodename++;
+	if (modelCodename == NULL) {
+		if (strcmp(line, "ODROIDC") == 0) {
+			// Compatibility for Odroid-C series that are not having proper model name
+			libwiring.model = MODEL_ODROID_C1;
+		} else {
+			wiringPiFailure(WPI_FATAL, "** Model string on this board is not well formatted **");
+		}
+	} else {
+		modelCodename++;
 
-	libwiring.model = 0;
-	for (i = 1; i <= sizeOfAssignedModelNames; i++) {
-		model = strstr(piModelNames[i], "-");
+		libwiring.model = 0;
+		for (i = 1; i <= sizeOfAssignedModelNames; i++) {
+			model = strstr(piModelNames[i], "-");
 
-		if (strcasestr(model, modelCodename) != NULL) {
-			libwiring.model = i;
-			break;
+			if (strcasestr(model, modelCodename) != NULL) {
+				libwiring.model = i;
+				break;
+			}
 		}
 	}
 
