@@ -59,7 +59,7 @@ const char *piModelNames [16] =
 	"ODROID-XU3/XU4",
 	"ODROID-N1",
 	"ODROID-N2/N2Plus",
-	"ODROID-C4/HC4",
+	"ODROID-C4",
 };
 
 const char *piRevisionNames [16] =
