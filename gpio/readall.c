@@ -110,6 +110,15 @@ static const int physToWpi [64] =
 } ;
 
 /*----------------------------------------------------------------------------*/
+static const int physToWpiHC4 [64] =
+{
+	-1,	// 0
+	-1,  0,	// 1, 2
+	 1,  2,
+	-1,
+} ;
+
+/*----------------------------------------------------------------------------*/
 static const char *physNamesOdroidC1All [64] =
 {
 	NULL,
@@ -544,6 +553,44 @@ static const char *physNamesOdroidC4 [64] =
 };
 
 /*----------------------------------------------------------------------------*/
+static const char *physNamesOdroidHC4All [64] =
+{
+	NULL,
+
+	"    3.3V",
+	"   SDA.2",
+	"   SCL.2",
+	"GPIO.481",
+	"      0V",
+
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+};
+
+/*----------------------------------------------------------------------------*/
+static const char *physNamesOdroidHC4 [64] =
+{
+	NULL,
+
+	"   3.3V",
+	"  SDA.2",
+	"  SCL.2",
+	" IO.481",
+	"     0V",
+
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+};
+
+/*----------------------------------------------------------------------------*/
 static void readallPhys(int model, int UNU rev, int physPin, const char *physNames[], int isAll) {
 	int pin ;
 
@@ -670,7 +717,6 @@ static void readallPhys(int model, int UNU rev, int physPin, const char *physNam
 	printf (" |\n") ;
 }
 
-/*----------------------------------------------------------------------------*/
 static void printHeader(const char *headerName, int isAll) {
 	const char *headerLeft = " +-----+-----+---------+------+---+";
 	const char *headerRight = "+---+------+---------+-----+-----+\n";
@@ -700,6 +746,94 @@ static void printBody(int model, int rev, const char *physNames[], int isAll) {
 		: printf(
 			" +------+-----+----------+------+---+----+-------+----++----+-------+----+---+------+----------+-----+------+\n"
 			" | GPIO | wPi |   Name   | Mode | V | DS | PU/PD | Physical | PU/PD | DS | V | Mode |   Name   | wPi | GPIO |\n");
+}
+
+/*----------------------------------------------------------------------------*/
+static void readallPhysHC4(int model, int UNU rev, int physPin, const char *physNames[], int isAll) {
+	int pin ;
+
+	// GPIO, wPi pin number
+	if (isAll == TRUE) {
+		if ((physPinToGpio (physPin) == -1) && (physToWpiHC4 [physPin] == -1))
+			printf(" |      |    ");
+		else if (physPinToGpio (physPin) != -1) {
+			printf(" |  %3d | %3d", physPinToGpio(physPin), physToWpiHC4[physPin]);
+		} else
+			printf(" |      | %3d", physToWpiHC4 [physPin]);
+	} else {
+		if ((physPinToGpio (physPin) == -1) && (physToWpiHC4 [physPin] == -1))
+			printf(" |     |    ");
+		else if (physPinToGpio (physPin) != -1) {
+			printf(" | %3d | %3d", physPinToGpio(physPin), physToWpiHC4[physPin]);
+		} else
+			printf(" |     | %3d", physToWpiHC4 [physPin]);
+	}
+
+	// GPIO pin name
+	printf (" | %s", physNames [physPin]) ;
+
+	// GPIO pin mode, value
+	if ((physToWpiHC4 [physPin] == -1) || (physPinToGpio (physPin) == -1)) {
+		printf(" |      |  ");
+		if (isAll == TRUE)
+			printf(" |    |      ");
+	} else {
+		if (wpMode == MODE_GPIO)
+			pin = physPinToGpio (physPin);
+		else if (wpMode == MODE_PHYS)
+			pin = physPin ;
+		else
+			pin = physToWpiHC4 [physPin];
+
+		printf (" | %4s", alts [getAlt (pin)]) ;
+		printf (" | %d", digitalRead (pin)) ;
+
+		// GPIO pin drive strength, pu/pd
+		if (isAll == TRUE) {
+			switch (model) {
+			case MODEL_ODROID_HC4:
+				printf (" | %2d | %5s", getDrive(pin), pupd[getPUPD(pin)]);
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
+	// Physical pin number
+	printf(" |  %2d |\n", physPin);
+}
+
+/*----------------------------------------------------------------------------*/
+static void printHeaderHC4(const char *headerName, int isAll) {
+	const char *header = " +-----+-----+---------+------+---+-----+";
+	const char *headerAll = " +------+-----+----------+------+---+----+-------+-----+";
+
+	(isAll == FALSE) ? printf("%s\n", header) : printf("%s\n", headerAll);
+	(isAll == FALSE)
+		? printf(" |              %s              |\n", headerName)
+		: printf(" |             %s              |\n", headerName);
+	(isAll == FALSE) ? printf("%s\n", header) : printf("%s\n", headerAll);
+}
+
+/*----------------------------------------------------------------------------*/
+static void printBodyHC4(int model, int rev, const char *physNames[], int isAll) {
+	(isAll == FALSE)
+		? printf(
+			" | I/O | wPi |   Name  | Mode | V | Phy |\n"
+			" +-----+-----+---------+------+---+-----+\n")
+		: printf(
+			" | GPIO | wPi |   Name   | Mode | V | DS | PU/PD | Phy |\n"
+			" +------+-----+----------+------+---+----+-------+-----+\n");
+	for (int pin = 1; pin <= 5; pin ++)
+		readallPhysHC4(model, rev, pin, physNames, isAll);
+	(isAll == FALSE)
+		? printf(
+			" +-----+-----+---------+------+---+-----+\n"
+			" | I/O | wPi |   Name  | Mode | V | Phy |\n")
+		: printf(
+			" +------+-----+----------+------+---+----+-------+-----+\n"
+			" | GPIO | wPi |   Name   | Mode | V | DS | PU/PD | Phy |\n");
 }
 
 /*----------------------------------------------------------------------------*/
@@ -764,14 +898,27 @@ void doReadall(int argc, char *argv[]) {
 			headerName = (isAll == FALSE) ? "--- C4 ---" : "---- Model  ODROID-C4 ----";
 			physNames = (char *) ((isAll == FALSE) ? physNamesOdroidC4 : physNamesOdroidC4All);
 			break;
+		case MODEL_ODROID_HC4:
+			headerName = (isAll == FALSE) ? "   HC4    " : "     Model ODROID-HC4     ";
+			physNames = (char *) ((isAll == FALSE) ? physNamesOdroidHC4 : physNamesOdroidHC4All);
+			break;
 		default:
 			printf("Oops - unknown model: %d\n", model);
 			return;
 	}
 
-	printHeader((const char *) headerName, isAll);
-	printBody(model, rev, (const char **) physNames, isAll);
-	printHeader((const char *) headerName, isAll);
+	switch (model) {
+		case MODEL_ODROID_HC4:
+			printHeaderHC4((const char *) headerName, isAll);
+			printBodyHC4(model, rev, (const char **) physNames, isAll);
+			printHeaderHC4((const char *) headerName, isAll);
+			break;
+		default:
+			printHeader((const char *) headerName, isAll);
+			printBody(model, rev, (const char **) physNames, isAll);
+			printHeader((const char *) headerName, isAll);
+			break;
+	}
 }
 
 /*----------------------------------------------------------------------------*/

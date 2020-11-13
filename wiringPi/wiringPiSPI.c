@@ -138,12 +138,13 @@ int wiringPiSPISetupMode (int channel, int speed, int mode)
 
 	piBoardId (&model, &temp, &temp, &temp, &temp) ;
 
-	if (model == MODEL_ODROID_C2) {
+	switch(model)	{
+	case MODEL_ODROID_C2:
 		return wiringPiFailure (WPI_ALMOST,
 			"ODROID C2 does not support hardware SPI. Check out the SPI bitbang and use wiringPiSPISetupInterface.\n");
-	}
-
-	switch(model)	{
+	case MODEL_ODROID_HC4:
+		return wiringPiFailure (WPI_ALMOST,
+			"ODROID HC4 does not support hardware SPI.\n");
 	case MODEL_ODROID_C1:
 	case MODEL_ODROID_N2:
 	case MODEL_ODROID_C4:

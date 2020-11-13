@@ -60,6 +60,7 @@ const char *piModelNames [16] =
 	"ODROID-N1",
 	"ODROID-N2/N2Plus",
 	"ODROID-C4",
+	"ODROID-HC4",
 };
 
 const char *piRevisionNames [16] =
@@ -497,6 +498,11 @@ int piGpioLayout (void) {
 			libwiring.rev = 1;
 			break;
 		case MODEL_ODROID_C4:
+			libwiring.maker = MAKER_AMLOGIC;
+			libwiring.mem = 4;
+			libwiring.rev = 1;
+			break;
+		case MODEL_ODROID_HC4:
 			libwiring.maker = MAKER_AMLOGIC;
 			libwiring.mem = 4;
 			libwiring.rev = 1;
@@ -1207,6 +1213,9 @@ int wiringPiSetup (void)
 	break;
 	case MODEL_ODROID_C4:
 		init_odroidc4(&libwiring);
+	break;
+	case MODEL_ODROID_HC4:
+		init_odroidhc4(&libwiring);
 	break;
 	default:
 		return wiringPiFailure (WPI_ALMOST,

@@ -54,6 +54,7 @@ extern "C" {
 #endif
 
 extern void init_odroidc4 (struct libodroid *libwiring);
+extern void init_odroidhc4 (struct libodroid *libwiring);
 
 #ifdef __cplusplus
 }
