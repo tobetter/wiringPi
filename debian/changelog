@@ -1,3 +1,9 @@
+odroid-wiringpi (9:3.9) stable; urgency=medium
+
+  * WiringPi: Android: Add odroidhc4.c to compile on the android platform
+
+ -- Deokgyu Yang <secugyu@gmail.com>  Fri, 20 Nov 2020 10:53:41 +0900
+
 odroid-wiringpi (9:3.8) stable; urgency=medium
 
   * WiringPi: Add support for Odroid-HC4
