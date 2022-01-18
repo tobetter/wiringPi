@@ -13,3 +13,14 @@ gpio/gpio
 
 libs/
 obj/
+
+*.lo
+*.la
+*.in
+*.pdf
+
+.deps/
+.libs/
+.debhelper/
+m4/
+autom4te.cache/

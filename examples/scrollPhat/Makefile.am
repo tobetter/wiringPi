@@ -1,0 +1,10 @@
+COMMON_CFLAGS=$(EXTRA_CFLAGS) $(LIBWIRINGPI_CFLAGS)
+LIBS=$(LIBWIRINGPI_LIBS)
+
+bin_PROGRAMS = scphat test
+
+scphat_SOURCES = scphat.c
+scphat_CFLAGS = $(COMMON_CFLAGS)
+
+test_SOURCES = test.c
+test_CFLAGS = $(COMMON_CFLAGS)

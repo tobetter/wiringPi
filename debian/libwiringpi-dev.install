@@ -1,3 +1,11 @@
-debian/tmp/usr/include
-debian/tmp/usr/lib/*.so
-examples		usr/share/doc/libwiringpi-dev
+debian/tmp/usr/lib/${DEB_HOST_MULTIARCH}/libwiringPi.a		usr/lib/${DEB_HOST_MULTIARCH}
+debian/tmp/usr/lib/${DEB_HOST_MULTIARCH}/libwiringPi.la		usr/lib/${DEB_HOST_MULTIARCH}
+debian/tmp/usr/lib/${DEB_HOST_MULTIARCH}/libwiringPiDev.a	usr/lib/${DEB_HOST_MULTIARCH}
+debian/tmp/usr/lib/${DEB_HOST_MULTIARCH}/libwiringPiDev.la	usr/lib/${DEB_HOST_MULTIARCH}
+
+debian/tmp/usr/include/wiringpi2/*.h				usr/include/wiringpi2/
+
+debian/tmp/usr/lib/aarch64-linux-gnu/pkgconfig/libwiringpi2.pc	usr/lib/${DEB_HOST_MULTIARCH}/pkgconfig/
+
+README.TXT	usr/share/doc/wiringpi
+People		usr/share/doc/wiringpi

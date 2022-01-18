@@ -1,1 +1,4 @@
-debian/tmp/usr/lib/lib*.so.*
+debian/tmp/usr/lib/${DEB_HOST_MULTIARCH}/libwiringPi.so*	usr/lib/${DEB_HOST_MULTIARCH}
+debian/tmp/usr/lib/${DEB_HOST_MULTIARCH}/libwiringPiDev.so*	usr/lib/${DEB_HOST_MULTIARCH}
+debian/tmp/usr/sbin/gpio
+debian/tmp/usr/sbin/wiringPiD

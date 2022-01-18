@@ -4,25 +4,41 @@ Priority: optional
 Maintainer: Deokgyu Yang <secugyu@gmail.com>, Steve Jeong <jkhpro@gmail.com>
 Standards-Version: 3.8.0
 Homepage: https://wiki.odroid.com
-Build-Depends: debhelper (>= 10)
+Build-Depends: debhelper (>= 10),
+  libc6-dev,
+  libcrypt-dev,
+  libgpiod-dev,
+  texlive-latex-base,
+  texlive-fonts-recommended
+
+Package: odroid-wiringpi
+Architecture: any
+Depends: ${misc:Depends}, libwiringpi2 (= ${binary:Version})
+Description: gpio utility for ODROID
+  The wiringPi gpio command line utility, for GPIO access on a
+  ODROID from the command line.
 
 Package: libwiringpi2
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libgpiod-dev
 Description: GPIO libraries for ODROID (runtime).
- Runtime for the popular wiringPi library.
-
-Package: odroid-wiringpi
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libwiringpi2 (= ${binary:Version})
-Description: gpio utility for ODROID
- The wiringPi gpio command line utility, for GPIO access on a
- ODROID from the command line.
+  Runtime for the popular wiringPi library.
 
 Package: libwiringpi-dev
 Architecture: any
-Depends: libc6-dev, ${misc:Depends}, libwiringpi2 (= ${binary:Version}), odroid-wiringpi (= ${binary:Version}),
+Depends: ${misc:Depends},
+  libc6-dev,
+  libgpiod-dev,
+  libwiringpi2 (= ${binary:Version}),
+  odroid-wiringpi (= ${binary:Version})
 Description: GPIO development library for ODROID
- Development libraries to allow GPIO access on a ODROID from C
- and C++ programs.
+  Development libraries to allow GPIO access on a ODROID from C
+  and C++ programs.
+
+Package: wiringpi-examples
+Architecture: any
+Depends: libwiringpi-dev
+Description: GPIO development library examples for ODROID
+  Development libraries to allow GPIO access on a ODROID from C
+  and C++ programs.
