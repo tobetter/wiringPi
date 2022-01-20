@@ -43,7 +43,7 @@ INCLUDE	= -I.
 DEFS	= -D_GNU_SOURCE
 CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Wextra -Winline -Wno-format-truncation $(INCLUDE) -pipe -fPIC
 
-LIBS    = -lm -lpthread -lrt -lcrypt
+LIBS    = -lm -lpthread -lrt -lcrypt -lgpiod
 
 ###############################################################################
 
@@ -69,7 +69,8 @@ SRC	=	wiringPi.c						\
 		odroidn1.c						\
 		odroidn2.c						\
 		odroidc4.c						\
-		odroidhc4.c
+		odroidhc4.c						\
+		odroidm1.c
 
 HEADERS =	$(shell ls *.h)
 
@@ -87,7 +88,7 @@ $(STATIC):	$(OBJ)
 
 $(DYNAMIC):	$(OBJ)
 	$Q echo "[Link (Dynamic)]"
-	$Q $(CC) -shared -Wl,-soname,libwiringPi.so$(WIRINGPI_SONAME_SUFFIX) -o libwiringPi.so.$(VERSION) $(LIBS) $(OBJ)
+	$Q $(CC) -shared -Wl,-soname,libwiringPi.so$(WIRINGPI_SONAME_SUFFIX) -o libwiringPi.so.$(VERSION) $(OBJ) $(LIBS)
 
 .c.o:
 	$Q echo [Compile] $<
@@ -184,3 +185,4 @@ odroidn1.o  : wiringPi.h odroidn1.h
 odroidn2.o  : wiringPi.h odroidn2.h
 odroidc4.o  : wiringPi.h odroidc4.h
 odroidhc4.o  : wiringPi.h odroidc4.h
+odroidm1.o  : wiringPi.h odroidm1.h

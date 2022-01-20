@@ -86,10 +86,9 @@ configure_gpiomem() {
 }
 
 install() {
+  echo "====================="
   echo "wiringPi Build script"
   echo "====================="
-  echo
-
   echo
   echo "WiringPi Library"
   cd wiringPi

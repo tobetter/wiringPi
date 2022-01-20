@@ -60,6 +60,7 @@
 #define	MODEL_ODROID_N2		5
 #define	MODEL_ODROID_C4		6
 #define	MODEL_ODROID_HC4	7
+#define	MODEL_ODROID_M1		8
 
 #define	MAKER_UNKNOWN		0
 #define	MAKER_AMLOGIC		1

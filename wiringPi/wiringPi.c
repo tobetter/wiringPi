@@ -44,6 +44,7 @@
 #include "odroidn1.h"
 #include "odroidn2.h"
 #include "odroidc4.h"
+#include "odroidm1.h"
 
 /*----------------------------------------------------------------------------*/
 // Const string define
@@ -61,6 +62,7 @@ const char *piModelNames [16] =
 	"ODROID-N2/N2Plus",
 	"ODROID-C4",
 	"ODROID-HC4",
+	"ODROID-M1",
 };
 
 const char *piRevisionNames [16] =
@@ -507,6 +509,11 @@ int piGpioLayout (void) {
 			libwiring.mem = 4;
 			libwiring.rev = 1;
 			break;
+		case MODEL_ODROID_M1:
+			libwiring.maker = MAKER_ROCKCHIP;
+			libwiring.mem = 5;
+			libwiring.rev = 1;
+			break;
 		case MODEL_UNKNOWN:
 		default:
 			libwiring.model = MAKER_UNKNOWN;
@@ -536,7 +543,8 @@ int piGpioLayout (void) {
  *         Rev 1.1 : /sys/class/odroid/boardrev value is 1 (Mass board)
  *  03xx - Model ODROID N1, 4096M, Hardkernel
  *  04xx - Model ODROID N2, 4096M, Hardkernel
- *  05xx - Model ODROID C4, 4096M, Hardkernel
+ *  05xx - Model ODROID C4/HC4, 4096M, Hardkernel
+ *  06xx - Model ODROID M1, 8192M, Hardkernel
  */
 /*----------------------------------------------------------------------------*/
 void piBoardId (int *model, int *rev, int *mem, int *maker, int *warranty)
@@ -1216,6 +1224,9 @@ int wiringPiSetup (void)
 	break;
 	case MODEL_ODROID_HC4:
 		init_odroidhc4(&libwiring);
+	break;
+	case MODEL_ODROID_M1:
+		init_odroidm1(&libwiring);
 	break;
 	default:
 		return wiringPiFailure (WPI_ALMOST,

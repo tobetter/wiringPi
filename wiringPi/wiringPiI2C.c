@@ -261,6 +261,7 @@ int wiringPiI2CSetup (const int devId)
 	case MODEL_ODROID_N2:
 	case MODEL_ODROID_C4:
 	case MODEL_ODROID_HC4:
+	case MODEL_ODROID_M1:
 		if (cmpKernelVersion(KERN_NUM_TO_REVISION, 4, 9, 230))
 			device = "/dev/i2c-0";
 		else
