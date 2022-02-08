@@ -31,22 +31,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <sys/ioctl.h>
 #include <asm/ioctl.h>
 #include <sys/mman.h>
-#include <gpiod.h>
 /*----------------------------------------------------------------------------*/
 #include "softPwm.h"
 #include "softTone.h"
 /*----------------------------------------------------------------------------*/
 #include "wiringPi.h"
 #include "odroidm1.h"
+
+#if !defined(DEVMEM)
+#include <gpiod.h>
 /*----------------------------------------------------------------------------*/
 // libgpiod define
 /*----------------------------------------------------------------------------*/
 static struct gpiod_chip *chip;
 static struct gpiod_line *gpiod;
-/*----------------------------------------------------------------------------*/
-// select mode WIRINGPI or LIBGPIOD
-/*----------------------------------------------------------------------------*/
-#define MODE	WIRINGPI
+#endif
+
 /*----------------------------------------------------------------------------*/
 // wiringPi gpio map define
 /*----------------------------------------------------------------------------*/
@@ -145,6 +145,8 @@ static int		_digitalWrite		(int pin, int value);
 static int		_analogRead		(int pin);
 static int		_digitalWriteByte	(const unsigned int value);
 static unsigned int	_digitalReadByte	(void);
+
+#if !defined(DEVMEM)
 /*----------------------------------------------------------------------------*/
 // libgpiod core function
 /*----------------------------------------------------------------------------*/
@@ -153,6 +155,8 @@ static int		_digitalRead_gpiod		(int pin);
 static int		_digitalWrite_gpiod		(int pin, int value);
 static int		_digitalWriteByte_gpiod	(const unsigned int value);
 static unsigned int	_digitalReadByte_gpiod	(void);
+#endif
+
 /*----------------------------------------------------------------------------*/
 // board init function
 /*----------------------------------------------------------------------------*/
@@ -347,6 +351,8 @@ __attribute__ ((unused))static int _pinMode (int pin, int mode)
 
 	return 0;
 }
+
+#if !defined(DEVMEM)
 /*----------------------------------------------------------------------------*/
 __attribute__ ((unused))static int _pinMode_gpiod (int pin, int mode)
 {
@@ -427,6 +433,8 @@ __attribute__ ((unused))static int _pinMode_gpiod (int pin, int mode)
 
 	return 0;
 }
+#endif
+
 /*----------------------------------------------------------------------------*/
 __attribute__ ((unused))static int _getDrive(int pin)
 {
@@ -744,6 +752,8 @@ __attribute__ ((unused))static int _digitalRead (int pin)
 
 	return ret;
 }
+
+#if !defined(DEVMEM)
 /*----------------------------------------------------------------------------*/
 __attribute__ ((unused))static int _digitalRead_gpiod (int pin)
 {
@@ -796,6 +806,8 @@ __attribute__ ((unused))static int _digitalRead_gpiod (int pin)
 
 	return ret;
 }
+#endif
+
 /*----------------------------------------------------------------------------*/
 __attribute__ ((unused))static int _digitalWrite (int pin, int value)
 {
@@ -845,6 +857,8 @@ __attribute__ ((unused))static int _digitalWrite (int pin, int value)
 
 	return 0;
 }
+
+#if !defined(DEVMEM)
 /*----------------------------------------------------------------------------*/
 __attribute__ ((unused))static int _digitalWrite_gpiod (int pin, int value)
 {
@@ -915,6 +929,8 @@ __attribute__ ((unused))static int _digitalWrite_gpiod (int pin, int value)
 
 	return 0;
 }
+#endif
+
 /*----------------------------------------------------------------------------*/
 static int _analogRead (int pin)
 {
@@ -995,6 +1011,8 @@ __attribute__ ((unused))static int _digitalWriteByte (const unsigned int value)
 
 	return 0;
 }
+
+#if !defined(DEVMEM)
 /*----------------------------------------------------------------------------*/
 __attribute__ ((unused))static int _digitalWriteByte_gpiod (const unsigned int value)
 {
@@ -1057,6 +1075,8 @@ __attribute__ ((unused))static int _digitalWriteByte_gpiod (const unsigned int v
 
 	return 0;
 }
+#endif
+
 /*----------------------------------------------------------------------------*/
 __attribute__ ((unused))static unsigned int _digitalReadByte (void)
 {
@@ -1100,6 +1120,8 @@ __attribute__ ((unused))static unsigned int _digitalReadByte (void)
 
 	return value;
 }
+
+#if !defined(DEVMEM)
 /*----------------------------------------------------------------------------*/
 __attribute__ ((unused))static unsigned int _digitalReadByte_gpiod (void)
 {
@@ -1161,6 +1183,8 @@ __attribute__ ((unused))static unsigned int _digitalReadByte_gpiod (void)
 
 	return value;
 }
+#endif
+
 /*----------------------------------------------------------------------------*/
 static void init_gpio_mmap (void)
 {
@@ -1247,7 +1271,7 @@ void init_odroidm1 (struct libodroid *libwiring)
 	init_gpio_mmap();
 
 	init_adc_fds();
-#if MODE == WIRINGPI
+#if defined(DEVMEM)
 	/* wiringPi Core function initialize */
 	libwiring->getModeToGpio	= _getModeToGpio;
 	libwiring->pinMode		= _pinMode;
@@ -1261,7 +1285,7 @@ void init_odroidm1 (struct libodroid *libwiring)
 	libwiring->analogRead		= _analogRead;
 	libwiring->digitalWriteByte	= _digitalWriteByte;
 	libwiring->digitalReadByte	= _digitalReadByte;
-#elif MODE == LIBGPIOD
+#else
 	/* wiringPi-libgpiod Core function initialize */
 	libwiring->getModeToGpio	= _getModeToGpio;
 	libwiring->pinMode		= _pinMode_gpiod;
