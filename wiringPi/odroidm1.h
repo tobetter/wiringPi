@@ -25,8 +25,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef	__ODROID_M1_H__
 #define	__ODROID_M1_H__
 
-#define WIRINGPI	0
-#define LIBGPIOD	1
 /*----------------------------------------------------------------------------*/
 // Common mmap block size for ODROID-M1 GRF register
 #define M1_GPIO_PIN_BASE	0
