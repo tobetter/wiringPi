@@ -1,3 +1,9 @@
+odroid-wiringpi (3.13) UNRELEASED; urgency=medium
+
+  * ODROID-N2/C4: fix compile error
+
+ -- steve <jkhpro1003@gmail.com>  Thu, 14 Apr 2022 18:52:19 +0900
+
 odroid-wiringpi (3.12) stable; urgency=medium
 
   *  Rework Debian package scripts
