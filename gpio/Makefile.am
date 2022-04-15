@@ -10,5 +10,5 @@ gpio_CFLAGS = \
 	$(LIBCRYPT_CFLAGS)
 
 gpio_LDFLAGS = \
-	-L../wiringPi/.libs -lwiringPi \
+	-L../wiringPi/.libs -lwiringPi -lgpiod \
 	$(LIBCRYPT_LIBS)

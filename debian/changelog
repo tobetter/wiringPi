@@ -1,8 +1,10 @@
-odroid-wiringpi (3.13) UNRELEASED; urgency=medium
+odroid-wiringpi (3.13.1) stable; urgency=medium
 
-  * ODROID-N2/C4: fix compile error
+  * ODROID-COMMON: Add link libgpiod
+  * ODROID-N2/C4: Fix compile error
+  * ODROID-N2/C4: Fix postinst error
 
- -- steve <jkhpro1003@gmail.com>  Thu, 14 Apr 2022 18:52:19 +0900
+ -- steve <jkhpro1003@gmail.com>  Fri, 15 Apr 2022 14:37:13 +0900
 
 odroid-wiringpi (3.12) stable; urgency=medium
 
