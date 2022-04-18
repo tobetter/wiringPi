@@ -790,11 +790,6 @@ __attribute__ ((unused))static int _digitalRead_gpiod (int pin)
 		printf("gpiod get error\n");
 		gpiod_chip_close(chip);
 	}
-	ret = gpiod_line_request_input(gpiod,CONSUMER);
-	if (ret < 0) {
-		printf("gpiod request error\n");
-		gpiod_line_release(gpiod);
-	}
 	ret = gpiod_line_get_value(gpiod);
 	if (ret < 0) {
 		printf("gpiod get error\n");
@@ -900,11 +895,6 @@ __attribute__ ((unused))static int _digitalWrite_gpiod (int pin, int value)
 		gpiod_chip_close(chip);
 	}
 
-	ret = gpiod_line_request_output(gpiod, CONSUMER, 0);
-	if (ret < 0) {
-		printf("gpiod request error\n");
-		gpiod_line_release(gpiod);
-	}
 	switch (value) {
 	case LOW:
 		ret = gpiod_line_set_value(gpiod, 0);

@@ -1,0 +1,2 @@
+# /dev/gpiomem
+SUBSYSTEM=="rk3568-gpiomem", GROUP="odroid", MODE="0660"

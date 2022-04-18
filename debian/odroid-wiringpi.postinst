@@ -8,15 +8,22 @@ msg() {
 
 case "$1" in
 	configure)
-	;;
+		if [ -c "/dev/gpiomem" ] && [ "$(stat -c "%a %G" "/dev/gpiomem")" != "660"*"odroid" ]; then
+				msg "Reload udev..."
+				[ -x "$(command -v udevadm)" ] \
+					&& udevadm trigger \
+					|| msg "udevadm not found. Please reboot to take effect"
+		fi
 
+	;;
 	abort-upgrade|abort-remove|abort-deconfigure)
-	;;
 
+	;;
 	*)
 		echo "postinst called with unknown argument \`$1'" >&2
 		exit 1
 	;;
+
 esac
 
 exit 0
