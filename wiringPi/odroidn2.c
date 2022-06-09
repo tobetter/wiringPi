@@ -841,8 +841,15 @@ static void init_adc_fds (void)
 	const char *AIN0_NODE, *AIN1_NODE;
 
 	/* ADC node setup */
-	AIN0_NODE = "/sys/devices/platform/ff809000.saradc/iio:device0/in_voltage2_raw";
-	AIN1_NODE = "/sys/devices/platform/ff809000.saradc/iio:device0/in_voltage3_raw";
+	if (cmpKernelVersion(KERN_NUM_TO_MAJOR, 5)) {
+		AIN0_NODE = "/sys/devices/platform/soc/ff800000.bus/ff809000.adc/iio:device0/in_voltage2_raw";
+		AIN1_NODE = "/sys/devices/platform/soc/ff800000.bus/ff809000.adc/iio:device0/in_voltage3_raw";
+	}
+
+	else {
+		AIN0_NODE = "/sys/devices/platform/ff809000.saradc/iio:device0/in_voltage2_raw";
+		AIN1_NODE = "/sys/devices/platform/ff809000.saradc/iio:device0/in_voltage3_raw";
+	}
 
 	adcFds[0] = open(AIN0_NODE, O_RDONLY);
 	adcFds[1] = open(AIN1_NODE, O_RDONLY);
