@@ -1,3 +1,9 @@
+odroid-wiringpi (3.13.3) stable; urgency=medium
+
+  * ODROID-N2/C4: Add path of ADC in kernel 5.x
+
+ -- steve <jkhpro1003@gmail.com>  Thu, 09 Jun 2022 10:26:57 +0900
+
 odroid-wiringpi (3.13.2) stable; urgency=medium
 
   * ODROID-M1: Add gpiomem rules
