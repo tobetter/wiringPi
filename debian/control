@@ -8,6 +8,7 @@ Build-Depends: debhelper (>= 10),
   libc6-dev,
   libcrypt-dev,
   libgpiod-dev,
+  pkg-config,
   texlive-latex-base,
   texlive-fonts-recommended
 
@@ -38,7 +39,7 @@ Description: GPIO development library for ODROID
 
 Package: wiringpi-examples
 Architecture: any
-Depends: libwiringpi-dev
+Depends: libwiringpi-dev, pkg-config
 Description: GPIO development library examples for ODROID
   Development libraries to allow GPIO access on a ODROID from C
   and C++ programs.

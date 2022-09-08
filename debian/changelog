@@ -1,3 +1,10 @@
+odroid-wiringpi (3.13.4) stable; urgency=medium
+
+  * ODROID-COMMON: [solve] syntax error near unexpected token `LIBCRYPT,'
+  * ODROID-XU3/4: New support ODROID-XU3/4.
+
+ -- steve <jkhpro1003@gmail.com>  Thu, 08 Sep 2022 14:15:42 +0900
+
 odroid-wiringpi (3.13.3) stable; urgency=medium
 
   * ODROID-N2/C4: Add path of ADC in kernel 5.x
