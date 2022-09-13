@@ -1,3 +1,9 @@
+odroid-wiringpi (9:3.13.4) stable; urgency=medium
+
+  * ODROID-N2/C4/XU4: solve unmet dependencies.
+
+ -- steve <jkhpro1003@gmail.com>  Tue, 13 Sep 2022 11:29:41 +0900
+
 odroid-wiringpi (3.13.4) stable; urgency=medium
 
   * ODROID-COMMON: [solve] syntax error near unexpected token `LIBCRYPT,'
