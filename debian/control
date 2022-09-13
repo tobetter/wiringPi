@@ -22,7 +22,9 @@ Description: gpio utility for ODROID
 Package: libwiringpi2
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libgpiod-dev
+Depends: libc6,
+  libcrypt1,
+  libgpiod-dev
 Description: GPIO libraries for ODROID (runtime).
   Runtime for the popular wiringPi library.
 
