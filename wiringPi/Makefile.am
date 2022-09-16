@@ -46,8 +46,7 @@ libwiringPi_la_SOURCES = \
 
 libwiringPi_la_CFLAGS = \
 	@EXTRA_CFLAGS@ \
-	$(LIBCRYPT_CFLAGS) \
-	-DDEVMEM
+	$(LIBCRYPT_CFLAGS)
 
 libwiringPi_la_LDFLAGS = \
 	-version-info @LIBWIRINGPI_VERSION@ \

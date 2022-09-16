@@ -1,3 +1,9 @@
+odroid-wiringpi (3.13.6) stable; urgency=medium
+
+  * ODROID-M1: define "DEVMEM" in m1 header. for solving gpiod error on pip package.
+
+ -- steve <jkhpro1003@gmail.com>  Fri, 16 Sep 2022 12:29:00 +0900
+
 odroid-wiringpi (3.13.5) stable; urgency=medium
 
   * libwiringpi2: update Depends

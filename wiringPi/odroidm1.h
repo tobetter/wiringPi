@@ -24,6 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef	__ODROID_M1_H__
 #define	__ODROID_M1_H__
+// flag of Using "/dev/gpiomem" or "libgpiod"
+#define DEVMEM
 
 /*----------------------------------------------------------------------------*/
 // Common mmap block size for ODROID-M1 GRF register
