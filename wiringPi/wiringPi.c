@@ -59,7 +59,7 @@ const char *piModelNames [16] =
 	"ODROID-C2",
 	"ODROID-XU3/XU4",
 	"ODROID-N1",
-	"ODROID-N2/N2Plus",
+	"ODROID-N2/N2Plus/N2L",
 	"ODROID-C4",
 	"ODROID-HC4",
 	"ODROID-M1",
