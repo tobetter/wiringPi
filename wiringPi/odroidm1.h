@@ -36,10 +36,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define M1_CLK_BYTE_ENABLE	2
 #define M1_CLK_BYTE_DISABLE	3
 
-#define M1_GRF_BLOCK_SIZE	0xFFFF
+#define M1_GRF_BLOCK_SIZE 0xFFFF
 #define GPIO_SIZE	32
 
-#define M1_FUNC_GPIO	0
+#define M1_FUNC_GPIO 0
+#define M1_FUNC_PWM 1
 
 // GPIO[0]
 #define M1_GPIO_0_BASE	0xFDD60000
@@ -81,11 +82,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define DS_LEVEL_4	0x1f //0b011111
 #define DS_LEVEL_5	0x3f //0b111111
 
-//GPIO write mask for WriteByte
+// GPIO write mask for WriteByte
 #define WRITE_BYTE_MASK_GPIO0_H	0x00030000
 #define WRITE_BYTE_MASK_GPIO0_L	0x40000000
 #define WRITE_BYTE_MASK_GPIO3_H	0x03C00000
 #define WRITE_BYTE_MASK_GPIO3_L	0x04000000
+
+// PWM
+#define M1_PWM_BASE 0xFDD70000
+#define M1_PWM9_BASE 0xFE6F0000
+#define M1_PWM_SCALE 0x0c
+#define M1_PWM_READY 0x10
+#define M1_PWM_EN 0x0b
+#define M1_PWM_LOCK 0x08
+// PWM offset
+#define M1_PWM1_PERIOD_OFFSET 0x14
+#define M1_PWM1_DUTY_OFFSET 0x18
+#define M1_PWM1_CTRL_OFFSET 0x1c
+#define M1_PWM2_PERIOD_OFFSET 0x24
+#define M1_PWM2_DUTY_OFFSET 0x28
+#define M1_PWM2_CTRL_OFFSET 0x2c
+#define M1_PWM9_PERIOD_OFFSET 0x14
+#define M1_PWM9_DUTY_OFFSET 0x18
+#define M1_PWM9_CTRL_OFFSET 0x1c
 
 #define CONSUMER "consumer"
 

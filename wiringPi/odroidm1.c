@@ -74,6 +74,30 @@ static const int pinToGpio[64] = {
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,	// 48...63
 };
 
+static const int pinToPwm[64] = {
+	// wiringPi number to pwm idx number
+	-1,  -1,	//  0 |  1 : GPIO0_C0, GPIO3_D0
+	-1,   9,	//  2 |  3 : GPIO0_C1, GPIO3_B2(PWM9) /* To be added */
+	-1,  -1,	//  4 |  5 : GPIO3_C6, GPIO3_C7
+	-1,   2, 	//  6 |  7 : GPIO3_D1, GPIO0_B6(PWM2)
+	-1,  -1,	//  8 |  9 : GPIO3_B6, GPIO3_B5
+	-1,  -1,	// 10 | 11 : GPIO2_D2, GPIO3_D2
+	-1,  -1,	// 12 | 13 : GPIO2_D1, GPIO2_D0
+	-1,  -1,	// 14 | 15 : GPIO2_D3, GPIO3_D6
+	-1,  -1,	// 16 | 17 : GPIO3_D7
+	-1,  -1,	// 18 | 19 :
+	-1,  -1,	// 20 | 21 : , GPIO4_C1
+	-1,   1,	// 22 | 23 : GPIO4_B6, GPIO0_B5(PWM1)
+	-1,  -1,	// 24 | 25 : GPIO3_D5,
+	-1,  -1,	// 26 | 27 : GPIO3_D3, GPIO3_D4
+	-1,  -1,	// 28 | 29 :
+	-1,  -1,	// 30 | 31 : GPIO0_B4, GPIO0_B3
+
+	// Padding:
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,	// 32...47
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,	// 48...63
+};
+
 static const int phyToGpio[64] = {
 	// physical header pin number to native gpio number
 	-1,		//  0
@@ -103,6 +127,16 @@ static const int phyToGpio[64] = {
 	-1, -1, -1, -1, -1, -1, -1, -1,	// 49...56
 	-1, -1, -1, -1, -1, -1, -1	// 57...63
 };
+
+static int pwmPinToRange[10] = {
+	-1,
+	 0,  0,
+	-1, -1,
+	-1, -1,
+	-1, -1,
+	 0
+};
+
 /*----------------------------------------------------------------------------*/
 //
 // Global variable define
@@ -110,6 +144,9 @@ static const int phyToGpio[64] = {
 /*----------------------------------------------------------------------------*/
 /* ADC file descriptor */
 static int adcFds[2];
+
+/* GPIO mmap control. Actual PWM bank number. */
+static volatile uint32_t *pwm[2];
 
 /* GPIO mmap control. Actual GPIO bank number. */
 static volatile uint32_t *gpio[5];
@@ -129,7 +166,7 @@ static struct libodroid	*lib = NULL;
 static int	gpioToShiftRegBy32	(int pin);
 static int	gpioToShiftRegBy16	(int pin);
 static void	setClkState	(int pin, int state);
-static void	setIomuxMode 	(int pin, int mode);
+static int	setIomuxMode 	(int pin, int mode);
 /*----------------------------------------------------------------------------*/
 // wiringPi core function
 /*----------------------------------------------------------------------------*/
@@ -142,9 +179,12 @@ static int		_getPUPD		(int pin);
 static int		_pullUpDnControl	(int pin, int pud);
 static int		_digitalRead		(int pin);
 static int		_digitalWrite		(int pin, int value);
+static int		_pwmWrite		(int pin, int value);
 static int		_analogRead		(int pin);
 static int		_digitalWriteByte	(const unsigned int value);
 static unsigned int	_digitalReadByte	(void);
+static void		_pwmSetRange	(unsigned int range);
+static void		_pwmSetClock	(int divisor);
 
 #if !defined(DEVMEM)
 /*----------------------------------------------------------------------------*/
@@ -258,10 +298,15 @@ __attribute__ ((unused))static void setClkState (int pin, int state)
 // set IOMUX mode
 //
 /*----------------------------------------------------------------------------*/
-__attribute__ ((unused))static void setIomuxMode (int pin, int mode)
+__attribute__ ((unused))static int setIomuxMode (int pin, int mode)
 {
 	uint32_t offset, target;
 	uint8_t	bank, group, bitNum, bitInByte;
+
+	if (lib->mode == MODE_GPIO_SYS)
+		return -1;
+	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
+		return -1;
 
 	bank = pin / GPIO_SIZE;
 	bitNum = pin - (bank * GPIO_SIZE);
@@ -273,7 +318,7 @@ __attribute__ ((unused))static void setIomuxMode (int pin, int mode)
 
 	// Common IOMUX Funtion 1 : GPIO (3'h0)
 	switch (mode) {
-	case M1_FUNC_GPIO://Common IOMUX Function 1_GPIO (3'h0)
+	case M1_FUNC_GPIO: // Common IOMUX Function 1_GPIO (3'h0)
 		if (bank == 0) {
 			offset += M1_PMU_GRF_IOMUX_OFFSET;
 			target = *(grf[0] + (offset >> 2));
@@ -289,18 +334,36 @@ __attribute__ ((unused))static void setIomuxMode (int pin, int mode)
 			*(grf[1] + (offset >> 2)) = target;
 		}
 		break;
+	case M1_FUNC_PWM:
+		if (bank == 0) {
+			offset += M1_PMU_GRF_IOMUX_OFFSET;
+			target = *(grf[0] + (offset >> 2));
+			target |= (0x7 << ((bitInByte % 4) * 4 + 16));
+			target |= (0x4 << ((bitInByte % 4) * 4)); // gpio0 b5/b6: 3'h100
+			*(grf[0] + (offset >> 2)) = target;
+		}
+		else {
+			offset += M1_SYS_GRF_IOMUX_OFFSET;
+			target = *(grf[1] + (offset >> 2));
+			target |= (0x7 << ((bitInByte % 4) * 4 + 16));
+			target |= (0x5 << ((bitInByte % 4) * 4)); // gpio3 b2: 3'h101
+			*(grf[1] + (offset >> 2)) = target;
+		}
+		break;
 	default:
 		break;
 	}
+
+	return 0;
 }
 /*----------------------------------------------------------------------------*/
 __attribute__ ((unused))static int _pinMode (int pin, int mode)
 {
 	uint32_t offset, target;
 	uint8_t bank, bitNum;
-	int oriPin;
+	int origPin;
 
-	oriPin = pin;
+	origPin = pin;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return -1;
@@ -314,35 +377,56 @@ __attribute__ ((unused))static int _pinMode (int pin, int mode)
 
 	softPwmStop(pin);
 	softToneStop(pin);
+	*(pwm[0] + (M1_PWM1_CTRL_OFFSET >> 2)) = M1_PWM_LOCK;
+	*(pwm[0] + (M1_PWM2_CTRL_OFFSET >> 2)) = M1_PWM_LOCK;
+//	*(pwm[1] + (M1_PWM9_CTRL_OFFSET >> 2)) = M1_PWM_LOCK;
 
 	target = *(gpio[bank] + (offset >> 2));
 	target |= (1 << (gpioToShiftRegBy16(pin) + 16));
 
 	switch (mode) {
 	case INPUT:
+		setIomuxMode(origPin, M1_FUNC_GPIO);
 		target &= ~(1 << gpioToShiftRegBy16(pin));
 		*(gpio[bank] + (offset >> 2)) = target;
-		_pullUpDnControl(oriPin, PUD_OFF);
+		_pullUpDnControl(origPin, PUD_OFF);
 		break;
 	case OUTPUT:
+		setIomuxMode(origPin, M1_FUNC_GPIO);
 		target |= (1 << gpioToShiftRegBy16(pin));
 		*(gpio[bank] + (offset >> 2)) = target;
 		break;
 	case INPUT_PULLUP:
+		setIomuxMode(origPin, M1_FUNC_GPIO);
 		target &= ~(1 << gpioToShiftRegBy16(pin));
 		*(gpio[bank] + (offset >> 2)) = target;
-		_pullUpDnControl(oriPin, PUD_UP);
+		_pullUpDnControl(origPin, PUD_UP);
 		break;
 	case INPUT_PULLDOWN:
+		setIomuxMode(origPin, M1_FUNC_GPIO);
 		target &= ~(1 << gpioToShiftRegBy16(pin));
 		*(gpio[bank] + (offset >> 2)) = target;
-		_pullUpDnControl(oriPin, PUD_DOWN);
+		_pullUpDnControl(origPin, PUD_DOWN);
 		break;
 	case SOFT_PWM_OUTPUT:
-		softPwmCreate(oriPin, 0, 100);
+		softPwmCreate(origPin, 0, 100);
 		break;
 	case SOFT_TONE_OUTPUT:
-		softToneCreate(oriPin);
+		softToneCreate(origPin);
+		break;
+	case PWM_OUTPUT:
+		setIomuxMode(origPin, M1_FUNC_PWM);
+
+#ifndef ANDROID
+		/**
+		 * PWM1,2 clk: [12MHz] PWM9 clk: [24MHz]
+		 *
+		 * frequency of PWM: 400 Hz
+		 * period of PWM: 2500 us
+		 */
+		_pwmSetClock(30);
+		_pwmSetRange(1000);
+#endif
 		break;
 	default:
 		msg(MSG_WARN, "%s : Unknown Mode %d\n", __func__, mode);
@@ -921,6 +1005,59 @@ __attribute__ ((unused))static int _digitalWrite_gpiod (int pin, int value)
 }
 #endif
 
+__attribute__ ((unused))static int _pwmWrite (int pin, int value)
+{
+	int pwmPin;
+	uint16_t range;
+	uint32_t target;
+	float duty_rate;
+
+	if (lib->mode == MODE_GPIO_SYS)
+		return -1;
+
+	if (((pwmPin = pinToPwm[pin]) < 0))
+		return -1;
+
+	if (((*(pwm[0] + (M1_PWM1_CTRL_OFFSET >> 2)) & M1_PWM_READY) < M1_PWM_READY) ||
+	//	((*(pwm[1] + (M1_PWM9_CTRL_OFFSET >> 2)) & M1_PWM_READY) < M1_PWM_READY) ||
+		((*(pwm[0] + (M1_PWM2_CTRL_OFFSET >> 2)) & M1_PWM_READY) < M1_PWM_READY)) {
+		printf("you didn't set pwm range\n");
+		return -1;
+	}
+
+	range = pwmPinToRange[pwmPin];
+	if (value > range)
+		value = range;
+	duty_rate = ((value * 100) / range);
+
+	switch (pwmPin) {
+		case 1:
+			target = *(pwm[0] + (M1_PWM1_CTRL_OFFSET >> 2));
+			target &= ~M1_PWM_READY;
+			target |= M1_PWM_EN;
+			*(pwm[0] + (M1_PWM1_CTRL_OFFSET >> 2)) = target;
+			*(pwm[0] + (M1_PWM1_DUTY_OFFSET >> 2)) = ((*(pwm[0] + (M1_PWM1_PERIOD_OFFSET >> 2)) * (uint8_t)duty_rate) / 100);
+			break;
+		case 2:
+			target = *(pwm[0] + (M1_PWM2_CTRL_OFFSET >> 2));
+			target &= ~M1_PWM_READY;
+			target |= M1_PWM_EN;
+			*(pwm[0] + (M1_PWM2_CTRL_OFFSET >> 2)) = target;
+			*(pwm[0] + (M1_PWM2_DUTY_OFFSET >> 2)) = ((*(pwm[0] + (M1_PWM2_PERIOD_OFFSET >> 2)) * (uint8_t)duty_rate) / 100);
+			break;
+		/*
+		case 9:
+			target = *(pwm[1] + (M1_PWM9_CTRL_OFFSET >> 2));
+			target &= ~M1_PWM_READY;
+			target |= M1_PWM_EN;
+			*(pwm[1] + (M1_PWM9_CTRL_OFFSET >> 2)) = target;
+			*(pwm[1] + (M1_PWM9_DUTY_OFFSET >> 2)) = ((*(pwm[1] + (M1_PWM9_PERIOD_OFFSET >> 2)) * (uint8_t)duty_rate) / 100);
+			break;
+		*/
+	}
+
+	return 0;
+}
 /*----------------------------------------------------------------------------*/
 static int _analogRead (int pin)
 {
@@ -1176,10 +1313,56 @@ __attribute__ ((unused))static unsigned int _digitalReadByte_gpiod (void)
 #endif
 
 /*----------------------------------------------------------------------------*/
+// PWM signal ___-----------___________---------------_______-----_
+//               <--value-->           <----value---->
+//               <-------range--------><-------range-------->
+// PWM frequency == (PWM clock) / range
+/*----------------------------------------------------------------------------*/
+static void _pwmSetRange (unsigned int range)
+{
+	if ((*(pwm[0] + (M1_PWM1_CTRL_OFFSET >> 2)) == 0) ||
+//		(*(pwm[1] + (M1_PWM9_CTRL_OFFSET >> 2)) == 0) ||
+		(*(pwm[0] + (M1_PWM2_CTRL_OFFSET >> 2)) == 0)) {
+		printf("you didn't set clock\n");
+		return;
+	}
+
+	range = range & 0xFFFFFFFF;
+	pwmPinToRange[1] = range;
+	pwmPinToRange[2] = range;
+//	pwmPinToRange[9] = range;
+
+	*(pwm[0] + (M1_PWM1_PERIOD_OFFSET >> 2)) = range;
+	*(pwm[0] + (M1_PWM2_PERIOD_OFFSET >> 2)) = range;
+//	*(pwm[1] + (M1_PWM9_PERIOD_OFFSET >> 2)) = range;
+}
+
+/*----------------------------------------------------------------------------*/
+// Internal clock: PWM0: 12MHz PWM2: 24MHz
+// PWM clock == (Internal clock) / divisor
+// PWM frequency == (PWM clock) / range
+/*----------------------------------------------------------------------------*/
+static void _pwmSetClock (int divisor)
+{
+	uint8_t scale;
+	uint32_t pwmScale, target;
+	scale = (uint8_t)(divisor & 0xFF);
+
+	pwmScale = (scale << 16);
+
+	target = pwmScale; // if scale == 0, It changes to the maximum value(256).
+	target |= (1 << 9); // scaled clock is selected
+	target |= M1_PWM_READY;
+	*(pwm[0] + (M1_PWM1_CTRL_OFFSET >> 2)) = target;
+	*(pwm[0] + (M1_PWM2_CTRL_OFFSET >> 2)) = target;
+//	*(pwm[1] + (M1_PWM9_CTRL_OFFSET >> 2)) = target;
+}
+
+/*----------------------------------------------------------------------------*/
 static void init_gpio_mmap (void)
 {
 	int fd = -1;
-	void *mapped_cru[2], *mapped_grf[2], *mapped_gpio[5];
+	void *mapped_cru[2], *mapped_grf[2], *mapped_gpio[5], *mapped_pwm[2];
 
 	/* GPIO mmap setup */
 	if (!getuid()) {
@@ -1214,20 +1397,24 @@ static void init_gpio_mmap (void)
 		mapped_gpio[4] = mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, M1_GPIO_4_BASE);
 		mapped_gpio[3] = mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, M1_GPIO_3_BASE);
 
+		mapped_pwm[0] = mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, M1_PWM_BASE);
+		mapped_pwm[1] = mmap(0, BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, M1_PWM9_BASE);
+
 		if ((mapped_cru[0] == MAP_FAILED) || (mapped_cru[1] == MAP_FAILED)) {
 			msg (MSG_ERR,"wiringPiSetup: mmap (CRU) failed: %s\n",strerror (errno));
 		} else {
 			cru[0] = (uint32_t *) mapped_cru[0];
 			cru[1] = (uint32_t *) mapped_cru[1];
-			}
+		}
+
 		if ((mapped_grf[0] == MAP_FAILED) || (mapped_grf[1] == MAP_FAILED)) {
 			msg (MSG_ERR,"wiringPiSetup: mmap (GRF) failed: %s\n",strerror (errno));
 		} else {
 			grf[0] = (uint32_t *) mapped_grf[0];
 			grf[1] = (uint32_t *) mapped_grf[1];
-			}
+		}
 
-		if (	(mapped_gpio[0] == MAP_FAILED) ||
+		if ((mapped_gpio[0] == MAP_FAILED) ||
 			(mapped_gpio[1] == MAP_FAILED) ||
 			(mapped_gpio[2] == MAP_FAILED) ||
 			(mapped_gpio[3] == MAP_FAILED) ||
@@ -1241,6 +1428,15 @@ static void init_gpio_mmap (void)
 			gpio[2] = (uint32_t *) mapped_gpio[2];
 			gpio[3] = (uint32_t *) mapped_gpio[3];
 			gpio[4] = (uint32_t *) mapped_gpio[4];
+		}
+
+		if ((mapped_pwm[0] == MAP_FAILED) || (mapped_pwm[1] == MAP_FAILED)) {
+			msg (MSG_ERR,
+				"wiringPiSetup: mmap (PWM) failed: %s\n",
+				strerror (errno));
+		} else {
+			pwm[0] = (uint32_t *) mapped_pwm[0];
+			pwm[1] = (uint32_t *) mapped_pwm[1];
 		}
 	}
 }
@@ -1275,6 +1471,9 @@ void init_odroidm1 (struct libodroid *libwiring)
 	libwiring->analogRead		= _analogRead;
 	libwiring->digitalWriteByte	= _digitalWriteByte;
 	libwiring->digitalReadByte	= _digitalReadByte;
+	libwiring->pwmWrite			= _pwmWrite;
+	libwiring->pwmSetRange		= _pwmSetRange;
+	libwiring->pwmSetClock		= _pwmSetClock;
 #else
 	/* wiringPi-libgpiod Core function initialize */
 	libwiring->getModeToGpio	= _getModeToGpio;

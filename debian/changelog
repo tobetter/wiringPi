@@ -1,3 +1,9 @@
+odroid-wiringpi (3.13.7) stable; urgency=medium
+
+  * ODROID-M1: support PWM OUTPUT. (PWM1. PWM2)
+
+ -- steve <jkhpro1003@gmail.com>  Tue, 04 Oct 2022 17:51:54 +0900
+
 odroid-wiringpi (3.13.6) stable; urgency=medium
 
   * ODROID-M1: define "DEVMEM" in m1 header. for solving gpiod error on pip package.
