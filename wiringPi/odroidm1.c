@@ -1346,8 +1346,14 @@ static void _pwmSetClock (int divisor)
 {
 	uint8_t scale;
 	uint32_t pwmScale, target;
-	scale = (uint8_t)(divisor & 0xFF);
 
+	if ((divisor % 2 != 0)) {
+		printf("clk divisor must be set to an even number.\n");
+		return;
+	}
+
+	divisor = divisor / 2;
+	scale = (uint8_t)(divisor & 0xFF);
 	pwmScale = (scale << 16);
 
 	target = pwmScale; // if scale == 0, It changes to the maximum value(256).

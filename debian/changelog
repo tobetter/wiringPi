@@ -1,3 +1,9 @@
+odroid-wiringpi (3.13.8) stable; urgency=medium
+
+  * ODROID-M1: pwmSetClock: Troubleshooting (2x) frequencies
+
+ -- steve <jkhpro1003@gmail.com>  Wed, 19 Oct 2022 09:25:29 +0900
+
 odroid-wiringpi (3.13.7) stable; urgency=medium
 
   * ODROID-M1: support PWM OUTPUT. (PWM1. PWM2)
