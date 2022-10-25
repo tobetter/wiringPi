@@ -1018,14 +1018,12 @@ __attribute__ ((unused))static int _pwmWrite (int pin, int value)
 	if (((pwmPin = pinToPwm[pin]) < 0))
 		return -1;
 
-	if (((*(pwm[0] + (M1_PWM1_CTRL_OFFSET >> 2)) & M1_PWM_READY) < M1_PWM_READY) ||
-	//	((*(pwm[1] + (M1_PWM9_CTRL_OFFSET >> 2)) & M1_PWM_READY) < M1_PWM_READY) ||
-		((*(pwm[0] + (M1_PWM2_CTRL_OFFSET >> 2)) & M1_PWM_READY) < M1_PWM_READY)) {
+	range = pwmPinToRange[pwmPin];
+	if (range <= 0) {
 		printf("you didn't set pwm range\n");
 		return -1;
 	}
 
-	range = pwmPinToRange[pwmPin];
 	if (value > range)
 		value = range;
 	duty_rate = ((value * 100) / range);

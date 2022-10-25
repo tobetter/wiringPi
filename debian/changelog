@@ -1,3 +1,9 @@
+odroid-wiringpi (3.13.9) stable; urgency=medium
+
+  * ODROID-M1: modify set pwmRange flag
+
+ -- steve <jkhpro1003@gmail.com>  Tue, 25 Oct 2022 10:20:17 +0900
+
 odroid-wiringpi (3.13.8) stable; urgency=medium
 
   * ODROID-M1: pwmSetClock: Troubleshooting (2x) frequencies
