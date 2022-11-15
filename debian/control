@@ -7,7 +7,7 @@ Homepage: https://wiki.odroid.com
 Build-Depends: debhelper (>= 10),
   libc6-dev,
   libcrypt-dev,
-  libgpiod-dev,
+# libgpiod-dev,
   pkg-config,
   texlive-latex-base,
   texlive-fonts-recommended
@@ -24,7 +24,7 @@ Section: libs
 Architecture: any
 Depends: libc6,
   libcrypt1,
-  libgpiod-dev
+# libgpiod-dev
 Description: GPIO libraries for ODROID (runtime).
   Runtime for the popular wiringPi library.
 
@@ -32,7 +32,7 @@ Package: libwiringpi-dev
 Architecture: any
 Depends: ${misc:Depends},
   libc6-dev,
-  libgpiod-dev,
+# libgpiod-dev,
   libwiringpi2 (= ${binary:Version}),
   odroid-wiringpi (= ${binary:Version})
 Description: GPIO development library for ODROID

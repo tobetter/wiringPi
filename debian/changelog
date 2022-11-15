@@ -1,3 +1,9 @@
+odroid-wiringpi (3.13.10) stable; urgency=medium
+
+  * ODROID-COMMON: remove dependency "libgpiod"
+
+ -- steve <jkhpro1003@gmail.com>  Tue, 15 Nov 2022 10:01:52 +0900
+
 odroid-wiringpi (3.13.9) stable; urgency=medium
 
   * ODROID-M1: modify set pwmRange flag

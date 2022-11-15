@@ -12,5 +12,5 @@ wiringPiD_CFLAGS = \
 	$(LIBCRYPT_CFLAGS)
 
 wiringPiD_LDFLAGS = \
-	-L../wiringPi/.libs -lwiringPi -lgpiod \
-	$(LIBCRYPT_LIBS)
+	-L../wiringPi/.libs -lwiringPi \
+	$(LIBCRYPT_LIBS) # -lgpiod
