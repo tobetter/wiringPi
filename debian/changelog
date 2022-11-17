@@ -1,3 +1,10 @@
+odroid-wiringpi (3.14.1) stable; urgency=medium
+
+  * ODROID-COMMON: allow permission pwm sys nodes and use with gpiomem mode.
+  * ANDROID: Add Android.mk for android.
+
+ -- steve <jkhpro1003@gmail.com>  Wed, 23 Nov 2022 10:41:05 +0900
+
 odroid-wiringpi (3.14.0) stable; urgency=medium
 
   * ODROID-N2L: new support ODROID-N2L

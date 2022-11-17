@@ -1311,6 +1311,20 @@ int wiringPiSetupPhys (void)
  * Initialisation (again), however this time we are using the /sys/class/gpio
  *	interface to the GPIO systems - slightly slower, but always usable as
  *	a non-root user, assuming the devices are already exported and setup correctly.
+ *
+ *  -----------------------------------------------------------------------------
+ * Applies from "odroid-wiringpi" 3.14.1 and later.
+ *
+ * [The odroid hardware pwm uses sysnode, but it is separate from it.]
+ *	I decided to use the wiringpi service as gpiomem base for odroid,
+ *	but the pwm is using sysnode.
+ *
+ *	In addition, i designed the API in common so that devices such as gpio as well as pwm
+ *	can be directly accessed and used by sysnode.
+ *
+ *	"inputToSysNode" is what it is.
+ *
+ *	Authored by steve.jeong <jkhpro1003@gmail.com>, <steve.jeong@hardkernel.com>
  */
 /*----------------------------------------------------------------------------*/
 int wiringPiSetupSys (void)

@@ -49,6 +49,8 @@
 #define C4_GPIOX_MUX_4_REG_OFFSET	0x1B4
 #define C4_GPIOX_MUX_5_REG_OFFSET	0x1B5
 
+#define C4_PWM_INTERNAL_CLK			24000000 // 24MHz
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -1,0 +1,1 @@
+ACTION=="add", KERNEL=="pwmchip*", SUBSYSTEM=="pwm", RUN+="/bin/sh /etc/odroid-wpi-pwm.sh /sys/class/pwm/pwmchip*"

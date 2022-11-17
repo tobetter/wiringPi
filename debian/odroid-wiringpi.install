@@ -1,1 +1,2 @@
 udev/rules.d/*		usr/lib/udev/rules.d/
+etc/*				etc/

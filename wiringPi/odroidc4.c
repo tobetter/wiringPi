@@ -5,6 +5,7 @@
 //
 //
 /*----------------------------------------------------------------------------*/
+#include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -15,6 +16,7 @@
 #include <sys/ioctl.h>
 #include <asm/ioctl.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 
 /*----------------------------------------------------------------------------*/
 #include "softPwm.h"
@@ -47,7 +49,7 @@ static const int pinToGpio[64] = {
 	474, 475,	// 30 | 31 : GPIOA.14(I2C-3_SDA), GPIOA.15(I2C-3_SCL)
 	// Padding:
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,	// 32...47
-	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,	// 48...63
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1	// 48...63
 };
 
 static const int phyToGpio[64] = {
@@ -79,6 +81,62 @@ static const int phyToGpio[64] = {
 	-1, -1, -1, -1, -1, -1, -1	// 57...63
 };
 
+static const char *pinToPwm[64] = {
+	// wiringPi number to pwm group number
+		"ffd1a000", "ffd19000",		//  0 |  1 : GPIOX.3(PWM_CD), GPIOX.16(PWM_EF)
+		"None", "ffd19000",		//  2 |  3 : GPIOX.4, GPIOX.7(PWM_EF)
+		"None", "None",				//  4 |  5 : GPIOX.0, GPIOX.1
+		"None", "ffd1a000",		//  6 |  7 : GPIOX.2, GPIOX.5(PWM_CD)
+		"None", "None",			//  8 |  9 : GPIOX.17(I2C-2_SDA), GPIOX.18(I2C-2_SCL)
+		"None", "None",			// 10 | 11 : GPIOX.10(SPI_SS), GPIOH.6
+		"None", "None",			// 12 | 13 : GPIOX.8(SPI_MOSI), GPIOX.9(SPI_MISO)
+		"None", "None",			// 14 | 15 : GPIOX.11(SPI_CLK), GPIOX.12(UART_TX_B)
+		"None", "None",			// 16 | 17 : GPIOX.13(UART_RX_B),
+		"None", "None",			// 18 | 19 :
+		"None", "None",			// 20 | 21 : , GPIOX.14
+		"None", "ffd1b000",	// 22 | 23 : GPIOX.15, GPIOX.6(PWM_AB)
+		"ffd1b000", "None",	// 24 | 25 : GPIOX.19(PWM_AB), ADC.AIN3
+		"None", "None",	// 26 | 27 : GPIOH.7, GPIOH.5
+		"None", "None",	// 28 | 29 : REF1.8V OUT, ADC.AIC4
+		"None", "None",	// 30 | 31 : GPIOA.14(I2C-3_SDA), GPIOA.15(I2C-3_SCL)
+	// Padding:
+	"None","None","None","None","None","None","None","None","None","None","None","None","None","None","None","None", // 32...47
+	"None","None","None","None","None","None","None","None","None","None","None","None","None","None","None","None"  // 48...63
+};
+
+static const int pinToPwmNum[64] = {
+	// wiringPi number to pwm pin number
+	  3,  4,	//  0 |  1 : GPIOX.3(PWM_D), GPIOX.16(PWM_E)
+	 -1,  5,	//  2 |  3 : GPIOX.4, GPIOX.7(PWM_F)
+	 -1, -1,	//  4 |  5 : GPIOX.0, GPIOX.1
+	 -1,  2,	//  6 |  7 : GPIOX.2, GPIOX.5(PWM_C)
+	 -1, -1,	//  8 |  9 : GPIOX.17(I2C-2_SDA), GPIOX.18(I2C-2_SCL)
+	 -1, -1,	// 10 | 11 : GPIOX.10(SPI_SS), GPIOH.6
+	 -1, -1,	// 12 | 13 : GPIOX.8(SPI_MOSI), GPIOX.9(SPI_MISO)
+	 -1, -1,	// 14 | 15 : GPIOX.11(SPI_CLK), GPIOX.12(UART_TX_B)
+	 -1, -1,	// 16 | 17 : GPIOX.13(UART_RX_B),
+	 -1, -1,	// 18 | 19 :
+	 -1, -1,	// 20 | 21 : , GPIOX.14
+	 -1,  0,	// 22 | 23 : GPIOX.15, GPIOX.6(PWM_A)
+	  1, -1,	// 24 | 25 : GPIOX.19(PWM_B), ADC.AIN3
+	 -1, -1,	// 26 | 27 : GPIOH.7, GPIOH.5
+	 -1, -1,	// 28 | 29 : REF1.8V OUT, ADC.AIC4
+	 -1, -1,	// 30 | 31 : GPIOA.14(I2C-3_SDA), GPIOA.15(I2C-3_SCL)
+	// Padding:
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,	// 32...47
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1	// 48...63
+};
+
+static char pwmPinPath[10][(BLOCK_SIZE)] = {
+	"","",
+	"","",
+	"","",
+	// Padding:
+	"None","None","None","None"
+};
+
+static char setupedPwmPinPath[BLOCK_SIZE];
+
 /*----------------------------------------------------------------------------*/
 //
 // Global variable define
@@ -95,6 +153,18 @@ static volatile uint32_t *gpio;
 /* wiringPi Global library */
 static struct libodroid	*lib = NULL;
 
+/* pwm sysnode */
+static DIR *pwm;
+static struct dirent *pwmchip;
+/* pwm params */
+static char sysPwmPath[(BLOCK_SIZE / 4)];
+static char pwmExport[(BLOCK_SIZE / 16)];
+static char pwmUnexport[(BLOCK_SIZE / 16)];
+static char pwmPeriod[(BLOCK_SIZE / 16)];
+static char pwmDuty[(BLOCK_SIZE / 16)];
+static unsigned int pwmClock;
+static unsigned int pwmRange;
+
 /*----------------------------------------------------------------------------*/
 // Function prototype define
 /*----------------------------------------------------------------------------*/
@@ -106,7 +176,12 @@ static int	gpioToShiftReg	(int pin);
 static int	gpioToGPFSELReg	(int pin);
 static int	gpioToDSReg	(int pin);
 static int	gpioToMuxReg	(int pin);
-
+/*----------------------------------------------------------------------------*/
+// Function of pwm define
+/*----------------------------------------------------------------------------*/
+static int	pinToSysPwmPath	(int pin);
+static int	pwmSetup (int pin);
+static int	pwmRelease (int pin);
 /*----------------------------------------------------------------------------*/
 // wiringPi core function
 /*----------------------------------------------------------------------------*/
@@ -119,9 +194,12 @@ static int		_getPUPD		(int pin);
 static int		_pullUpDnControl	(int pin, int pud);
 static int		_digitalRead		(int pin);
 static int		_digitalWrite		(int pin, int value);
+static int		_pwmWrite		(int pin, int value);
 static int		_analogRead		(int pin);
 static int		_digitalWriteByte	(const unsigned int value);
 static unsigned int	_digitalReadByte	(void);
+static void		_pwmSetRange		(unsigned int range);
+static void		_pwmSetClock		(int divisor);
 
 /*----------------------------------------------------------------------------*/
 // board init function
@@ -272,6 +350,114 @@ static int gpioToMuxReg (int pin)
 }
 
 /*----------------------------------------------------------------------------*/
+//
+// config pwm sys path. "/sys/class/pwm/pwmchip?"
+//
+/*----------------------------------------------------------------------------*/
+static int pinToSysPwmPath (int pin)
+{
+	const char *pwmGroup;
+	char pwmLinkSrc[(BLOCK_SIZE / 8)];
+	char pwmPath[(BLOCK_SIZE / 8)];
+	int sz_link;
+
+	memset(pwmLinkSrc, 0, sizeof(pwmLinkSrc));
+	memset(pwmPath, 0, sizeof(pwmPath));
+
+	pwmGroup = pinToPwm[pin];
+	pwm = opendir("/sys/class/pwm");
+	if (pwm == NULL) {
+		printf("need to set device: pwm\n");
+		return -1;
+	}
+
+	while (1) {
+		pwmchip = readdir(pwm);
+
+		if (pwmchip == NULL) {
+			break;
+		}
+
+		if (strlen(pwmchip->d_name) <= 2)
+			continue;
+
+		sprintf(pwmPath, "%s/%s", "/sys/class/pwm", pwmchip->d_name);
+		sz_link = readlink(pwmPath, pwmLinkSrc, sizeof(pwmLinkSrc));
+		if (sz_link < 0) {
+			perror("Read symbolic link fail");
+			return sz_link;
+		}
+
+		if (strstr(pwmLinkSrc, pwmGroup) != NULL) {
+			strncpy(sysPwmPath, pwmPath, (sizeof(sysPwmPath) - 1));
+			break;
+		}
+	}
+	closedir(pwm);
+
+	return 0;
+}
+
+static int pwmSetup (int pin) {
+	char cmd[(BLOCK_SIZE * 2)];
+	int pwmPin, ret;
+
+	memset(cmd, 0, sizeof(cmd));
+	memset(pwmExport, 0, sizeof(pwmExport));
+
+	if ((ret = pinToSysPwmPath(pin)) < 0) {
+		perror("set pwm dtb overlays");
+		return ret;
+	}
+
+	if (strstr(sysPwmPath, "pwmchip") == NULL) {
+		printf("config pwm dtb overlays\n");
+		return -1;
+	}
+
+	pwmPin = pinToPwmNum[pin];
+	sprintf(pwmExport, "%d", (pwmPin % 2));
+	sprintf(pwmPinPath[pwmPin], "%s/pwm%d", sysPwmPath, (pwmPin % 2));
+	strncpy(setupedPwmPinPath, pwmPinPath[pwmPin], (sizeof(setupedPwmPinPath) - 1));
+#ifdef ANDROID
+	sprintf(cmd, "su -s sh -c %s %s", PWM_ACCESS_SCRIPT, pwmPinPath[pwmPin]);
+#else
+	sprintf(cmd, "sudo sh %s %s", PWM_ACCESS_SCRIPT, pwmPinPath[pwmPin]);
+#endif
+	inputToSysNode(sysPwmPath, "export", pwmExport);
+	system(cmd);
+	inputToSysNode(pwmPinPath[pwmPin], "polarity", "normal");
+	inputToSysNode(pwmPinPath[pwmPin], "enable", "1");
+
+	return 0;
+}
+
+static int pwmRelease (int pin) {
+	int pwmPin, ret;
+
+	if ((ret = pinToSysPwmPath(pin)) < 0) {
+		perror("set pwm dtb overlays");
+		return ret;
+	}
+
+	if (strstr(sysPwmPath, "pwmchip") == NULL) {
+		printf("config pwm dtb overlays\n");
+		return -1;
+	}
+
+	pwmPin = pinToPwmNum[pin];
+	sprintf(pwmUnexport, "%d", (pwmPin % 2));
+	sprintf(pwmPinPath[pwmPin], "%s/pwm%d", sysPwmPath, (pwmPin % 2));
+	if ((pwm = opendir(pwmPinPath[pwmPin])) != NULL) {
+		inputToSysNode(pwmPinPath[pwmPin], "enable", "0");
+		inputToSysNode(sysPwmPath, "unexport", pwmUnexport);
+		closedir(pwm);
+	}
+
+	return 0;
+}
+
+/*----------------------------------------------------------------------------*/
 static int _getModeToGpio (int mode, int pin)
 {
 	int retPin = -1;
@@ -356,6 +542,7 @@ static int _pinMode (int pin, int mode)
 	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return -1;
 
+	pwmRelease (origPin);
 	softPwmStop  (origPin);
 	softToneStop (origPin);
 
@@ -374,6 +561,9 @@ static int _pinMode (int pin, int mode)
 		break;
 	case	SOFT_TONE_OUTPUT:
 		softToneCreate (pin);
+		break;
+	case	PWM_OUTPUT:
+		pwmSetup(origPin);
 		break;
 	default:
 		msg(MSG_WARN, "%s : Unknown Mode %d\n", __func__, mode);
@@ -513,6 +703,36 @@ static int _digitalWrite (int pin, int value)
 }
 
 /*----------------------------------------------------------------------------*/
+// PWM signal ___-----------___________---------------_______-----_
+//               <--value-->           <----value---->
+//               <-------range--------><-------range-------->
+/*----------------------------------------------------------------------------*/
+static int _pwmWrite (int pin, int value)
+{
+	unsigned int duty;
+	int pwmPin;
+
+	memset(pwmDuty, 0, sizeof(pwmDuty));
+
+	if (lib->mode == MODE_GPIO_SYS)
+		return -1;
+
+	if (((unsigned int)value > pwmRange) || (pwmRange <= 0)) {
+		printf("Set \'pwmWrite\' valied value. ( < pwm range)\n");
+		printf("pwmSetRange value is greater than or equal pwmWrite's\n");
+		return -1;
+	}
+
+	pwmPin = pinToPwmNum[pin];
+	duty = ((value * 100) / pwmRange);
+	sprintf(pwmDuty, "%d", ((atoi(pwmPeriod) * duty) / 100));
+
+	inputToSysNode(pwmPinPath[pwmPin], "duty_cycle", pwmDuty);
+
+	return 0;
+}
+
+/*----------------------------------------------------------------------------*/
 static int _analogRead (int pin)
 {
 	char value[5] = {0,};
@@ -625,6 +845,57 @@ static unsigned int _digitalReadByte (void)
 }
 
 /*----------------------------------------------------------------------------*/
+// PWM signal ___-----------___________---------------_______-----_
+//               <--value-->           <----value---->
+//               <-------range--------><-------range-------->
+// PWM frequency == (PWM clock) / range
+/*----------------------------------------------------------------------------*/
+
+static void _pwmSetRange (unsigned int range)
+{
+	unsigned int freq, period;
+
+	memset(pwmPeriod, 0, sizeof(pwmPeriod));
+
+	if (lib->mode == MODE_GPIO_SYS)
+		return;
+
+	if (pwmClock < 2) {
+		printf("Set \'pwmSetClock\' valied value.\n");
+		printf("pwm freq: %dMHz / (pwmSetClock's value) >= 2\n", (C4_PWM_INTERNAL_CLK / 1000000));
+		return;
+	}
+
+	pwmRange = range;
+	if ((pwmRange < 1) || (pwmRange >= pwmClock)) {
+		printf("Set \'pwmSetRange\' valied value. ( < pwm freq)\n");
+		return;
+	}
+
+	freq = (pwmClock / pwmRange);
+	period = (1000000000 / freq); // period: s to ns.
+	sprintf(pwmPeriod, "%d", period);
+	if (strstr(setupedPwmPinPath, "pwm") == NULL) {
+		printf("Not setuped pwm target.\n");
+		return;
+	}
+
+	inputToSysNode(setupedPwmPinPath, "period", pwmPeriod);
+}
+
+
+/*----------------------------------------------------------------------------*/
+// Internal clock == 24MHz
+// PWM clock == (Internal clock) / divisor
+// PWM frequency == (PWM clock) / range
+/*----------------------------------------------------------------------------*/
+
+static void _pwmSetClock (int divisor)
+{
+	pwmClock = (C4_PWM_INTERNAL_CLK / divisor);
+}
+
+/*----------------------------------------------------------------------------*/
 static void init_gpio_mmap (void)
 {
 	int fd = -1;
@@ -706,9 +977,12 @@ void init_odroidc4 (struct libodroid *libwiring)
 	libwiring->pullUpDnControl	= _pullUpDnControl;
 	libwiring->digitalRead		= _digitalRead;
 	libwiring->digitalWrite		= _digitalWrite;
+	libwiring->pwmWrite		= _pwmWrite;
 	libwiring->analogRead		= _analogRead;
 	libwiring->digitalWriteByte	= _digitalWriteByte;
 	libwiring->digitalReadByte	= _digitalReadByte;
+	libwiring->pwmSetRange		= _pwmSetRange;
+	libwiring->pwmSetClock		= _pwmSetClock;
 
 	/* specify pin base number */
 	libwiring->pinBase		= C4_GPIO_PIN_BASE;
