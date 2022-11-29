@@ -27,6 +27,7 @@
 #include <sys/wait.h>
 #include <sys/ioctl.h>
 #include <sys/utsname.h>
+#include <sys/types.h>
 #include <asm/ioctl.h>
 
 /*----------------------------------------------------------------------------*/
@@ -262,6 +263,29 @@ void usingGpiomemCheck(const char *what)
 void setUsingGpiomem(const unsigned int value)
 {
 	libwiring.usingGpiomem = value;
+}
+
+/*----------------------------------------------------------------------------*/
+/*
+ * input data to sys node.
+ */
+/*----------------------------------------------------------------------------*/
+int inputToSysNode (const char* sysPath, const char* node, char* data) {
+	char dest[(BLOCK_SIZE * 2)];
+	FILE *fd;
+
+	memset(dest, 0, sizeof(dest));
+
+	sprintf(dest, "%s/%s", sysPath, node);
+
+	if((fd = fopen(dest, "w")) == NULL) {
+		printf("Invalid sysnode path\n");
+		return -1;
+	}
+	fprintf(fd, "%s\n", data);
+	fclose(fd);
+
+	return 0;
 }
 
 /*----------------------------------------------------------------------------*/

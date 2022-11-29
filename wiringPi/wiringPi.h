@@ -342,6 +342,9 @@ extern unsigned int  digitalReadByte2	(void) UNU;
 extern		void digitalWriteByte	(int value) UNU;
 extern		void digitalWriteByte2	(int value) UNU;
 
+// sys node
+extern		int inputToSysNode	(const char* sysPath, const char* node, char* data);
+
 #ifdef __cplusplus
 }
 #endif
