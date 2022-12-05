@@ -279,8 +279,9 @@ int inputToSysNode (const char* sysPath, const char* node, char* data) {
 	sprintf(dest, "%s/%s", sysPath, node);
 
 	if((fd = fopen(dest, "w")) == NULL) {
-		printf("Invalid sysnode path\n");
-		return -1;
+		fprintf(stderr, "sys: Unable to open %s: %s\n",
+				dest, strerror (errno));
+		return -errno;
 	}
 	fprintf(fd, "%s\n", data);
 	fclose(fd);
