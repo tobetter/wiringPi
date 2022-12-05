@@ -416,6 +416,7 @@ static int pwmSetup (int pin) {
 	}
 
 	pwmPin = pinToPwmNum[pin];
+	pwmClock = C4_PWM_INTERNAL_CLK;
 	sprintf(pwmExport, "%d", (pwmPin % 2));
 	sprintf(pwmPinPath[pwmPin], "%s/pwm%d", sysPwmPath, (pwmPin % 2));
 	strncpy(setupedPwmPinPath, pwmPinPath[pwmPin], (sizeof(setupedPwmPinPath) - 1));
@@ -426,8 +427,7 @@ static int pwmSetup (int pin) {
 #endif
 	inputToSysNode(sysPwmPath, "export", pwmExport);
 	system(cmd);
-	inputToSysNode(pwmPinPath[pwmPin], "polarity", "normal");
-	inputToSysNode(pwmPinPath[pwmPin], "enable", "1");
+	printf("PWM/pin%d: Don't change to gpio mode with overlay registered.\n", pin);
 
 	return 0;
 }
@@ -436,12 +436,10 @@ static int pwmRelease (int pin) {
 	int pwmPin, ret;
 
 	if ((ret = pinToSysPwmPath(pin)) < 0) {
-		perror("set pwm dtb overlays");
 		return ret;
 	}
 
 	if (strstr(sysPwmPath, "pwmchip") == NULL) {
-		printf("config pwm dtb overlays\n");
 		return -1;
 	}
 
@@ -718,8 +716,7 @@ static int _pwmWrite (int pin, int value)
 		return -1;
 
 	if (((unsigned int)value > pwmRange) || (pwmRange <= 0)) {
-		printf("Set \'pwmWrite\' valied value. ( < pwm range)\n");
-		printf("pwmSetRange value is greater than or equal pwmWrite's\n");
+		printf("warn : pwm range value is greater than or equal pwmWrite's\n");
 		return -1;
 	}
 
@@ -861,14 +858,14 @@ static void _pwmSetRange (unsigned int range)
 		return;
 
 	if (pwmClock < 2) {
-		printf("Set \'pwmSetClock\' valied value.\n");
-		printf("pwm freq: %dMHz / (pwmSetClock's value) >= 2\n", (C4_PWM_INTERNAL_CLK / 1000000));
+		printf("error : pwm freq: %dMHz / (pwmSetClock's value) >= 2\n",
+				(C4_PWM_INTERNAL_CLK / 1000000));
 		return;
 	}
 
 	pwmRange = range;
 	if ((pwmRange < 1) || (pwmRange >= pwmClock)) {
-		printf("Set \'pwmSetRange\' valied value. ( < pwm freq)\n");
+		printf("error : invalied value. ( < pwm freq)\n");
 		return;
 	}
 
@@ -881,6 +878,8 @@ static void _pwmSetRange (unsigned int range)
 	}
 
 	inputToSysNode(setupedPwmPinPath, "period", pwmPeriod);
+	inputToSysNode(setupedPwmPinPath, "polarity", "normal");
+	inputToSysNode(setupedPwmPinPath, "enable", "1");
 }
 
 
@@ -892,7 +891,12 @@ static void _pwmSetRange (unsigned int range)
 
 static void _pwmSetClock (int divisor)
 {
-	pwmClock = (C4_PWM_INTERNAL_CLK / divisor);
+	if (pwmClock > 0)
+		pwmClock = (pwmClock / divisor);
+	else {
+		printf("error : pwm mode error\n");
+		return;
+	}
 }
 
 /*----------------------------------------------------------------------------*/

@@ -108,6 +108,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define CONSUMER "consumer"
 
+#define M1_PWM_INTERNAL_CLK			24000000 // 24MHz
+
 #ifdef __cplusplus
 extern "C" {
 #endif

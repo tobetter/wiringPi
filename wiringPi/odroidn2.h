@@ -62,6 +62,8 @@
 #define N2_PWM_1_EN			( 1 )
 #define N2_PWM_0_EN			( 0 )
 
+#define N2_PWM_INTERNAL_CLK			24000000 // 24MHz
+
 #ifdef __cplusplus
 extern "C" {
 #endif
