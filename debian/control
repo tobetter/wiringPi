@@ -34,7 +34,8 @@ Depends: ${misc:Depends},
   libc6-dev,
 # libgpiod-dev,
   libwiringpi2 (= ${binary:Version}),
-  odroid-wiringpi (= ${binary:Version})
+  odroid-wiringpi (= ${binary:Version}),
+  pkg-config
 Description: GPIO development library for ODROID
   Development libraries to allow GPIO access on a ODROID from C
   and C++ programs.
