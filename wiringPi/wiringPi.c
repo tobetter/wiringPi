@@ -224,7 +224,6 @@ int wiringPiFailure (int fatal, const char *message, ...)
 	va_end (argp) ;
 
 	fprintf (stderr, "%s", buffer);
-	exit (EXIT_FAILURE);
 
 	return 0 ;
 }
