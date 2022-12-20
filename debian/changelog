@@ -1,3 +1,9 @@
+odroid-wiringpi (3.14.4) stable; urgency=medium
+
+  * ODROID-COMMON: improve pwmSetRange
+
+ -- steve <jkhpro1003@gmail.com>  Tue, 20 Dec 2022 09:30:06 +0900
+
 odroid-wiringpi (3.14.3) stable; urgency=medium
 
   * ODROID-COMMON: remove exit in wiringPiFailure.
