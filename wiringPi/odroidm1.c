@@ -160,7 +160,13 @@ static char pwmPinPath[10][(BLOCK_SIZE)] = {
 	"None","None","None","None"
 };
 
-static char setupedPwmPinPath[BLOCK_SIZE];
+static char setupedPwmPinPath[10][BLOCK_SIZE] = {
+	"None","None",
+	"None","None",
+	"None","None",
+	"None","None",
+	"None","None"
+};
 /*----------------------------------------------------------------------------*/
 //
 // Global variable define
@@ -332,7 +338,7 @@ static int pwmSetup (int pin) {
 		pwmClock = (M1_PWM_INTERNAL_CLK / 2);
 	sprintf(pwmExport, "%d", 0);
 	sprintf(pwmPinPath[pwmPin], "%s/pwm%d", sysPwmPath, 0);
-	strncpy(setupedPwmPinPath, pwmPinPath[pwmPin], (sizeof(setupedPwmPinPath) - 1));
+	strncpy(setupedPwmPinPath[pwmPin], pwmPinPath[pwmPin], (BLOCK_SIZE - 1));
 #ifdef ANDROID
 	sprintf(cmd, "su -s sh -c %s %s", PWM_ACCESS_SCRIPT, pwmPinPath[pwmPin]);
 #else
@@ -1447,14 +1453,14 @@ static void _pwmSetRange (unsigned int range)
 	freq = (pwmClock / pwmRange);
 	period = (1000000000 / freq); // period: s to ns.
 	sprintf(pwmPeriod, "%d", period);
-	if (strstr(setupedPwmPinPath, "pwm") == NULL) {
-		printf("Not setuped pwm target.\n");
-		return;
-	}
 
-	inputToSysNode(setupedPwmPinPath, "period", pwmPeriod);
-	inputToSysNode(setupedPwmPinPath, "polarity", "normal");
-	inputToSysNode(setupedPwmPinPath, "enable", "1");
+	for (int i = 0; i < 10; i++) {
+		if (strstr(setupedPwmPinPath[i], "None") != NULL)
+			continue;
+		inputToSysNode(setupedPwmPinPath[i], "period", pwmPeriod);
+		inputToSysNode(setupedPwmPinPath[i], "polarity", "normal");
+		inputToSysNode(setupedPwmPinPath[i], "enable", "1");
+	}
 }
 
 /*----------------------------------------------------------------------------*/
