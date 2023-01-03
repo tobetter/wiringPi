@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # /etc/odroid-wpi-pwm.sh
-# written by steve.jeong <jkhpro1003@gmail.com>
+# written by Steve Jeong <how2soft@gmail.com>
 #
 # allow access pwm sys node (with odroid-wiringpi gpiomem).
 # udev rules: 99-odroid-wiringpi-pwm.rules

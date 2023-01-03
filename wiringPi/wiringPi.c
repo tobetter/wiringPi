@@ -1324,7 +1324,7 @@ int wiringPiSetupPhys (void)
  *
  *	"inputToSysNode" is what it is.
  *
- *	Authored by steve.jeong <jkhpro1003@gmail.com>, <steve.jeong@hardkernel.com>
+ *	Authored by Steve Jeong <how2soft@gmail.com>, <steve.jeong@hardkernel.com>
  */
 /*----------------------------------------------------------------------------*/
 int wiringPiSetupSys (void)
