@@ -1,11 +1,10 @@
 #!/bin/sh
 
-# /etc/odroid-wpi-pwm.sh
+# /etc/odroid-allowuser.sh
 # written by Steve Jeong <how2soft@gmail.com>
 #
-# allow access pwm sys node (with odroid-wiringpi gpiomem).
-# udev rules: 99-odroid-wiringpi-pwm.rules
-# param: "/sys/class/pwm/pwmchip*" default.
+# allow access sys node (with odroid-wiringpi gpiomem).
+# udev rules: 99-odroid-wiringpi-*.rules
 
 cutoff=0
 

@@ -412,9 +412,9 @@ static int pwmSetup (int pin) {
 	sprintf(pwmPinPath[pwmPin], "%s/pwm%d", sysPwmPath, (pwmPin % 2));
 	strncpy(setupedPwmPinPath[pwmPin], pwmPinPath[pwmPin], (BLOCK_SIZE - 1));
 #ifdef ANDROID
-	sprintf(cmd, "su -s sh -c %s %s", PWM_ACCESS_SCRIPT, pwmPinPath[pwmPin]);
+	sprintf(cmd, "su -s sh -c %s %s", SYS_ACCESS_SCRIPT, pwmPinPath[pwmPin]);
 #else
-	sprintf(cmd, "sudo sh %s %s", PWM_ACCESS_SCRIPT, pwmPinPath[pwmPin]);
+	sprintf(cmd, "sudo sh %s %s", SYS_ACCESS_SCRIPT, pwmPinPath[pwmPin]);
 #endif
 	inputToSysNode(sysPwmPath, "export", pwmExport);
 	system(cmd);

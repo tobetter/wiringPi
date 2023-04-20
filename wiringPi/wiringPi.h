@@ -102,8 +102,8 @@
 // Module names
 #define AML_MODULE_I2C		"aml_i2c"
 
-// syspwm
-#define PWM_ACCESS_SCRIPT	"/etc/odroid-wpi-pwm.sh"
+// sysnode
+#define SYS_ACCESS_SCRIPT	"/etc/odroid-allowuser.sh"
 
 // Threads
 #define	PI_THREAD(X)		void *X (UNU void *dummy)
