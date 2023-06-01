@@ -3,7 +3,7 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 COMMON_CFLAGS = $(EXTRA_CFLAGS) $(LIBWIRINGPI_CFLAGS)
 LIBS = $(LIBWIRINGPI_LIBS)
 
-bin_PROGRAMS = blink blink12 blink12drcs blink8 clock delayTest ds1302 isr isr-osc lcd lcd-adafruit max31855 nes okLed pwm rht03 serialRead serialTest softPwm softTone speed wfi
+bin_PROGRAMS = blink blink12 blink12drcs blink8 clock delayTest ds1302 isr isr-osc i2c-lcd lcd lcd-adafruit max31855 nes okLed pwm rht03 serialRead serialTest softPwm softTone speed wfi
 
 blink_SOURCES = blink.c
 blink_CFLAGS = $(COMMON_CFLAGS)
@@ -32,6 +32,9 @@ isr_CFLAGS = $(COMMON_CFLAGS)
 
 isr_osc_SOURCES = isr-osc.c
 isr_osc_CFLAGS = $(COMMON_CFLAGS)
+
+i2c_lcd_SOURCES = i2c-lcd.c
+i2c_lcd_CFLAGS = $(COMMON_CFLAGS)
 
 lcd_SOURCES = lcd.c
 lcd_CFLAGS = $(COMMON_CFLAGS)
