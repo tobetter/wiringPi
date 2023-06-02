@@ -1,3 +1,9 @@
+odroid-wiringpi (3.15.1) stable; urgency=medium
+
+  * examples: Add a new example of lcd. (i2c)
+
+ -- Steve Jeong <how2soft@gmail.com>  Fri, 02 Jun 2023 10:17:26 +0900
+
 odroid-wiringpi (3.15.0) stable; urgency=medium
 
   * ODROID-COMMON: Rename scripts that access system nodes to more generic.
