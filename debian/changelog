@@ -1,3 +1,9 @@
+odroid-wiringpi (3.15.2) stable; urgency=medium
+
+  * examples: Improve a new example of lcd. (i2c)
+
+ -- Steve Jeong <how2soft@gmail.com>  Fri, 02 Jun 2023 11:46:19 +0900
+
 odroid-wiringpi (3.15.1) stable; urgency=medium
 
   * examples: Add a new example of lcd. (i2c)
