@@ -28,7 +28,6 @@
 
 // Define some device parameters
 #define I2C_ADDR  0x3f // I2C device address
-#define LCD_WIDTH  20
 
 // Define some device constants
 #define LCD_CHR  1 // Mode - Sending data
@@ -40,7 +39,7 @@
 #define LINE4  0xD4 // 4th line
 
 #define LCD_BACKLIGHT   0x08  // On
-// LCD_BACKLIGHT = 0x00  # Off
+// #define LCD_BACKLIGHT  0x00  // Off
 
 #define ENABLE  0b00000100 // Enable bit
 
@@ -50,15 +49,12 @@ void lcd_toggle_enable(int bits);
 void display_string(const char *string, int line);
 
 int fd;
-char *bus; /* /dev/i2c-0 ~ /dev/i2c-9 */
-int address;
+char *bus = "0"; /* /dev/i2c-0 ~ /dev/i2c-9 */
+int address = 0x3f;
 
 int main(int argc, char *argv[]) {
 
-  char device[16] = "/dev/i2c-";
-
-  bus = "0";
-  address = 0x3f;
+  char device[12];
 
   if (wiringPiSetup () == -1)
     exit (1);
@@ -71,30 +67,27 @@ int main(int argc, char *argv[]) {
     address = strtoul(argv[2], NULL, 16);
   }
 
-  strncat(device, bus, 1);
+  snprintf(device, 11, "%s%s", "/dev/i2c-", bus);
   fd = wiringPiI2CSetupInterface(device, address);
 
   lcd_init(); // setup LCD
 
   while (1) {
-    display_string("Hard Kernel", LINE1);
+    display_string("HardKernel", LINE1);
     display_string("Hello ODROID", LINE2);
   }
 
   return 0;
-
 }
 
 void display_string(const char *string, int line) {
   // go to location on LCD
   lcd_byte(line, LCD_CMD);
 
-  if (strlen(string) > LCD_WIDTH) {
-    printf("message is too long!\n");
-    return;
+  while (*string) {
+    lcd_byte(*(string++), LCD_CHR);
   }
 
-  while (*string) lcd_byte(*(string++), LCD_CHR);
 }
 
 void lcd_byte(int bits, int mode) {
@@ -105,8 +98,8 @@ void lcd_byte(int bits, int mode) {
   int bits_high;
   int bits_low;
   // uses the two half byte writes to LCD
-  bits_high = mode | (bits & 0xf0) | LCD_BACKLIGHT ;
-  bits_low = mode | ((bits << 4) & 0xf0) | LCD_BACKLIGHT ;
+  bits_high = mode | (bits & 0xf0) | LCD_BACKLIGHT;
+  bits_low = mode | ((bits << 4) & 0xf0) | LCD_BACKLIGHT;
 
   // High bits
   wiringPiI2CReadReg8(fd, bits_high);
@@ -117,7 +110,7 @@ void lcd_byte(int bits, int mode) {
   lcd_toggle_enable(bits_low);
 }
 
-void lcd_toggle_enable(int bits)   {
+void lcd_toggle_enable(int bits) {
   // Toggle enable pin on LCD display
   delayMicroseconds(500);
   wiringPiI2CReadReg8(fd, (bits | ENABLE));
@@ -126,7 +119,7 @@ void lcd_toggle_enable(int bits)   {
   delayMicroseconds(500);
 }
 
-void lcd_init()   {
+void lcd_init() {
   // Initialise display
   lcd_byte(0x33, LCD_CMD); // Initialise
   lcd_byte(0x32, LCD_CMD); // Initialise
