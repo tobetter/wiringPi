@@ -6,7 +6,7 @@
 //
 /*----------------------------------------------------------------------------*/
 /*******************************************************************************
-Copyright (C) 2022 Steve Jeong <how2soft@gmail.com>
+Copyright (C) 2022-2023 Steve Jeong <steve@how2flow.net>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

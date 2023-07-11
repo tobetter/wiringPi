@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # /etc/odroid-allowuser.sh
-# written by Steve Jeong <how2soft@gmail.com>
+# written by Steve Jeong <steve@how2flow.net>
 #
 # allow access sys node (with odroid-wiringpi gpiomem).
 # udev rules: 99-odroid-wiringpi-*.rules
