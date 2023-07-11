@@ -1,3 +1,9 @@
+odroid-wiringpi (3.15.3) stable; urgency=medium
+
+  * The maintainer's email address has been changed.
+
+ -- Steve Jeong <steve@how2flow.net>  Tue, 11 Jul 2023 15:36:39 +0900
+
 odroid-wiringpi (3.15.2) stable; urgency=medium
 
   * examples: Improve a new example of lcd. (i2c)
