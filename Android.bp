@@ -27,6 +27,7 @@ cc_library_shared {
         "wiringPi/odroidc4.c",
         "wiringPi/odroidhc4.c",
         "wiringPi/odroidm1.c",
+        "wiringPi/odroidm1s.c",
         "wiringPi/drcSerial.c",
         "wiringPi/mcp23s08.c",
         "wiringPi/odroidn1.c",

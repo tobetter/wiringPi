@@ -115,6 +115,7 @@ extern "C" {
 #endif
 
 extern void init_odroidm1 (struct libodroid *libwiring);
+extern void init_odroidm1s (struct libodroid *libwiring);
 
 #ifdef __cplusplus
 }
