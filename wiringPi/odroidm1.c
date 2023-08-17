@@ -527,9 +527,9 @@ __attribute__ ((unused))static int _pinMode (int pin, int mode)
 	bitNum = pin - (bank * GPIO_SIZE);
 	offset = bitNum / 16 == 0 ? M1_GPIO_DIR_OFFSET : M1_GPIO_DIR_OFFSET + 0x4;
 
-	pwmRelease (origPin);
-	softPwmStop(pin);
-	softToneStop(pin);
+	pwmRelease(origPin);
+	softPwmStop(origPin);
+	softToneStop(origPin);
 
 	target = *(gpio[bank] + (offset >> 2));
 	target |= (1 << (gpioToShiftRegBy16(pin) + 16));
@@ -580,9 +580,9 @@ __attribute__ ((unused))static int _pinMode (int pin, int mode)
 __attribute__ ((unused))static int _pinMode_gpiod (int pin, int mode)
 {
 	uint8_t bank, bitNum;
-	int oriPin, ret;
+	int origPin, ret;
 
-	oriPin = pin;
+	origPin = pin;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return -1;
@@ -593,8 +593,9 @@ __attribute__ ((unused))static int _pinMode_gpiod (int pin, int mode)
 	bank = pin / GPIO_SIZE;
 	bitNum = pin - (bank * GPIO_SIZE);
 
-	softPwmStop(pin);
-	softToneStop(pin);
+	pwmRelease(origPin);
+	softPwmStop(origPin);
+	softToneStop(origPin);
 
 	chip = gpiod_chip_open_by_number(bank);
 	if (!chip) {
@@ -615,7 +616,7 @@ __attribute__ ((unused))static int _pinMode_gpiod (int pin, int mode)
 			printf("gpiod request error\n");
 			gpiod_line_release(gpiod);
 		}
-		_pullUpDnControl(oriPin, PUD_OFF);
+		_pullUpDnControl(origPin, PUD_OFF);
 		break;
 	case OUTPUT:
 		ret = gpiod_line_request_output(gpiod, CONSUMER, 0);
@@ -630,7 +631,7 @@ __attribute__ ((unused))static int _pinMode_gpiod (int pin, int mode)
 			printf("gpiod request error\n");
 			gpiod_line_release(gpiod);
 		}
-		_pullUpDnControl(oriPin, PUD_UP);
+		_pullUpDnControl(origPin, PUD_UP);
 		break;
 	case INPUT_PULLDOWN:
 		ret = gpiod_line_request_input(gpiod, CONSUMER);
@@ -638,13 +639,13 @@ __attribute__ ((unused))static int _pinMode_gpiod (int pin, int mode)
 			printf("gpiod request error\n");
 			gpiod_line_release(gpiod);
 		}
-		_pullUpDnControl(oriPin, PUD_DOWN);
+		_pullUpDnControl(origPin, PUD_DOWN);
 		break;
 	case SOFT_PWM_OUTPUT:
-		softPwmCreate(oriPin, 0, 100);
+		softPwmCreate(origPin, 0, 100);
 		break;
 	case SOFT_TONE_OUTPUT:
-		softToneCreate(oriPin);
+		softToneCreate(origPin);
 		break;
 	default:
 		msg(MSG_WARN, "%s : Unknown Mode %d\n", __func__, mode);
