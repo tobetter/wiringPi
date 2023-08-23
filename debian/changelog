@@ -1,3 +1,9 @@
+odroid-wiringpi (3.15.4) stable; urgency=medium
+
+  * ODROID-M1: fix pin of softTone and correct typos.
+
+ -- Steve Jeong <steve@how2flow.net>  Wed, 23 Aug 2023 09:44:45 +0900
+
 odroid-wiringpi (3.15.3) stable; urgency=medium
 
   * The maintainer's email address has been changed.
