@@ -1,3 +1,9 @@
+odroid-wiringpi (3.16.0) stable; urgency=medium
+
+  * ODROID-M1S: New support for ODROID-M1S
+
+ -- Steve Jeong <steve@how2flow.net>  Tue, 07 Nov 2023 11:06:54 +0900
+
 odroid-wiringpi (3.15.4) stable; urgency=medium
 
   * ODROID-M1: fix pin of softTone and correct typos.
