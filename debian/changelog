@@ -1,3 +1,9 @@
+odroid-wiringpi (3.16.1) stable; urgency=medium
+
+  * ODROID-M1S: Supports extra pins
+
+ -- Steve Jeong <steve@how2flow.net>  Mon, 13 Nov 2023 05:35:50 +0000
+
 odroid-wiringpi (3.16.0) stable; urgency=medium
 
   * ODROID-M1S: New support for ODROID-M1S
