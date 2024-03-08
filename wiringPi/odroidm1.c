@@ -405,7 +405,7 @@ static int _getModeToGpio (int mode, int pin)
 __attribute__ ((unused))static void setClkState (int pin, int state)
 {
 	uint32_t target = 0;
-	uint8_t bank = pin / GPIO_SIZE;
+	uint8_t bank = (pin / GPIO_SIZE);
 	uint8_t gpioPclkShift = (bank == 0 ? M1_PMU_CRU_GPIO_PCLK_BIT : (bank * M1_CRU_GPIO_PCLK_BIT));
 
 	target |= (1 << (gpioPclkShift + 16));
@@ -452,54 +452,54 @@ __attribute__ ((unused))static void setClkState (int pin, int state)
 /*----------------------------------------------------------------------------*/
 __attribute__ ((unused))static int setIomuxMode (int pin, int mode)
 {
-	uint32_t offset, target;
-	uint8_t	bank, group, bitNum, bitInByte;
+	uint32_t regOffset, target;
+	uint8_t	bank, group, bankOffset, groupOffset;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return -1;
 	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return -1;
 
-	bank = pin / GPIO_SIZE;
-	bitNum = pin - (bank * GPIO_SIZE);
-	group = bitNum / 8; // A or B or C or D
-	bitInByte = (pin - (bank * GPIO_SIZE)) % 8;
+	bank = (pin / GPIO_SIZE);
+	bankOffset = (pin - (bank * GPIO_SIZE));
+	group = (bankOffset / 8); // A or B or C or D
+	groupOffset = (pin % 8);
 
-	offset = (bank == 0 ? 0 : bank-1) * 0x20 + group * 0x8;
-	offset += (bitInByte / 4 == 0) ? 0x0 : 0x4;
+	regOffset = (bank == 0 ? 0 : bank-1) * 0x20 + group * 0x8;
+	regOffset += (groupOffset / 4 == 0) ? 0x0 : 0x4;
 
 	// Common IOMUX Funtion 1 : GPIO (3'h0)
 	switch (mode) {
 	case M1_FUNC_GPIO: // Common IOMUX Function 1_GPIO (3'h0)
 		if (bank == 0) {
-			offset += M1_PMU_GRF_IOMUX_OFFSET;
-			target = *(grf[0] + (offset >> 2));
-			target |= (0x7 << ((bitInByte % 4) * 4 + 16));
-			target &= ~(0x7 << ((bitInByte % 4) * 4)); // ~0x07 = 3'h0
-			*(grf[0] + (offset >> 2)) = target;
+			regOffset += M1_PMU_GRF_IOMUX_OFFSET;
+			target = *(grf[0] + (regOffset >> 2));
+			target |= (0x7 << ((groupOffset % 4) * 4 + 16));
+			target &= ~(0x7 << ((groupOffset % 4) * 4)); // ~0x07 = 3'h0
+			*(grf[0] + (regOffset >> 2)) = target;
 		}
 		else {
-			offset += M1_SYS_GRF_IOMUX_OFFSET;
-			target = *(grf[1] + (offset >> 2));
-			target |= (0x7 << ((bitInByte % 4) * 4 + 16));
-			target &= ~(0x7 << ((bitInByte % 4) * 4));
-			*(grf[1] + (offset >> 2)) = target;
+			regOffset += M1_SYS_GRF_IOMUX_OFFSET;
+			target = *(grf[1] + (regOffset >> 2));
+			target |= (0x7 << ((groupOffset % 4) * 4 + 16));
+			target &= ~(0x7 << ((groupOffset % 4) * 4));
+			*(grf[1] + (regOffset >> 2)) = target;
 		}
 		break;
 	case M1_FUNC_PWM:
 		if (bank == 0) {
-			offset += M1_PMU_GRF_IOMUX_OFFSET;
-			target = *(grf[0] + (offset >> 2));
-			target |= (0x7 << ((bitInByte % 4) * 4 + 16));
-			target |= (0x4 << ((bitInByte % 4) * 4)); // gpio0 b5/b6: 3'h100
-			*(grf[0] + (offset >> 2)) = target;
+			regOffset += M1_PMU_GRF_IOMUX_OFFSET;
+			target = *(grf[0] + (regOffset >> 2));
+			target |= (0x7 << ((groupOffset % 4) * 4 + 16));
+			target |= (0x4 << ((groupOffset % 4) * 4)); // gpio0 b5/b6: 3'h100
+			*(grf[0] + (regOffset >> 2)) = target;
 		}
 		else {
-			offset += M1_SYS_GRF_IOMUX_OFFSET;
-			target = *(grf[1] + (offset >> 2));
-			target |= (0x7 << ((bitInByte % 4) * 4 + 16));
-			target |= (0x5 << ((bitInByte % 4) * 4)); // gpio3 b2: 3'h101
-			*(grf[1] + (offset >> 2)) = target;
+			regOffset += M1_SYS_GRF_IOMUX_OFFSET;
+			target = *(grf[1] + (regOffset >> 2));
+			target |= (0x7 << ((groupOffset % 4) * 4 + 16));
+			target |= (0x5 << ((groupOffset % 4) * 4)); // gpio3 b2: 3'h101
+			*(grf[1] + (regOffset >> 2)) = target;
 		}
 		break;
 	default:
@@ -511,8 +511,8 @@ __attribute__ ((unused))static int setIomuxMode (int pin, int mode)
 /*----------------------------------------------------------------------------*/
 __attribute__ ((unused))static int _pinMode (int pin, int mode)
 {
-	uint32_t offset, target;
-	uint8_t bank, bitNum;
+	uint32_t regOffset, target;
+	uint8_t bank, bankOffset;
 	int origPin;
 
 	origPin = pin;
@@ -523,39 +523,39 @@ __attribute__ ((unused))static int _pinMode (int pin, int mode)
 	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return -1;
 
-	bank = pin / GPIO_SIZE;
-	bitNum = pin - (bank * GPIO_SIZE);
-	offset = bitNum / 16 == 0 ? M1_GPIO_DIR_OFFSET : M1_GPIO_DIR_OFFSET + 0x4;
+	bank = (pin / GPIO_SIZE);
+	bankOffset = (pin - (bank * GPIO_SIZE));
+	regOffset = bankOffset / 16 == 0 ? M1_GPIO_DIR_OFFSET : M1_GPIO_DIR_OFFSET + 0x4;
 
 	pwmRelease(origPin);
 	softPwmStop(origPin);
 	softToneStop(origPin);
 
-	target = *(gpio[bank] + (offset >> 2));
+	target = *(gpio[bank] + (regOffset >> 2));
 	target |= (1 << (gpioToShiftRegBy16(pin) + 16));
 
 	switch (mode) {
 	case INPUT:
 		setIomuxMode(origPin, M1_FUNC_GPIO);
 		target &= ~(1 << gpioToShiftRegBy16(pin));
-		*(gpio[bank] + (offset >> 2)) = target;
+		*(gpio[bank] + (regOffset >> 2)) = target;
 		_pullUpDnControl(origPin, PUD_OFF);
 		break;
 	case OUTPUT:
 		setIomuxMode(origPin, M1_FUNC_GPIO);
 		target |= (1 << gpioToShiftRegBy16(pin));
-		*(gpio[bank] + (offset >> 2)) = target;
+		*(gpio[bank] + (regOffset >> 2)) = target;
 		break;
 	case INPUT_PULLUP:
 		setIomuxMode(origPin, M1_FUNC_GPIO);
 		target &= ~(1 << gpioToShiftRegBy16(pin));
-		*(gpio[bank] + (offset >> 2)) = target;
+		*(gpio[bank] + (regOffset >> 2)) = target;
 		_pullUpDnControl(origPin, PUD_UP);
 		break;
 	case INPUT_PULLDOWN:
 		setIomuxMode(origPin, M1_FUNC_GPIO);
 		target &= ~(1 << gpioToShiftRegBy16(pin));
-		*(gpio[bank] + (offset >> 2)) = target;
+		*(gpio[bank] + (regOffset >> 2)) = target;
 		_pullUpDnControl(origPin, PUD_DOWN);
 		break;
 	case SOFT_PWM_OUTPUT:
@@ -579,7 +579,7 @@ __attribute__ ((unused))static int _pinMode (int pin, int mode)
 /*----------------------------------------------------------------------------*/
 __attribute__ ((unused))static int _pinMode_gpiod (int pin, int mode)
 {
-	uint8_t bank, bitNum;
+	uint8_t bank, bankOffset;
 	int origPin, ret;
 
 	origPin = pin;
@@ -590,8 +590,8 @@ __attribute__ ((unused))static int _pinMode_gpiod (int pin, int mode)
 	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return -1;
 
-	bank = pin / GPIO_SIZE;
-	bitNum = pin - (bank * GPIO_SIZE);
+	bank = (pin / GPIO_SIZE);
+	bankOffset = (pin - (bank * GPIO_SIZE));
 
 	pwmRelease(origPin);
 	softPwmStop(origPin);
@@ -602,7 +602,7 @@ __attribute__ ((unused))static int _pinMode_gpiod (int pin, int mode)
 		return -1;
 	}
 
-	gpiod = gpiod_chip_get_line(chip, bitNum);
+	gpiod = gpiod_chip_get_line(chip, bankOffset);
 	if (!gpiod) {
 		printf("gpio get error\n");
 		gpiod_chip_close(chip);
@@ -662,8 +662,8 @@ __attribute__ ((unused))static int _pinMode_gpiod (int pin, int mode)
 /*----------------------------------------------------------------------------*/
 __attribute__ ((unused))static int _getDrive(int pin)
 {
-	uint32_t offset, target;
-	uint8_t bank, group, bitNum, bitInByte;
+	uint32_t regOffset, target;
+	uint8_t bank, group, bankOffset, groupOffset;
 	int value = 0;
 
 	if (lib->mode == MODE_GPIO_SYS)
@@ -672,27 +672,27 @@ __attribute__ ((unused))static int _getDrive(int pin)
 	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return	-1;
 
-	bank = pin / GPIO_SIZE;
-	bitNum = pin - (bank * GPIO_SIZE);
-	bitInByte = bitNum % 8;
-	group = bitNum / 8;
+	bank = (pin / GPIO_SIZE);
+	bankOffset = (pin - (bank * GPIO_SIZE));
+	group = (bankOffset / 8);
+	groupOffset = (pin % 8);
 
 	if (bank == 0) {
-		offset = M1_PMU_GRF_DS_OFFSET;
-		offset += (group * 0x10);
-		offset += ((bitInByte / 2) * 0x4);
-		target = *(grf[0] + (offset >> 2));
+		regOffset = M1_PMU_GRF_DS_OFFSET;
+		regOffset += (group * 0x10);
+		regOffset += ((groupOffset / 2) * 0x4);
+		target = *(grf[0] + (regOffset >> 2));
 	}
 	else {
-		offset = M1_SYS_GRF_DS_OFFSET;
-		offset += ((bank - 1) * 0x40);
-		offset += (group * 0x10);
-		offset += ((bitInByte / 2) * 0x4);
-		target = *(grf[1] + (offset >> 2));
+		regOffset = M1_SYS_GRF_DS_OFFSET;
+		regOffset += ((bank - 1) * 0x40);
+		regOffset += (group * 0x10);
+		regOffset += ((groupOffset / 2) * 0x4);
+		target = *(grf[1] + (regOffset >> 2));
 	}
 
 	target &= 0x3f3f; //reset reserved bits
-	target = (bitInByte % 2 == 0 ? target & 0x3f : target >> 8);
+	target = (groupOffset % 2 == 0 ? target & 0x3f : target >> 8);
 
 	switch (target) {
 		case DS_LEVEL_0:
@@ -723,8 +723,8 @@ __attribute__ ((unused))static int _getDrive(int pin)
 /*----------------------------------------------------------------------------*/
 __attribute__ ((unused))static int _setDrive(int pin, int value)
 {
-	uint32_t offset, target;
-	uint8_t bank, group, bitNum, bitInByte;
+	uint32_t regOffset, target;
+	uint8_t bank, group, bankOffset, groupOffset;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return	-1;
@@ -732,56 +732,56 @@ __attribute__ ((unused))static int _setDrive(int pin, int value)
 	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return	-1;
 
-	bank = pin / GPIO_SIZE;
-	bitNum = pin - (bank * GPIO_SIZE);
-	bitInByte = bitNum % 8;
-	group = bitNum / 8;
+	bank = (pin / GPIO_SIZE);
+	bankOffset = (pin - (bank * GPIO_SIZE));
+	group = (bankOffset / 8);
+	groupOffset = (pin % 8);
 
 	if (bank == 0) {
-		offset = M1_PMU_GRF_DS_OFFSET;
-		offset += (group * 0x10);
-		offset += ((bitInByte / 2) * 0x4);
-		target = *(grf[0] + (offset >> 2));
+		regOffset = M1_PMU_GRF_DS_OFFSET;
+		regOffset += (group * 0x10);
+		regOffset += ((groupOffset / 2) * 0x4);
+		target = *(grf[0] + (regOffset >> 2));
 	}
 	else {
-		offset = M1_SYS_GRF_DS_OFFSET;
-		offset += ((bank - 1) * 0x40);
-		offset += (group * 0x10);
-		offset += ((bitInByte / 2) * 0x4);
-		target = *(grf[1] + (offset >> 2));
+		regOffset = M1_SYS_GRF_DS_OFFSET;
+		regOffset += ((bank - 1) * 0x40);
+		regOffset += (group * 0x10);
+		regOffset += ((groupOffset / 2) * 0x4);
+		target = *(grf[1] + (regOffset >> 2));
 	}
 
 	target |= (0x3f3f << 16);
-	target &= ~(bitInByte % 2 == 0 ? 0x3f << 0 : 0x3f << 8);
+	target &= ~(groupOffset % 2 == 0 ? 0x3f << 0 : 0x3f << 8);
 
 	switch (value) {
 		case 0:
-			target |= (bitInByte % 2 == 0 ? DS_LEVEL_0 : (DS_LEVEL_0 << 8));
+			target |= (groupOffset % 2 == 0 ? DS_LEVEL_0 : (DS_LEVEL_0 << 8));
 			break;
 		case 1:
-			target |= (bitInByte % 2 == 0 ? DS_LEVEL_1 : (DS_LEVEL_1 << 8));
+			target |= (groupOffset % 2 == 0 ? DS_LEVEL_1 : (DS_LEVEL_1 << 8));
 			break;
 		case 2:
-			target |= (bitInByte % 2 == 0 ? DS_LEVEL_2 : (DS_LEVEL_2 << 8));
+			target |= (groupOffset % 2 == 0 ? DS_LEVEL_2 : (DS_LEVEL_2 << 8));
 			break;
 		case 3:
-			target |= (bitInByte % 2 == 0 ? DS_LEVEL_3 : (DS_LEVEL_3 << 8));
+			target |= (groupOffset % 2 == 0 ? DS_LEVEL_3 : (DS_LEVEL_3 << 8));
 			break;
 		case 4:
-			target |= (bitInByte % 2 == 0 ? DS_LEVEL_4 : (DS_LEVEL_4 << 8));
+			target |= (groupOffset % 2 == 0 ? DS_LEVEL_4 : (DS_LEVEL_4 << 8));
 			break;
 		case 5:
-			target |= (bitInByte % 2 == 0 ? DS_LEVEL_5 : (DS_LEVEL_5 << 8));
+			target |= (groupOffset % 2 == 0 ? DS_LEVEL_5 : (DS_LEVEL_5 << 8));
 			break;
 		default:
 			break;
 	}
 
 	if (bank == 0) {
-		*(grf[0] + (offset >> 2)) = target;
+		*(grf[0] + (regOffset >> 2)) = target;
 	}
 	else {
-		*(grf[1] + (offset >> 2)) = target;
+		*(grf[1] + (regOffset >> 2)) = target;
 	}
 	return 0;
 }
@@ -789,9 +789,9 @@ __attribute__ ((unused))static int _setDrive(int pin, int value)
 __attribute__ ((unused))static int _getAlt (int pin)
 {
 	// TODO: Working confirmed
-	uint32_t offset;
+	uint32_t regOffset;
 	uint16_t ret = 0;
-	uint8_t	bank, group, bitNum, bitInByte, shift;
+	uint8_t	bank, group, bankOffset, groupOffset, shift;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return	-1;
@@ -799,38 +799,38 @@ __attribute__ ((unused))static int _getAlt (int pin)
 	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return	-1;
 
-	bank = pin / GPIO_SIZE; // GPIO0, GPIO1, ...
-	bitNum = pin - (bank * GPIO_SIZE);
-	bitInByte = bitNum % 8;
-	group = bitNum / 8; // GPIO0_A, GPIO0_B, ...
+	bank = (pin / GPIO_SIZE); // GPIO0, GPIO1, ...
+	bankOffset = (pin - (bank * GPIO_SIZE));
+	group = (bankOffset / 8); // GPIO0_A, GPIO0_B, ...
+	groupOffset = (pin % 8);
 
 	// Move to the proper IOMUX register regardless of whether it is L, H.
-	offset = 0x20 * (bank == 0 ? 0x0 : bank - 1) + 0x8 * group;
+	regOffset = 0x20 * (bank == 0 ? 0x0 : bank - 1) + 0x8 * group;
 
 	// Check where the register this pin located in
-	offset += (bitInByte / 4 == 0) ? 0x0 : 0x4;
+	regOffset += (groupOffset / 4 == 0) ? 0x0 : 0x4;
 
 	// The shift to move to the target pin at the register
-	shift = bitInByte % 4 * 4;
+	shift = groupOffset % 4 * 4;
 
 	// Check if the pin is GPIO mode on GRF register
 	if (bank == 0) {
-		offset += M1_PMU_GRF_IOMUX_OFFSET; //0x00
-		ret = (*(grf[0] + (offset >> 2)) >> shift) & 0x7;
+		regOffset += M1_PMU_GRF_IOMUX_OFFSET; //0x00
+		ret = (*(grf[0] + (regOffset >> 2)) >> shift) & 0x7;
 	} else {
-		offset += M1_SYS_GRF_IOMUX_OFFSET; //0x00
-		ret = (*(grf[1] + (offset >> 2)) >> shift) & 0x7;
+		regOffset += M1_SYS_GRF_IOMUX_OFFSET; //0x00
+		ret = (*(grf[1] + (regOffset >> 2)) >> shift) & 0x7;
 	}
 
 	// If it is ALT0 (GPIO mode), check it's direction
-	// Add offset 0x4 to go to H register
+	// Add regOffset 0x4 to go to H register
 	// when the bit group is in the high two-bytes of the word size
 	if (ret == 0) {
-		if (bitNum / 16 == 0)
-			offset = (M1_GPIO_DIR_OFFSET >> 2);
+		if (bankOffset / 16 == 0)
+			regOffset = (M1_GPIO_DIR_OFFSET >> 2);
 		else
-			offset = ((M1_GPIO_DIR_OFFSET + 0x4) >> 2);
-		ret = !!(*(gpio[bank] + offset) & (1 << gpioToShiftRegBy16(bitNum)));
+			regOffset = ((M1_GPIO_DIR_OFFSET + 0x4) >> 2);
+		ret = !!(*(gpio[bank] + regOffset) & (1 << gpioToShiftRegBy16(bankOffset)));
 	}
 	else {
 		// If it is alternative mode, add number 2 to fit into
@@ -844,8 +844,8 @@ __attribute__ ((unused))static int _getAlt (int pin)
 /*----------------------------------------------------------------------------*/
 __attribute__ ((unused))static int _getPUPD (int pin)
 {
-	uint32_t offset, pupd;
-	uint8_t bank, group, bitNum, bitInByte;
+	uint32_t regOffset, pupd;
+	uint8_t bank, group, bankOffset, groupOffset;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return -1;
@@ -853,28 +853,28 @@ __attribute__ ((unused))static int _getPUPD (int pin)
 	if ((pin = _getModeToGpio(lib->mode,pin)) < 0)
 		return -1;
 
-	bank = pin / GPIO_SIZE;
-	bitNum = pin - (bank * GPIO_SIZE);
-	group = bitNum / 8;
-	bitInByte = bitNum % 8;
+	bank = (pin / GPIO_SIZE);
+	bankOffset = (pin - (bank * GPIO_SIZE));
+	group = (bankOffset / 8);
+	groupOffset = (pin % 8);
 	pupd = 0x00;
-	pupd = (0x3 << (bitInByte * 2));
-	offset = (bank == 0) ? M1_PMU_GRF_PUPD_OFFSET + (group * 0x4) :  M1_SYS_GRF_PUPD_OFFSET + (group * 0x4) + ((bank - 1) * 0x10);
+	pupd = (0x3 << (groupOffset * 2));
+	regOffset = (bank == 0) ? M1_PMU_GRF_PUPD_OFFSET + (group * 0x4) :  M1_SYS_GRF_PUPD_OFFSET + (group * 0x4) + ((bank - 1) * 0x10);
 
 	if (bank == 0)
-		pupd &= *(grf[0] + (offset >> 2));
+		pupd &= *(grf[0] + (regOffset >> 2));
 	else
-		pupd &= *(grf[1] + (offset >> 2));
+		pupd &= *(grf[1] + (regOffset >> 2));
 
-	pupd = (pupd >> bitInByte * 2);
+	pupd = (pupd >> groupOffset * 2);
 
 	return pupd;
 }
 /*----------------------------------------------------------------------------*/
 __attribute__ ((unused))static int _pullUpDnControl (int pin, int pud)
 {
-	uint32_t offset, target;
-	uint8_t	bank, group, bitNum, bitInByte;
+	uint32_t regOffset, target;
+	uint8_t	bank, group, bankOffset, groupOffset;
 
 	if (lib->mode == MODE_GPIO_SYS)
 		return	-1;
@@ -882,63 +882,63 @@ __attribute__ ((unused))static int _pullUpDnControl (int pin, int pud)
 	if ((pin = _getModeToGpio(lib->mode, pin)) < 0) //exit
 		return	-1;
 
-	bank = pin / GPIO_SIZE;
-	bitNum = pin - (bank * GPIO_SIZE);
-	group = bitNum / 8;
-	bitInByte = bitNum % 8;
-	offset = (bank == 0) ? M1_PMU_GRF_PUPD_OFFSET + (group * 0x4) :  M1_SYS_GRF_PUPD_OFFSET + (group * 0x4) + ((bank - 1) * 0x10);
+	bank = (pin / GPIO_SIZE);
+	bankOffset = (pin - (bank * GPIO_SIZE));
+	group = (bankOffset / 8);
+	groupOffset = (pin % 8);
+	regOffset = (bank == 0) ? M1_PMU_GRF_PUPD_OFFSET + (group * 0x4) :  M1_SYS_GRF_PUPD_OFFSET + (group * 0x4) + ((bank - 1) * 0x10);
 
 	switch (pud) {
 	case PUD_UP:
 		if (bank == 0)
 		{
-			target = *(grf[0] + (offset >> 2));
-			target |= (0x3 << ((bitInByte * 2) + 16));
-			target &= ~(0x3 << (bitInByte * 2));
-			target |= (0x1 << (bitInByte * 2));
-			*(grf[0] + (offset >> 2)) = target;
+			target = *(grf[0] + (regOffset >> 2));
+			target |= (0x3 << ((groupOffset * 2) + 16));
+			target &= ~(0x3 << (groupOffset * 2));
+			target |= (0x1 << (groupOffset * 2));
+			*(grf[0] + (regOffset >> 2)) = target;
 		}
 		else
 		{
-			target = *(grf[1] + (offset >> 2));
-			target |= (0x3 << ((bitInByte * 2) + 16));
-			target &= ~(0x3 << (bitInByte * 2));
-			target |= (0x1 << (bitInByte * 2));
-			*(grf[1] + (offset >> 2)) = target;
+			target = *(grf[1] + (regOffset >> 2));
+			target |= (0x3 << ((groupOffset * 2) + 16));
+			target &= ~(0x3 << (groupOffset * 2));
+			target |= (0x1 << (groupOffset * 2));
+			*(grf[1] + (regOffset >> 2)) = target;
 		}
 		break;
 	case PUD_DOWN:
 		if (bank == 0)
 		{
-			target = *(grf[0] + (offset >> 2));
-			target |= (0x3 << ((bitInByte * 2) + 16));
-			target &= ~(0x3 << (bitInByte * 2));
-			target |= (0x2 << (bitInByte * 2));
-			*(grf[0] + (offset >> 2)) = target;
+			target = *(grf[0] + (regOffset >> 2));
+			target |= (0x3 << ((groupOffset * 2) + 16));
+			target &= ~(0x3 << (groupOffset * 2));
+			target |= (0x2 << (groupOffset * 2));
+			*(grf[0] + (regOffset >> 2)) = target;
 		}
 		else
 		{
-			target = *(grf[1] + (offset >> 2));
-			target |= (0x3 << ((bitInByte * 2) + 16));
-			target &= ~(0x3 << (bitInByte * 2));
-			target |= (0x2 << (bitInByte * 2));
-			*(grf[1] + (offset >> 2)) = target;
+			target = *(grf[1] + (regOffset >> 2));
+			target |= (0x3 << ((groupOffset * 2) + 16));
+			target &= ~(0x3 << (groupOffset * 2));
+			target |= (0x2 << (groupOffset * 2));
+			*(grf[1] + (regOffset >> 2)) = target;
 		}
 		break;
 	case PUD_OFF:
 		if (bank == 0)
 		{
-			target = *(grf[0] + (offset >> 2));
-			target |= (0x3 << ((bitInByte * 2) + 16));
-			target &= ~(0x3 << (bitInByte * 2));
-			*(grf[0] + (offset >> 2)) = target;
+			target = *(grf[0] + (regOffset >> 2));
+			target |= (0x3 << ((groupOffset * 2) + 16));
+			target &= ~(0x3 << (groupOffset * 2));
+			*(grf[0] + (regOffset >> 2)) = target;
 		}
 		else
 		{
-			target = *(grf[1] + (offset >> 2));
-			target |= (0x3 << ((bitInByte * 2) + 16));
-			target &= ~(0x3 << (bitInByte * 2));
-			*(grf[1] + (offset >> 2)) = target;
+			target = *(grf[1] + (regOffset >> 2));
+			target |= (0x3 << ((groupOffset * 2) + 16));
+			target &= ~(0x3 << (groupOffset * 2));
+			*(grf[1] + (regOffset >> 2)) = target;
 		}
 		break;
 	default:
@@ -970,7 +970,7 @@ __attribute__ ((unused))static int _digitalRead (int pin)
 	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return	-1;
 
-	bank = pin / GPIO_SIZE;
+	bank = (pin / GPIO_SIZE);
 
 	ret = *(gpio[bank] + (M1_GPIO_GET_OFFSET >> 2)) & (1 << gpioToShiftRegBy32(pin)) ? HIGH : LOW;
 
@@ -981,7 +981,7 @@ __attribute__ ((unused))static int _digitalRead (int pin)
 /*----------------------------------------------------------------------------*/
 __attribute__ ((unused))static int _digitalRead_gpiod (int pin)
 {
-	uint8_t bank, bitNum;
+	uint8_t bank, bankOffset;
 	int ret;
 	char c;
 
@@ -1001,15 +1001,15 @@ __attribute__ ((unused))static int _digitalRead_gpiod (int pin)
 	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return	-1;
 
-	bank = pin / GPIO_SIZE;
-	bitNum = pin - (bank * GPIO_SIZE);
+	bank = (pin / GPIO_SIZE);
+	bankOffset = (pin - (bank * GPIO_SIZE));
 
 	chip = gpiod_chip_open_by_number(bank);
 	if (!chip) {
 		printf("chip open error\n");
 		return -1;
 	}
-	gpiod = gpiod_chip_get_line(chip,bitNum);
+	gpiod = gpiod_chip_get_line(chip,bankOffset);
 	if (!gpiod) {
 		printf("gpiod get error\n");
 		gpiod_chip_close(chip);
@@ -1030,8 +1030,8 @@ __attribute__ ((unused))static int _digitalRead_gpiod (int pin)
 /*----------------------------------------------------------------------------*/
 __attribute__ ((unused))static int _digitalWrite (int pin, int value)
 {
-	uint32_t offset, target;
-	uint8_t bank, bitNum;
+	uint32_t regOffset, target;
+	uint8_t bank, bankOffset;
 
 	if (lib->mode == MODE_GPIO_SYS) {
 		if (lib->sysFds[pin] != -1) {
@@ -1053,22 +1053,22 @@ __attribute__ ((unused))static int _digitalWrite (int pin, int value)
 	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return -1;
 
-	bank = pin / GPIO_SIZE;
-	bitNum = pin - (bank*GPIO_SIZE);
+	bank = (pin / GPIO_SIZE);
+	bankOffset = (pin - (bank * GPIO_SIZE));
 
-	offset = (bitNum / 16 == 0 ? M1_GPIO_SET_OFFSET : M1_GPIO_SET_OFFSET + 0x04);
+	regOffset = (bankOffset / 16 == 0 ? M1_GPIO_SET_OFFSET : M1_GPIO_SET_OFFSET + 0x04);
 
-	target = *(gpio[bank] + (offset >> 2));
+	target = *(gpio[bank] + (regOffset >> 2));
 	target |= (1 << (gpioToShiftRegBy16(pin)+16));
 
 	switch (value) {
 	case LOW:
 		target &= ~(1 << gpioToShiftRegBy16(pin));
-		*(gpio[bank] + (offset >> 2)) = target;
+		*(gpio[bank] + (regOffset >> 2)) = target;
 		break;
 	case HIGH:
 		target |= (1 << gpioToShiftRegBy16(pin));
-		*(gpio[bank] + (offset >> 2)) =  target;
+		*(gpio[bank] + (regOffset >> 2)) =  target;
 		break;
 	default:
 		break;
@@ -1081,7 +1081,7 @@ __attribute__ ((unused))static int _digitalWrite (int pin, int value)
 /*----------------------------------------------------------------------------*/
 __attribute__ ((unused))static int _digitalWrite_gpiod (int pin, int value)
 {
-	uint8_t bank,bitNum;
+	uint8_t bank,bankOffset;
 	int ret;
 
 	if (lib->mode == MODE_GPIO_SYS) {
@@ -1104,8 +1104,8 @@ __attribute__ ((unused))static int _digitalWrite_gpiod (int pin, int value)
 	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
 		return -1;
 
-	bank = pin / GPIO_SIZE;
-	bitNum = pin - (bank * GPIO_SIZE);
+	bank = (pin / GPIO_SIZE);
+	bankOffset = (pin - (bank * GPIO_SIZE));
 
 	chip = gpiod_chip_open_by_number(bank);
 	if (!chip) {
@@ -1113,7 +1113,7 @@ __attribute__ ((unused))static int _digitalWrite_gpiod (int pin, int value)
 		return -1;
 	}
 
-	gpiod = gpiod_chip_get_line(chip, bitNum);
+	gpiod = gpiod_chip_get_line(chip, bankOffset);
 	if (!gpiod) {
 		printf("gpiod get error\n");
 		gpiod_chip_close(chip);
