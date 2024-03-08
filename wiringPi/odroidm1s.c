@@ -251,7 +251,7 @@ static unsigned int	_digitalReadByte_gpiod	(void);
 /*----------------------------------------------------------------------------*/
 static 	void init_gpio_mmap	(void);
 static 	void init_adc_fds	(void);
-void init_odroidm1 	(struct libodroid *libwiring);
+void init_odroidm1s 	(struct libodroid *libwiring);
 /*----------------------------------------------------------------------------*/
 //
 // for the offset to the GPIO bit
