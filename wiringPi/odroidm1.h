@@ -88,24 +88,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define WRITE_BYTE_MASK_GPIO3_H	0x03C00000
 #define WRITE_BYTE_MASK_GPIO3_L	0x04000000
 
-// PWM
-#define M1_PWM_BASE 0xFDD70000
-#define M1_PWM9_BASE 0xFE6F0000
-#define M1_PWM_SCALE 0x0c
-#define M1_PWM_READY 0x10
-#define M1_PWM_EN 0x0b
-#define M1_PWM_LOCK 0x08
-// PWM offset
-#define M1_PWM1_PERIOD_OFFSET 0x14
-#define M1_PWM1_DUTY_OFFSET 0x18
-#define M1_PWM1_CTRL_OFFSET 0x1c
-#define M1_PWM2_PERIOD_OFFSET 0x24
-#define M1_PWM2_DUTY_OFFSET 0x28
-#define M1_PWM2_CTRL_OFFSET 0x2c
-#define M1_PWM9_PERIOD_OFFSET 0x14
-#define M1_PWM9_DUTY_OFFSET 0x18
-#define M1_PWM9_CTRL_OFFSET 0x1c
-
 #define CONSUMER "consumer"
 
 #define M1_PWM_INTERNAL_CLK			24000000 // 24MHz
